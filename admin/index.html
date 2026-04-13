@@ -414,6 +414,7 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
             <th>Product Name</th>
             <th class="hide-mobile">Durasi</th>
             <th class="hide-mobile">Checkout URL</th>
+            <th class="hide-mobile">Variant ID</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr></thead>
@@ -659,6 +660,13 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
         <div style="font-size:11px;color:var(--muted);margin-top:4px;">URL halaman checkout. Digunakan untuk generate shareable link affiliate.</div>
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Scalev Variant ID</label>
+        <input type="text" id="product-variant-id" placeholder="394125"/>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">variant_unique_id dari Scalev. Digunakan untuk checkout order.</div>
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeProductModal()">Batal</button>
       <button class="btn btn-primary" onclick="saveProduct()">Simpan</button>
@@ -897,6 +905,7 @@ async function loadProducts() {
           <td><strong>${p.product_name}</strong></td>
           <td class="hide-mobile">${p.months ? p.months + ' bulan' : '<span style="color:var(--gold)">Lifetime</span>'}</td>
           <td class="hide-mobile" style="font-size:11px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.checkout_url || '<span style="color:var(--border)">—</span>'}</td>
+          <td class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">${p.scalev_variant_id || '—'}</td>
           <td>
             <label class="toggle">
               <input type="checkbox" ${p.is_active ? 'checked' : ''} onchange="toggleProduct(${p.id}, this.checked)"/>
@@ -904,11 +913,11 @@ async function loadProducts() {
             </label>
           </td>
           <td>
-            <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id}, \`${p.product_name.replace(/`/g,"'")}\`, ${p.months || ''}, \`${(p.checkout_url||'').replace(/`/g,"'")}\`)">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id}, \`${p.product_name.replace(/`/g,"'")}\`, ${p.months || ''}, \`${(p.checkout_url||'').replace(/`/g,"'")}\`, \`${(p.scalev_variant_id||'').replace(/`/g,"'")}\`)">Edit</button>
             <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="deleteProduct(${p.id})">Hapus</button>
           </td>
         </tr>`).join('')
-      : '<tr><td colspan="5" class="empty">Belum ada produk terdaftar</td></tr>';
+      : '<tr><td colspan="6" class="empty">Belum ada produk terdaftar</td></tr>';
   } catch(e) { showAlert('products', e.message, 'error'); }
 }
 
@@ -917,15 +926,17 @@ function openProductModal() {
   document.getElementById('product-name').value = '';
   document.getElementById('product-months').value = '';
   document.getElementById('product-checkout-url').value = '';
+  document.getElementById('product-variant-id').value = '';
   document.getElementById('product-modal-title').textContent = 'TAMBAH PRODUK';
   document.getElementById('product-modal').classList.add('open');
 }
 
-function editProduct(id, name, months, checkoutUrl) {
+function editProduct(id, name, months, checkoutUrl, variantId) {
   document.getElementById('product-id').value = id;
   document.getElementById('product-name').value = name;
   document.getElementById('product-months').value = months || '';
   document.getElementById('product-checkout-url').value = checkoutUrl || '';
+  document.getElementById('product-variant-id').value = variantId || '';
   document.getElementById('product-modal-title').textContent = 'EDIT PRODUK';
   document.getElementById('product-modal').classList.add('open');
 }
@@ -939,12 +950,14 @@ async function saveProduct() {
   const name        = document.getElementById('product-name').value.trim();
   const months      = document.getElementById('product-months').value;
   const checkoutUrl = document.getElementById('product-checkout-url').value.trim();
+  const variantId   = document.getElementById('product-variant-id').value.trim();
   if (!name) return showAlert('products', 'Product name wajib diisi', 'error');
   try {
     const body = {
       product_name: name,
       months: months || null,
-      checkout_url: checkoutUrl || null
+      checkout_url: checkoutUrl || null,
+      scalev_variant_id: variantId || null
     };
     if (id) {
       await api('PUT', `/admin/products/${id}`, body);
