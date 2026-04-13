@@ -900,7 +900,7 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
   var trackKey = 'rqq_tracked_homepage_' + ref;
   if (!sessionStorage.getItem(trackKey)) {
     sessionStorage.setItem(trackKey, '1');
-    fetch('https://tradity-rqq-server-production.up.railway.app/track?ref=' +
+    fetch('https://tradity-qrr-server-production.up.railway.app/track?ref=' +
       encodeURIComponent(ref) + '&page=homepage', { method: 'GET', credentials: 'include' })
       .catch(function() {});
   }
@@ -908,7 +908,7 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 })();
 
 function injectMetaPixels(refCode, eventName) {
-  var SERVER = 'https://tradity-rqq-server-production.up.railway.app';
+  var SERVER = 'https://tradity-qrr-server-production.up.railway.app';
   var ownerPixelId = 'PLACEHOLDER_META_PIXEL_ID';
 
   // 1. Always fire owner pixel event (init already done above)

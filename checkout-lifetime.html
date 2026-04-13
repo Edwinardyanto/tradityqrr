@@ -296,7 +296,7 @@ document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY});
   var trackKey = 'rqq_tracked_checkout_' + ref;
   if (sessionStorage.getItem(trackKey)) return;
   sessionStorage.setItem(trackKey, '1');
-  fetch('https://tradity-rqq-server-production.up.railway.app/track?ref=' +
+  fetch('https://tradity-qrr-server-production.up.railway.app/track?ref=' +
     encodeURIComponent(ref) + '&page=checkout', { method: 'GET', credentials: 'include' })
     .catch(function() {});
 })();
@@ -306,7 +306,7 @@ document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY});
   var ref = sessionStorage.getItem('rqq_ref') ||
     new URLSearchParams(window.location.search).get('ref');
   var ownerPixelId = 'PLACEHOLDER_META_PIXEL_ID';
-  var SERVER = 'https://tradity-rqq-server-production.up.railway.app';
+  var SERVER = 'https://tradity-qrr-server-production.up.railway.app';
 
   function loadPixelAndFire(pixelId, eventName) {
     if (!window.fbq) {
@@ -365,7 +365,7 @@ document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY});
 })();
 
 // ── Checkout Logic ────────────────────────────────────────────────
-var API = 'https://tradity-rqq-server-production.up.railway.app';
+var API = 'https://tradity-qrr-server-production.up.railway.app';
 var PRODUCT_KEY = 'lifetime';
 var PRICE_LABEL = 'Rp 8.888.888';
 
