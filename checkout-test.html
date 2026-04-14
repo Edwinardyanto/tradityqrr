@@ -449,11 +449,18 @@ async function submitOrder() {
       throw new Error(data.error || 'Gagal membuat order');
     }
 
-    // Redirect to payment
-    showCheckoutAlert('Order berhasil! Mengalihkan ke halaman pembayaran...', 'success');
-    setTimeout(function() {
-      window.location.href = data.payment_url;
-    }, 1000);
+    // Redirect based on payment method
+    if (payment_method === 'no_payment') {
+      showCheckoutAlert('Order berhasil! Test order selesai.', 'success');
+      setTimeout(function() {
+        window.location.href = 'success-basic.html';
+      }, 1000);
+    } else {
+      showCheckoutAlert('Order berhasil! Mengalihkan ke halaman pembayaran...', 'success');
+      setTimeout(function() {
+        window.location.href = data.payment_url;
+      }, 1000);
+    }
 
   } catch (err) {
     showCheckoutAlert(err.message, 'error');
