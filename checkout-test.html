@@ -196,56 +196,26 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
         <div style="margin-bottom:18px;">
           <label style="font-size:11px;font-weight:600;color:#4A7080;display:block;margin-bottom:8px;">Metode Pembayaran</label>
 
-          <div id="payment-methods" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <label class="pm-opt" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dce3ea;border-radius:8px;cursor:pointer;font-size:12px;color:#0C1628;font-weight:500;transition:all .2s;">
-              <input type="radio" name="payment" value="qris" style="accent-color:#18B0C0;"/> QRIS
-            </label>
-            <label class="pm-opt" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dce3ea;border-radius:8px;cursor:pointer;font-size:12px;color:#0C1628;font-weight:500;transition:all .2s;">
-              <input type="radio" name="payment" value="dana" style="accent-color:#18B0C0;"/> Dana
-            </label>
-            <label class="pm-opt" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dce3ea;border-radius:8px;cursor:pointer;font-size:12px;color:#0C1628;font-weight:500;transition:all .2s;">
-              <input type="radio" name="payment" value="gopay" style="accent-color:#18B0C0;"/> GoPay
-            </label>
-            <label class="pm-opt" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dce3ea;border-radius:8px;cursor:pointer;font-size:12px;color:#0C1628;font-weight:500;transition:all .2s;">
-              <input type="radio" name="payment" value="ovo" style="accent-color:#18B0C0;"/> OVO
-            </label>
-            <label class="pm-opt" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dce3ea;border-radius:8px;cursor:pointer;font-size:12px;color:#0C1628;font-weight:500;transition:all .2s;">
-              <input type="radio" name="payment" value="shopeepay" style="accent-color:#18B0C0;"/> ShopeePay
-            </label>
-            <label class="pm-opt" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dce3ea;border-radius:8px;cursor:pointer;font-size:12px;color:#0C1628;font-weight:500;transition:all .2s;">
-              <input type="radio" name="payment" value="linkaja" style="accent-color:#18B0C0;"/> LinkAja
-            </label>
-            <label class="pm-opt" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dce3ea;border-radius:8px;cursor:pointer;font-size:12px;color:#0C1628;font-weight:500;transition:all .2s;grid-column:1/-1;">
-              <input type="radio" name="payment" value="va" style="accent-color:#18B0C0;" onchange="document.getElementById('va-options').style.display='flex'"/> Virtual Account (Transfer Bank)
-            </label>
+          <div class="pm-grid">
+            <label class="pm-opt"><input type="radio" name="payment" value="dana"/><span>Dana</span></label>
+            <label class="pm-opt"><input type="radio" name="payment" value="gopay"/><span>GoPay</span></label>
+            <label class="pm-opt"><input type="radio" name="payment" value="ovo"/><span>OVO</span></label>
+            <label class="pm-opt"><input type="radio" name="payment" value="qris"/><span>QRIS</span></label>
+            <label class="pm-opt"><input type="radio" name="payment" value="shopeepay"/><span>ShopeePay</span></label>
+            <label class="pm-opt"><input type="radio" name="payment" value="linkaja"/><span>LinkAja</span></label>
+            <label class="pm-opt va-trigger"><input type="radio" name="payment" value="va"/><span>Virtual Account</span></label>
+            <label class="pm-opt"><input type="radio" name="payment" value="free"/><span>Free (Test)</span></label>
           </div>
 
-          <div id="va-options" style="display:none;flex-wrap:wrap;gap:6px;margin-top:8px;padding:10px 12px;background:#f8fafc;border:1px solid #dce3ea;border-radius:8px;">
-            <div style="font-size:10px;color:#4A7080;font-weight:600;width:100%;margin-bottom:4px;">Pilih Bank:</div>
-            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#0C1628;cursor:pointer;padding:4px 8px;border:1px solid #dce3ea;border-radius:6px;background:#fff;">
-              <input type="radio" name="va_bank" value="BNI" style="accent-color:#18B0C0;"/> BNI
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#0C1628;cursor:pointer;padding:4px 8px;border:1px solid #dce3ea;border-radius:6px;background:#fff;">
-              <input type="radio" name="va_bank" value="BRI" style="accent-color:#18B0C0;"/> BRI
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#0C1628;cursor:pointer;padding:4px 8px;border:1px solid #dce3ea;border-radius:6px;background:#fff;">
-              <input type="radio" name="va_bank" value="MANDIRI" style="accent-color:#18B0C0;"/> Mandiri
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#0C1628;cursor:pointer;padding:4px 8px;border:1px solid #dce3ea;border-radius:6px;background:#fff;">
-              <input type="radio" name="va_bank" value="BSI" style="accent-color:#18B0C0;"/> BSI
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#0C1628;cursor:pointer;padding:4px 8px;border:1px solid #dce3ea;border-radius:6px;background:#fff;">
-              <input type="radio" name="va_bank" value="CIMB" style="accent-color:#18B0C0;"/> CIMB
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#0C1628;cursor:pointer;padding:4px 8px;border:1px solid #dce3ea;border-radius:6px;background:#fff;">
-              <input type="radio" name="va_bank" value="PERMATA" style="accent-color:#18B0C0;"/> Permata
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#0C1628;cursor:pointer;padding:4px 8px;border:1px solid #dce3ea;border-radius:6px;background:#fff;">
-              <input type="radio" name="va_bank" value="BJB" style="accent-color:#18B0C0;"/> BJB
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#0C1628;cursor:pointer;padding:4px 8px;border:1px solid #dce3ea;border-radius:6px;background:#fff;">
-              <input type="radio" name="va_bank" value="SAHABAT_SAMPOERNA" style="accent-color:#18B0C0;"/> Sampoerna
-            </label>
+          <div id="va-options" style="display:none; flex-wrap:wrap; gap:8px; margin-top:12px;">
+            <label class="pm-opt"><input type="radio" name="va_bank" value="BNI"/><span>BNI</span></label>
+            <label class="pm-opt"><input type="radio" name="va_bank" value="BRI"/><span>BRI</span></label>
+            <label class="pm-opt"><input type="radio" name="va_bank" value="BSI"/><span>BSI</span></label>
+            <label class="pm-opt"><input type="radio" name="va_bank" value="BJB"/><span>BJB</span></label>
+            <label class="pm-opt"><input type="radio" name="va_bank" value="CIMB"/><span>CIMB Niaga</span></label>
+            <label class="pm-opt"><input type="radio" name="va_bank" value="MANDIRI"/><span>Mandiri</span></label>
+            <label class="pm-opt"><input type="radio" name="va_bank" value="PERMATA"/><span>Permata</span></label>
+            <label class="pm-opt"><input type="radio" name="va_bank" value="SAHABAT_SAMPOERNA"/><span>Sahabat Sampoerna</span></label>
           </div>
         </div>
 
@@ -389,12 +359,7 @@ var refCode = urlParams.get('ref') || null;
 // Hide VA options when other payment selected
 document.querySelectorAll('input[name="payment"]').forEach(function(radio) {
   radio.addEventListener('change', function() {
-    if (this.value !== 'va') {
-      document.getElementById('va-options').style.display = 'none';
-    } else {
-      document.getElementById('va-options').style.display = 'flex';
-    }
-    // Highlight selected
+    document.getElementById('va-options').style.display = this.value === 'va' ? 'flex' : 'none';
     document.querySelectorAll('.pm-opt').forEach(function(el) {
       el.style.borderColor = '#dce3ea';
       el.style.background = '#fff';
@@ -455,6 +420,8 @@ async function submitOrder() {
     }
     sub_payment_method = vaEl.value;
   }
+  // Free payment for test — no VA validation needed
+
 
   // Loading state
   var btn = document.getElementById('submit-btn');
