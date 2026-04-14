@@ -195,6 +195,19 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
           <img src="data/username_tradingview.png" alt="Cara melihat username TradingView" style="width:100%;border-radius:7px;display:block;"/>
         </div>
 
+        <!-- PROMO CODE -->
+        <div style="margin-bottom:18px;">
+          <label style="display:block;font-size:11px;font-weight:600;color:#4A7080;margin-bottom:5px;">Promo Code <span style="color:#9CA3AF;font-weight:400">(optional)</span></label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="f-promo" placeholder="Enter promo code" oninput="this.value=this.value.toUpperCase()"
+              style="flex:1;padding:10px 14px;border:1px solid #dce3ea;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#fff;color:#0C1628;transition:border-color .2s"
+              onfocus="this.style.borderColor='#6B5FD4'" onblur="this.style.borderColor='#dce3ea'"/>
+            <button type="button" onclick="applyPromo()" id="promo-btn"
+              style="background:rgba(107,95,212,.1);border:1px solid rgba(107,95,212,.4);border-radius:8px;padding:10px 16px;color:#6B5FD4;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif">Apply</button>
+          </div>
+          <div id="promo-result" style="display:none;margin-top:6px;font-size:12px;padding:8px 12px;border-radius:6px"></div>
+        </div>
+
         <div style="margin-bottom:18px;">
           <label style="font-size:11px;font-weight:600;color:#4A7080;display:block;margin-bottom:8px;">Metode Pembayaran</label>
 
@@ -359,6 +372,37 @@ var API = 'https://tradity-qrr-server-production.up.railway.app';
 var urlParams = new URLSearchParams(window.location.search);
 var refCode = urlParams.get('ref') || null;
 
+var _promoValid = false;
+var _promoCode = null;
+
+async function applyPromo() {
+  var code = document.getElementById('f-promo').value.trim();
+  var promoResult = document.getElementById('promo-result');
+  var promoBtn = document.getElementById('promo-btn');
+  if (!code) { promoResult.style.display = 'none'; _promoValid = false; _promoCode = null; return; }
+  promoBtn.textContent = '...'; promoBtn.disabled = true;
+  try {
+    var res = await fetch(API + '/promo/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code }) });
+    var data = await res.json();
+    if (data.valid) {
+      _promoValid = true; _promoCode = code;
+      promoResult.style.display = 'block'; promoResult.style.background = 'rgba(107,95,212,.08)'; promoResult.style.border = '1px solid rgba(107,95,212,.2)'; promoResult.style.color = '#6B5FD4';
+      promoResult.textContent = '\u2705 ' + data.message + ' applied!';
+    } else {
+      _promoValid = false; _promoCode = null;
+      promoResult.style.display = 'block'; promoResult.style.background = 'rgba(255,68,68,.06)'; promoResult.style.border = '1px solid rgba(255,68,68,.15)'; promoResult.style.color = '#CC3333';
+      promoResult.textContent = '\u274C ' + (data.reason || 'Invalid promo code');
+    }
+  } catch (err) {
+    promoResult.style.display = 'block'; promoResult.style.background = 'rgba(255,68,68,.06)'; promoResult.style.border = '1px solid rgba(255,68,68,.15)'; promoResult.style.color = '#CC3333';
+    promoResult.textContent = '\u274C Failed to validate promo code'; _promoValid = false; _promoCode = null;
+  } finally { promoBtn.textContent = 'Apply'; promoBtn.disabled = false; }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var pi = document.getElementById('f-promo');
+  if (pi) pi.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); applyPromo(); } });
+});
+
 // Hide VA options when other payment selected
 document.querySelectorAll('input[name="payment"]').forEach(function(radio) {
   radio.addEventListener('change', function() {
@@ -437,6 +481,7 @@ async function submitOrder() {
     };
     if (sub_payment_method) body.sub_payment_method = sub_payment_method;
     if (refCode) body.ref_code = refCode;
+    if (_promoValid && _promoCode) body.promo_code = _promoCode;
 
     var res = await fetch(API + '/checkout/create-order', {
       method: 'POST',

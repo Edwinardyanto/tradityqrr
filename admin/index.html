@@ -327,6 +327,7 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
     <div class="nav-tab" onclick="showPage('grant')">Manual Grant</div>
     <div class="nav-tab" onclick="showPage('affiliates')">Affiliates</div>
     <div class="nav-tab" onclick="showPage('traffic')">Traffic</div>
+    <div class="nav-tab" onclick="showPage('promo')">Promo</div>
   </div>
   <div class="nav-right">
     <span id="auth-status">not connected</span>
@@ -419,10 +420,11 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
             <th class="hide-mobile">Durasi</th>
             <th class="hide-mobile">Checkout URL</th>
             <th class="hide-mobile">Variant ID</th>
+            <th class="hide-mobile">Price</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr></thead>
-          <tbody id="products-table"><tr><td colspan="4" class="empty">Loading...</td></tr></tbody>
+          <tbody id="products-table"><tr><td colspan="7" class="empty">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -637,6 +639,80 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
     </div>
   </div>
 
+  <!-- PROMO CODES -->
+  <div class="page" id="page-promo">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Promo Codes</div>
+        <button class="btn btn-primary" onclick="openPromoModal()">+ Create Promo</button>
+      </div>
+      <div id="alert-promo" class="alert"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Code</th>
+            <th>Type</th>
+            <th>Discount</th>
+            <th>Used</th>
+            <th>Max Uses</th>
+            <th class="hide-mobile">Expires</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="promo-tbody"><tr><td colspan="8" class="empty">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: Promo Code -->
+<div class="modal-overlay" id="promo-modal">
+  <div class="modal">
+    <h3 id="promo-modal-title">CREATE PROMO CODE</h3>
+    <p>Create a discount code for customers</p>
+    <input type="hidden" id="promo-edit-id"/>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Promo Code *</label>
+        <input type="text" id="pm-code" placeholder="SAVE20" oninput="this.value=this.value.toUpperCase()" style="font-family:'JetBrains Mono',monospace"/>
+      </div>
+    </div>
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>Discount Type *</label>
+        <select id="pm-type" onchange="updatePromoValueLabel()" style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;">
+          <option value="percentage">Percentage (%)</option>
+          <option value="fixed">Fixed Amount (Rp)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label id="pm-value-label">Value (%) *</label>
+        <input type="number" id="pm-value" placeholder="20" min="1"/>
+      </div>
+    </div>
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>Max Uses</label>
+        <input type="number" id="pm-maxuses" placeholder="Empty = unlimited" min="1"/>
+      </div>
+      <div class="form-group">
+        <label>Expires At</label>
+        <input type="datetime-local" id="pm-until"/>
+      </div>
+    </div>
+    <div style="margin:12px 0 16px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--white);">
+        <input id="pm-active" type="checkbox" checked style="width:16px;height:16px;accent-color:#6B5FD4;"/>
+        Activate this promo code
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePromoModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePromo()">Save</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL: Add/Edit Product -->
@@ -669,6 +745,13 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
         <label>Scalev Variant ID</label>
         <input type="text" id="product-variant-id" placeholder="394125"/>
         <div style="font-size:11px;color:var(--muted);margin-top:4px;">variant_unique_id dari Scalev. Digunakan untuk checkout order.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Product Price (Rp)</label>
+        <input type="number" id="product-price" placeholder="288888" min="0"/>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Harga produk dalam Rupiah. Digunakan untuk kalkulasi diskon promo code.</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -827,13 +910,14 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  const tabs = { dashboard:0, products:1, subscribers:2, transactions:3, grant:4, affiliates:5, traffic:6 };
+  const tabs = { dashboard:0, products:1, subscribers:2, transactions:3, grant:4, affiliates:5, traffic:6, promo:7 };
   document.querySelectorAll('.nav-tab')[tabs[name]]?.classList.add('active');
   if (name === 'products')     loadProducts();
   if (name === 'subscribers')  loadSubscribers();
   if (name === 'transactions') loadTransactions();
   if (name === 'affiliates')   loadAffiliates();
   if (name === 'traffic')      loadAdminTraffic();
+  if (name === 'promo')        loadPromos();
 
   // Sync admin bottom nav
   document.querySelectorAll('.admin-bottom-nav-item').forEach(t => {
@@ -910,6 +994,7 @@ async function loadProducts() {
           <td class="hide-mobile">${p.months ? p.months + ' bulan' : '<span style="color:var(--gold)">Lifetime</span>'}</td>
           <td class="hide-mobile" style="font-size:11px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.checkout_url || '<span style="color:var(--border)">—</span>'}</td>
           <td class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">${p.scalev_variant_id || '—'}</td>
+          <td class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold)">${p.price ? 'Rp ' + parseInt(p.price).toLocaleString('id-ID') : '—'}</td>
           <td>
             <label class="toggle">
               <input type="checkbox" ${p.is_active ? 'checked' : ''} onchange="toggleProduct(${p.id}, this.checked)"/>
@@ -917,11 +1002,11 @@ async function loadProducts() {
             </label>
           </td>
           <td>
-            <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id}, \`${p.product_name.replace(/`/g,"'")}\`, ${p.months || 'null'}, \`${(p.checkout_url||'').replace(/`/g,"'")}\`, \`${(p.scalev_variant_id||'').replace(/`/g,"'")}\`)">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id}, \`${p.product_name.replace(/`/g,"'")}\`, ${p.months || 'null'}, \`${(p.checkout_url||'').replace(/`/g,"'")}\`, \`${(p.scalev_variant_id||'').replace(/`/g,"'")}\`, ${p.price || 0})">Edit</button>
             <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="deleteProduct(${p.id})">Hapus</button>
           </td>
         </tr>`).join('')
-      : '<tr><td colspan="6" class="empty">Belum ada produk terdaftar</td></tr>';
+      : '<tr><td colspan="7" class="empty">Belum ada produk terdaftar</td></tr>';
   } catch(e) { showAlert('products', e.message, 'error'); }
 }
 
@@ -931,16 +1016,18 @@ function openProductModal() {
   document.getElementById('product-months').value = '';
   document.getElementById('product-checkout-url').value = '';
   document.getElementById('product-variant-id').value = '';
+  document.getElementById('product-price').value = '';
   document.getElementById('product-modal-title').textContent = 'TAMBAH PRODUK';
   document.getElementById('product-modal').classList.add('open');
 }
 
-function editProduct(id, name, months, checkoutUrl, variantId) {
+function editProduct(id, name, months, checkoutUrl, variantId, price) {
   document.getElementById('product-id').value = id;
   document.getElementById('product-name').value = name;
   document.getElementById('product-months').value = months || '';
   document.getElementById('product-checkout-url').value = checkoutUrl || '';
   document.getElementById('product-variant-id').value = variantId || '';
+  document.getElementById('product-price').value = price || '';
   document.getElementById('product-modal-title').textContent = 'EDIT PRODUK';
   document.getElementById('product-modal').classList.add('open');
 }
@@ -955,13 +1042,15 @@ async function saveProduct() {
   const months      = document.getElementById('product-months').value;
   const checkoutUrl = document.getElementById('product-checkout-url').value.trim();
   const variantId   = document.getElementById('product-variant-id').value.trim();
+  const price       = document.getElementById('product-price').value;
   if (!name) return showAlert('products', 'Product name wajib diisi', 'error');
   try {
     const body = {
       product_name: name,
       months: months || null,
       checkout_url: checkoutUrl || null,
-      scalev_variant_id: variantId || null
+      scalev_variant_id: variantId || null,
+      price: parseInt(price) || 0
     };
     if (id) {
       await api('PUT', `/admin/products/${id}`, body);
@@ -986,6 +1075,134 @@ async function deleteProduct(id) {
     loadProducts();
     showAlert('products', 'Produk dihapus', 'success');
   } catch(e) { showAlert('products', e.message, 'error'); }
+}
+
+// ── Promo Codes ──────────────────────────────────────────────────
+
+var currentEditPromoId = null;
+
+function updatePromoValueLabel() {
+  var type = document.getElementById('pm-type').value;
+  document.getElementById('pm-value-label').textContent = type === 'percentage' ? 'Value (%) *' : 'Value (Rp) *';
+}
+
+function openPromoModal(promo) {
+  currentEditPromoId = promo ? promo.id : null;
+  document.getElementById('promo-modal-title').textContent = promo ? 'EDIT PROMO CODE' : 'CREATE PROMO CODE';
+  document.getElementById('promo-edit-id').value = promo ? promo.id : '';
+  document.getElementById('pm-code').value = promo ? promo.code : '';
+  document.getElementById('pm-type').value = promo ? promo.discount_type : 'percentage';
+  document.getElementById('pm-value').value = promo ? promo.discount_value : '';
+  document.getElementById('pm-maxuses').value = promo ? (promo.max_uses || '') : '';
+  document.getElementById('pm-until').value = promo && promo.valid_until
+    ? new Date(promo.valid_until).toISOString().slice(0,16) : '';
+  document.getElementById('pm-active').checked = promo ? promo.is_active : true;
+  updatePromoValueLabel();
+  document.getElementById('promo-modal').classList.add('open');
+}
+
+function closePromoModal() {
+  document.getElementById('promo-modal').classList.remove('open');
+  currentEditPromoId = null;
+}
+
+async function savePromo() {
+  var code = document.getElementById('pm-code').value.trim();
+  var discount_type = document.getElementById('pm-type').value;
+  var discount_value = document.getElementById('pm-value').value;
+  var max_uses = document.getElementById('pm-maxuses').value;
+  var valid_until = document.getElementById('pm-until').value;
+  var is_active = document.getElementById('pm-active').checked;
+
+  if (!code || !discount_value) {
+    alert('Code and discount value are required');
+    return;
+  }
+
+  var body = {
+    code: code.toUpperCase(),
+    discount_type: discount_type,
+    discount_value: parseFloat(discount_value),
+    max_uses: max_uses ? parseInt(max_uses) : null,
+    valid_until: valid_until || null,
+    is_active: is_active
+  };
+
+  try {
+    if (currentEditPromoId) {
+      await api('PATCH', '/admin/promo-codes/' + currentEditPromoId, body);
+    } else {
+      await api('POST', '/admin/promo-codes', body);
+    }
+    closePromoModal();
+    loadPromos();
+    showAlert('promo', 'Promo code saved', 'success');
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function deletePromo(id, code) {
+  if (!confirm('Delete promo code "' + code + '"?')) return;
+  try {
+    await api('DELETE', '/admin/promo-codes/' + id);
+    loadPromos();
+    showAlert('promo', 'Promo code deleted', 'success');
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function togglePromo(id, currentActive) {
+  try {
+    await api('PATCH', '/admin/promo-codes/' + id, { is_active: !currentActive });
+    loadPromos();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function loadPromos() {
+  try {
+    const { promo_codes } = await api('GET', '/admin/promo-codes');
+    const tbody = document.getElementById('promo-tbody');
+    if (!tbody) return;
+
+    if (!promo_codes || !promo_codes.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty">No promo codes yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = promo_codes.map(function(p) {
+      var discountLabel = p.discount_type === 'percentage'
+        ? p.discount_value + '%'
+        : 'Rp ' + parseInt(p.discount_value).toLocaleString('id-ID');
+      var maxUsesLabel = p.max_uses ? p.max_uses : '∞';
+      var untilLabel = p.valid_until ? new Date(p.valid_until).toLocaleDateString('en-GB') : 'Never';
+      var statusBadge = p.is_active
+        ? '<span class="badge badge-green">Active</span>'
+        : '<span class="badge" style="background:rgba(107,114,128,.15);color:#6B7280;">Inactive</span>';
+
+      var promoJson = JSON.stringify(p).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+      return '<tr>' +
+        '<td><span class="mono" style="color:var(--cyan);font-weight:600">' + p.code + '</span></td>' +
+        '<td style="color:var(--muted);font-size:13px">' + (p.discount_type === 'percentage' ? 'Percentage' : 'Fixed') + '</td>' +
+        '<td style="font-weight:600;color:var(--gold)">' + discountLabel + '</td>' +
+        '<td>' + p.used_count + '</td>' +
+        '<td style="color:var(--muted)">' + maxUsesLabel + '</td>' +
+        '<td class="hide-mobile" style="color:var(--muted);font-size:12px">' + untilLabel + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td><div style="display:flex;gap:6px">' +
+          '<button class="btn btn-ghost btn-sm" onclick="openPromoModal(JSON.parse(decodeURIComponent(\'' + encodeURIComponent(JSON.stringify(p)) + '\')))">Edit</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="togglePromo(\'' + p.id + '\',' + p.is_active + ')">' + (p.is_active ? 'Off' : 'On') + '</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="deletePromo(\'' + p.id + '\',\'' + p.code + '\')">Del</button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+  } catch (e) {
+    console.error('loadPromos error:', e);
+  }
 }
 
 // ── Subscribers ───────────────────────────────────────────────────
@@ -1658,6 +1875,13 @@ async function saveAndRetry() {
       <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
     </svg>
     Produk
+  </div>
+  <div class="admin-bottom-nav-item" onclick="showPage('promo')" data-page="promo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+      <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>
+    Promo
   </div>
   <div class="admin-bottom-nav-item" onclick="showPage('affiliates')" data-page="affiliates">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
