@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TRXC QRR — Predictive Market Indicator</title>
 <link rel="icon" type="image/png" href="data/trxc-qrr-logo.png"/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
+<meta property="og:title" content="TRXC QRR — Predictive Market Indicator"/>
+<meta property="og:description" content="Sinyal muncul sebelum harga sampai ke level target. Bukan reaktif. Predictive."/>
+<meta property="og:image" content="data/og-trxc-qrr.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
   --bg:#07060F;--bg2:#0C0A1A;--bg3:#100E20;
@@ -17,283 +20,358 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;overflow-x:hidden;cursor:none}
-
-/* grid bg */
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(107,95,212,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(107,95,212,.025) 1px,transparent 1px);
-  background-size:56px 56px}
-
-/* cursor */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(107,95,212,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(107,95,212,.025) 1px,transparent 1px);background-size:56px 56px}
 .cur{position:fixed;width:8px;height:8px;background:var(--purple);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
 .cur-ring{position:fixed;width:32px;height:32px;border:1.5px solid rgba(107,95,212,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,opacity .25s}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:rgba(7,6,15,.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:62px;background:rgba(7,6,15,.95);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
 .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-.nav-logo-img{height:36px;width:36px;object-fit:contain}
-.nav-logo-txt{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:3px;color:var(--white)}
-.nav-logo-txt .slash{color:var(--purple);margin:0 2px}
-.nav-links{display:flex;gap:28px}
-.nav-links a{font-size:12.5px;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.4px;transition:color .2s}
+.nav-logo-img{height:32px;width:32px;object-fit:contain}
+.nav-logo-txt{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--white)}
+.nav-logo-txt .slash{color:var(--purple4);margin:0 2px;font-weight:300}
+.nav-logo-txt .dim{color:var(--purple4)}
+.nav-links{display:flex;gap:32px}
+.nav-links a{font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
 .nav-links a:hover{color:var(--purple)}
-.nav-cta{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;background:var(--purple);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:700;font-size:12.5px;border:none;border-radius:4px;cursor:pointer;text-decoration:none;letter-spacing:.3px;transition:all .2s}
-.nav-cta:hover{background:#fff;color:var(--bg);transform:translateY(-1px)}
+.nav-cta{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;background:var(--purple);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;border:none;cursor:pointer;text-decoration:none;letter-spacing:.3px;transition:all .2s;border-radius:100px}
+.nav-cta:hover{background:var(--purple2);transform:translateY(-1px)}
 
 /* ── TICKER ── */
-.ticker-wrap{overflow:hidden;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 0;position:relative;z-index:1;margin-top:65px}
-.ticker-track{display:flex;width:max-content;animation:scrollT 28s linear infinite}
-.ticker-item{padding:0 24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);border-right:1px solid var(--border);white-space:nowrap}
-.up{color:var(--purple2)}.down{color:var(--red)}
+.ticker-wrap{overflow:hidden;background:var(--bg2);border-bottom:1px solid var(--border);padding:9px 0;position:relative;z-index:1;margin-top:62px}
+.ticker-track{display:flex;width:max-content;animation:scrollT 30s linear infinite}
+.ticker-item{padding:0 24px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);border-right:1px solid var(--border);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tick-pair{color:#3D3560}.up{color:var(--purple)}.down{color:var(--red)}
 @keyframes scrollT{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* ── HERO ── */
-.hero{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;padding:100px 64px 80px;overflow:hidden;gap:48px}
+.hero{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:center;padding:0 48px;overflow:hidden}
+.hero-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(107,95,212,.018) 2px,rgba(107,95,212,.018) 3px);pointer-events:none;z-index:1}
+.hero-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.55) 100%);pointer-events:none;z-index:1}
+.hero-glow-tl{position:absolute;top:-80px;left:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(75,63,160,.22) 0%,transparent 70%);pointer-events:none}
+.hero-glow-br{position:absolute;bottom:-60px;right:0;width:300px;height:300px;background:radial-gradient(circle,rgba(107,95,212,.12) 0%,transparent 70%);pointer-events:none}
+.hero-ghost{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:320px;color:transparent;-webkit-text-stroke:1px rgba(107,95,212,.045);line-height:1;top:50%;left:50%;transform:translate(-40%,-50%);pointer-events:none;letter-spacing:-10px;z-index:0}
 
-/* hero overlays */
-.hero-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(107,95,212,.02) 2px,rgba(107,95,212,.02) 3px);pointer-events:none;z-index:0}
-.hero-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.6) 100%);pointer-events:none;z-index:0}
-.hero-glow-tl{position:absolute;width:700px;height:700px;top:-15%;left:-10%;background:radial-gradient(circle,rgba(75,63,160,.2) 0%,transparent 70%);pointer-events:none;z-index:0}
-.hero-glow-br{position:absolute;width:600px;height:600px;bottom:-10%;right:-5%;background:radial-gradient(circle,rgba(75,63,160,.15) 0%,transparent 70%);pointer-events:none;z-index:0}
-.hero-ghost{position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);font-family:'Bebas Neue',sans-serif;font-size:280px;color:transparent;-webkit-text-stroke:1px rgba(107,95,212,.06);pointer-events:none;z-index:0;line-height:1;letter-spacing:-10px;user-select:none}
-
-.hero-left{position:relative;z-index:2}
-.hero-right{position:relative;z-index:2;display:flex;flex-direction:column;gap:14px}
-
-.hero-badge{display:inline-flex;align-items:center;gap:9px;padding:5px 18px;border:1px solid var(--purple3);border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;animation:fadeUp .5s ease both}
-.pulse{width:6px;height:6px;background:var(--purple);border-radius:50%;animation:pls 2s ease infinite}
+.hero-eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:28px}
+.hero-dot{width:5px;height:5px;background:var(--purple);border-radius:50%;animation:pls 2s ease infinite;flex-shrink:0}
 @keyframes pls{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+.hero-eyebrow-txt{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--purple3);letter-spacing:4px;text-transform:uppercase}
+.hero-h1{font-family:'Bebas Neue',sans-serif;line-height:.88;letter-spacing:-1px;margin-bottom:22px;text-align:right}
+.hero-h1 .l1{font-size:clamp(72px,10vw,120px);color:var(--white);display:block}
+.hero-h1 .l2{font-size:clamp(72px,10vw,120px);color:var(--purple);display:block}
+.hero-h1 .l3{font-size:clamp(72px,10vw,120px);display:block;background:linear-gradient(135deg,#8B7FE8,#4B3FA0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-h1 .l4{font-size:clamp(72px,10vw,120px);color:transparent;-webkit-text-stroke:1.5px var(--dim);display:block}
+.hero-rule{width:40px;height:2px;background:var(--purple3);margin-bottom:18px}
+.hero-sub{font-size:14px;color:var(--muted);line-height:1.85;max-width:360px;margin-bottom:30px}
+.hero-sub strong{color:var(--purple2)}
+.hero-btns{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn-hero-p{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:var(--purple);color:var(--white);font-weight:700;font-size:14px;border:none;border-radius:100px;text-decoration:none;cursor:pointer;transition:all .25s;box-shadow:0 0 24px rgba(107,95,212,.35)}
+.btn-hero-p:hover{background:var(--purple2);transform:translateY(-2px);box-shadow:0 0 36px rgba(107,95,212,.5)}
+.btn-hero-g{padding:14px 26px;border:1px solid var(--dim);color:var(--muted);background:transparent;font-size:13px;font-weight:500;border-radius:100px;text-decoration:none;transition:all .2s;cursor:pointer}
+.btn-hero-g:hover{border-color:var(--purple);color:var(--purple)}
 
-.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,8.5vw,120px);line-height:.88;letter-spacing:2px;animation:fadeUp .5s .08s ease both}
-.hero h1 .c{color:var(--purple)}
-.hero h1 .g{background:linear-gradient(135deg,var(--purple),var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero h1 .o{-webkit-text-stroke:1.5px rgba(240,239,248,.18);color:transparent}
+.hero-left{position:relative;z-index:2;padding:60px 32px 60px 0;display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.hero-eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:28px;justify-content:flex-end}
+.hero-rule{width:40px;height:2px;background:var(--purple3);margin-bottom:18px;margin-left:auto}
+.hero-sub{font-size:14px;color:var(--muted);line-height:1.85;max-width:360px;margin-bottom:30px;text-align:right}
+.hero-sub strong{color:var(--purple2)}
+.hero-btns{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.sig-card{background:rgba(12,10,26,.9);border:1px solid var(--border);padding:18px 20px;backdrop-filter:blur(8px)}
+.sig-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sig-badge{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;padding:3px 10px;text-transform:uppercase}
+.sig-badge.buy{background:rgba(107,95,212,.2);color:var(--purple2);border:1px solid rgba(107,95,212,.35)}
+.sig-badge.sell{background:rgba(232,99,122,.15);color:var(--red);border:1px solid rgba(232,99,122,.3)}
+.sig-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--purple4);letter-spacing:1px}
+.sig-price{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);letter-spacing:-1px;margin-bottom:4px}
+.sig-detail{font-size:10px;color:var(--purple4);margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.sig-detail span{color:var(--purple3)}
+.sig-tags{display:flex;gap:5px;flex-wrap:wrap}
+.sig-tag{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border:1px solid var(--dim);color:var(--dim)}
+.sig-tag.tp{color:var(--purple3);border-color:var(--purple4)}
+.sig-tag.sl{color:#6B2233;border-color:var(--dim)}
+.sig-tag.hit{color:var(--purple2);border-color:#3D3069;background:rgba(107,95,212,.1)}
 
-.hero-rule{width:40px;height:2px;background:var(--purple);margin:26px 0;animation:fadeUp .5s .14s ease both}
-
-.hero-sub{max-width:460px;font-size:15.5px;font-weight:300;color:var(--muted);line-height:1.8;animation:fadeUp .5s .18s ease both}
-.hero-sub b{color:var(--white);font-weight:500}
-
-.hero-btns{display:flex;gap:12px;align-items:center;margin-top:36px;animation:fadeUp .5s .24s ease both;flex-wrap:wrap}
-.btn-p{display:inline-flex;align-items:center;gap:10px;padding:15px 34px;background:var(--purple);color:var(--white);font-weight:700;font-size:15px;border:none;border-radius:4px;text-decoration:none;cursor:pointer;transition:all .25s;letter-spacing:.2px}
-.btn-p:hover{background:#fff;color:var(--bg);transform:translateY(-2px);box-shadow:0 16px 48px rgba(107,95,212,.35)}
-.btn-g{padding:15px 28px;border:1px solid var(--border);color:var(--muted);background:transparent;font-size:14px;font-weight:500;border-radius:4px;text-decoration:none;transition:all .2s;cursor:pointer}
-.btn-g:hover{border-color:var(--purple);color:var(--purple)}
-
-/* hero signal cards */
-.hero-sig{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 22px;display:flex;align-items:flex-start;gap:12px;transition:border-color .25s,transform .25s;animation:fadeUp .6s .32s ease both}
-.hero-sig:nth-child(2){animation-delay:.42s}
-.hero-sig:hover{border-color:var(--purple3);transform:translateX(5px)}
-.sig-badge{padding:4px 12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
-.sig-badge.buy{background:rgba(107,95,212,.14);color:var(--purple)}
-.sig-badge.sell{background:rgba(232,99,122,.14);color:var(--red)}
-.sig-pair{font-weight:600;font-size:13.5px;margin-bottom:3px}
-.sig-det{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
-.sig-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.tag-tp{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;background:rgba(107,95,212,.08);color:var(--purple2)}
-.tag-sl{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;background:rgba(232,99,122,.08);color:var(--red)}
-.tag-hit{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;background:rgba(107,95,212,.12);color:var(--purple)}
-
-/* ── STATS BAR ── */
-.stats-bar{position:relative;z-index:1;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:36px 48px;display:flex;justify-content:center;align-items:center;gap:0}
-.stats-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple) 30%,var(--purple2) 70%,transparent)}
-.stat-item{flex:1;max-width:220px;text-align:center;padding:0 24px}
-.stat-n{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;color:var(--purple);letter-spacing:1px}
-.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.8px;margin-top:4px}
-.stat-sep{width:1px;height:40px;background:var(--border);flex-shrink:0}
+.hero-stats{grid-column:1/-1;position:relative;z-index:2;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr)}
+.stat-item{padding:22px 0;text-align:center;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--purple);letter-spacing:1px;line-height:1}
+.stat-l{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--purple4);letter-spacing:3px;text-transform:uppercase;margin-top:4px}
 
 /* ── SECTION BASE ── */
 section{position:relative;z-index:1}
-.sec-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px}
-.sec-ttl{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,6.5vw,66px);line-height:.95;letter-spacing:1px}
-.sec-ttl .c{color:var(--purple)}
+.sec-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--purple3);letter-spacing:4px;text-transform:uppercase;margin-bottom:10px}
+.sec-ttl{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,6.5vw,68px);line-height:.9;letter-spacing:1px;color:var(--white)}
+.sec-ttl span{color:var(--purple)}
 
-/* ── FEATURES — 2-column list ── */
-.feat-sec{padding:88px 48px;max-width:960px;margin:0 auto}
+/* ── FEATURES ── */
+.feat-sec{padding:88px 48px;max-width:1120px;margin:0 auto}
 .feat-head{margin-bottom:52px}
-.feat-list{display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
-.feat-row{display:flex;gap:16px;padding:22px 0;border-bottom:1px solid var(--border);border-left:2px solid var(--purple3);padding-left:20px;transition:border-color .3s,background .3s}
-.feat-row:hover{border-left-color:var(--purple);background:rgba(107,95,212,.02)}
-.feat-row:nth-child(2){border-left-color:rgba(107,95,212,.6)}
-.feat-row:nth-child(3){border-left-color:rgba(107,95,212,.5)}
-.feat-row:nth-child(4){border-left-color:rgba(107,95,212,.4)}
-.feat-row:nth-child(5){border-left-color:rgba(107,95,212,.3)}
-.feat-row:nth-child(6){border-left-color:rgba(107,95,212,.25)}
-.feat-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--purple3);flex-shrink:0;margin-top:2px}
-.feat-body h3{font-size:15px;font-weight:600;margin-bottom:5px;letter-spacing:.1px}
-.feat-body p{font-size:13px;color:var(--muted);line-height:1.75}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border)}
+.fc{background:var(--bg);padding:32px 28px;border-left:2px solid var(--dim);overflow:hidden;transition:background .2s}
+.fc:nth-child(1){border-left-color:var(--purple)}
+.fc:nth-child(2){border-left-color:#5A4EC0}
+.fc:nth-child(3){border-left-color:var(--purple3)}
+.fc:nth-child(4){border-left-color:#3D3280}
+.fc:nth-child(5){border-left-color:var(--purple4)}
+.fc:nth-child(6){border-left-color:var(--dim)}
+.fc:hover{background:var(--card)}
+.fc-num{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--purple4);letter-spacing:2px;margin-bottom:14px}
+.fc-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;letter-spacing:.2px}
+.fc-desc{font-size:12px;color:var(--muted);line-height:1.75;margin-bottom:18px}
+.viz{background:var(--card);border:1px solid var(--border);padding:16px}
 
 /* ── HOW IT WORKS ── */
-.hiw-sec{padding:88px 48px;max-width:960px;margin:0 auto}
-.hiw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:54px;position:relative}
-.hiw-grid::before{content:'';position:absolute;top:24px;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(--dim),var(--dim),transparent)}
-.hiw-step{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 16px}
-.step-c{width:48px;height:48px;border:1px solid var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:21px;color:var(--purple);background:var(--bg);position:relative;z-index:1;margin-bottom:16px;flex-shrink:0}
-.hiw-step h4{font-size:14px;font-weight:600;margin-bottom:7px}
-.hiw-step p{font-size:12.5px;color:var(--muted);line-height:1.65}
-
-/* ── DEMO ── */
-.demo-sec{padding:88px 48px;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative}
-.demo-sec::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple) 30%,var(--purple2) 70%,transparent)}
-.demo-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.sig-list{display:flex;flex-direction:column;gap:12px}
-.sig-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:flex-start;gap:12px;transition:border-color .25s,transform .25s}
-.sig-card:hover{border-color:var(--purple3);transform:translateX(5px)}
+.hiw-sec{padding:88px 48px;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.hiw-inner{max-width:1080px;margin:0 auto}
+.hiw-top{text-align:center;margin-bottom:56px}
+.hiw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
+.hiw-line{position:absolute;top:27px;left:12.5%;right:12.5%;height:1px;background:linear-gradient(90deg,transparent,var(--dim) 20%,var(--dim) 80%,transparent)}
+.hiw-step{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px;position:relative;z-index:1}
+.step-c{width:56px;height:56px;border:1px solid var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--purple);background:var(--bg);margin-bottom:20px;flex-shrink:0}
+.hiw-step h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:8px}
+.hiw-step p{font-size:12px;color:var(--muted);line-height:1.65}
+.hiw-step p b{color:var(--purple2)}
 
 /* ── PRICING ── */
-.price-sec{padding:88px 48px;max-width:1080px;margin:0 auto}
-.price-head{text-align:center;margin-bottom:52px}
-.price-head p{color:var(--muted);margin-top:14px;font-size:14px}
-.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.price-sec{padding:88px 48px;max-width:1120px;margin:0 auto}
+.price-head{text-align:center;margin-bottom:44px}
+.price-head p{color:var(--muted);margin-top:12px;font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+.f-outer{display:grid;grid-template-columns:1fr 1.6fr;gap:2px;background:#0A0818;align-items:stretch}
+.f-left{display:flex;flex-direction:column;gap:2px;background:#0A0818}
+.f-small{background:var(--bg);padding:20px 22px;border-left:2px solid transparent}
+.f-small.basic{border-left-color:var(--purple4)}
+.f-small.silver{border-left-color:var(--purple)}
+.f-s-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.f-s-tier{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-bottom:3px}
+.basic .f-s-tier{color:var(--purple4)}.silver .f-s-tier{color:var(--purple)}
+.f-s-dur{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:.9;letter-spacing:-1px}
+.basic .f-s-dur{color:var(--purple4)}.silver .f-s-dur{color:var(--purple)}
+.f-s-dur-u{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase}
+.basic .f-s-dur-u{color:var(--dim)}.silver .f-s-dur-u{color:#3D3069}
+.f-s-price{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;letter-spacing:-1px}
+.basic .f-s-price{color:#4A4A5A}.silver .f-s-price{color:var(--purple2)}
+.f-s-price .rp{font-size:11px;vertical-align:top;margin-top:4px;display:inline-block}
+.f-s-perday{font-family:'JetBrains Mono',monospace;font-size:8px;text-align:right;margin-top:2px}
+.basic .f-s-perday{color:var(--dim)}.silver .f-s-perday{color:var(--purple4)}
+.f-s-feats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.f-s-feat{font-size:10px;display:flex;align-items:center;gap:4px}
+.basic .f-s-feat{color:var(--purple4)}.silver .f-s-feat{color:var(--purple3)}
+.f-s-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)}
+.f-s-saving{font-family:'JetBrains Mono',monospace;font-size:8px}
+.basic .f-s-saving{color:var(--dim)}.silver .f-s-saving{color:var(--purple3)}
 
-.pc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px 28px 28px;position:relative;overflow:hidden;transition:transform .3s,box-shadow .3s,border-color .3s}
-.pc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.pc:hover{transform:translateY(-5px)}
+/* Lifetime card */
+.f-lifetime{background:#08060F;border-left:2px solid var(--purple2);position:relative;overflow:hidden;flex:1}
+.f-lt-topline{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple) 40%,#C084FC 60%,transparent)}
+.f-lt-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(107,95,212,.15) 0%,transparent 65%);pointer-events:none}
+.f-lt-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(107,95,212,.018) 2px,rgba(107,95,212,.018) 3px);pointer-events:none}
+.f-lt-ghost{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:130px;color:transparent;-webkit-text-stroke:1px rgba(139,127,232,.06);bottom:-10px;right:10px;line-height:1;pointer-events:none}
+.f-lt-inner{position:relative;z-index:1;padding:20px 22px;display:flex;flex-direction:column;gap:14px;height:100%}
+.f-lt-top{display:flex;align-items:flex-start;justify-content:space-between}
+.f-lt-tier{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--purple2);margin-bottom:3px}
+.f-lt-dur{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:.9;letter-spacing:-1px;background:linear-gradient(135deg,#C084FC,var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.f-lt-dur-u{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--purple3)}
+.f-lt-price{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;letter-spacing:-1px;background:linear-gradient(135deg,#C084FC,var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.f-lt-price .rp{font-size:11px;-webkit-text-fill-color:rgba(139,127,232,.4);vertical-align:top;margin-top:4px;display:inline-block}
+.f-lt-perday{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--purple3);text-align:right;margin-top:2px}
+.f-lt-sep{height:1px;background:linear-gradient(90deg,rgba(107,95,212,.3),rgba(192,132,252,.4),rgba(107,95,212,.3))}
+.f-lt-feats{display:flex;flex-direction:column;gap:6px}
+.f-lt-feat{display:flex;align-items:center;gap:8px;font-size:11px}
+.f-lt-feat.hl{color:rgba(232,227,255,.85)}.f-lt-feat.dim{color:rgba(232,227,255,.45)}
+.f-lt-feat svg{flex-shrink:0}
+.f-lt-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid rgba(107,95,212,.15);margin-top:auto}
+.f-lt-saving{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--purple3)}
 
-.pc.basic::before{background:linear-gradient(90deg,transparent,var(--muted),transparent)}
-.pc.silver{border-color:rgba(107,95,212,.25);box-shadow:0 0 60px rgba(107,95,212,.07);transform:translateY(-10px)}
-.pc.silver::before{background:linear-gradient(90deg,transparent,var(--purple),transparent)}
-.pc.silver:hover{transform:translateY(-16px)}
-.pc.gold{border-color:rgba(201,168,76,.2)}
-.pc.gold::before{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+/* Gold card */
+.f-big{background:#0C0A18;padding:36px 32px;position:relative;overflow:hidden;border-top:2px solid var(--gold);display:flex;flex-direction:column}
+.f-big-glow{position:absolute;bottom:-60px;left:-60px;width:280px;height:280px;background:radial-gradient(circle,rgba(201,168,76,.12) 0%,transparent 70%);pointer-events:none}
+.f-big-glow2{position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(201,168,76,.06) 0%,transparent 70%);pointer-events:none}
+.f-big-ghost{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:220px;color:transparent;-webkit-text-stroke:1px rgba(201,168,76,.05);bottom:-20px;right:-10px;line-height:1;letter-spacing:-6px;pointer-events:none}
+.f-big-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(201,168,76,.01) 2px,rgba(201,168,76,.01) 3px);pointer-events:none}
+.f-big-inner{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;gap:20px}
+.f-big-badge{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--gold);border:1px solid rgba(201,168,76,.3);padding:4px 12px;text-transform:uppercase;margin-bottom:14px}
+.f-big-badge-dot{width:5px;height:5px;background:var(--gold);border-radius:50%}
+.f-big-tier-row{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.f-big-dur{font-family:'Bebas Neue',sans-serif;font-size:96px;color:var(--gold);line-height:.85;letter-spacing:-3px}
+.f-big-unit{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#6B5243;letter-spacing:3px;padding-bottom:8px}
+.f-big-tagline{font-size:13px;color:var(--muted);line-height:1.7;max-width:260px}
+.f-big-details{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f-big-stat{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.1);padding:12px 14px}
+.f-big-stat-label{font-family:'JetBrains Mono',monospace;font-size:8px;color:#6B5243;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.f-big-stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);line-height:1;letter-spacing:-.5px}
+.f-big-stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.f-big-feats{display:flex;flex-direction:column;gap:6px}
+.f-big-feat{display:flex;align-items:center;gap:8px;font-size:12px;color:#8B8060}
+.f-big-feat svg{flex-shrink:0}
+.f-big-bottom{border-top:1px solid rgba(201,168,76,.15);padding-top:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:auto}
+.f-big-price{font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--gold);line-height:1;letter-spacing:-2px}
+.f-big-price .rp{font-size:16px;vertical-align:top;margin-top:10px;display:inline-block;color:#C9A84C;opacity:.7;font-family:'DM Sans',sans-serif;font-weight:300;letter-spacing:1px}
+.f-big-perday{font-family:'JetBrains Mono',monospace;font-size:9px;color:#6B5243}
+.f-big-saving{font-family:'JetBrains Mono',monospace;font-size:9px;color:#9B8440}
+.f-big-note{font-family:'JetBrains Mono',monospace;font-size:8px;color:#6B5243;text-align:center;margin-top:6px}
+.price-note{text-align:center;font-size:11px;color:var(--dim);margin-top:16px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
 
-.pc-ribbon{position:absolute;top:16px;right:16px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 12px;border-radius:100px}
-.ribbon-pop{background:var(--purple);color:var(--bg)}
-.ribbon-best{background:var(--gold);color:#1a1200}
-
-.pc-tier{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:5px}
-.basic .pc-tier{color:var(--muted)}
-.silver .pc-tier{color:var(--purple)}
-.gold .pc-tier{color:var(--gold)}
-
-.pc-dur-block{display:flex;align-items:baseline;gap:5px;margin-bottom:16px;margin-top:4px}
-.pc-dur-n{font-family:'Bebas Neue',sans-serif;line-height:1;font-size:82px;letter-spacing:-3px}
-.pc-dur-u{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;padding-bottom:8px}
-.basic .pc-dur-n{color:var(--muted)}.basic .pc-dur-u{color:var(--dim)}
-.silver .pc-dur-n{color:var(--purple);text-shadow:0 0 40px rgba(107,95,212,.3)}.silver .pc-dur-u{color:var(--purple2)}
-.gold .pc-dur-n{color:var(--gold);text-shadow:0 0 40px rgba(201,168,76,.25)}.gold .pc-dur-u{color:rgba(201,168,76,.7)}
-
-.pc-price{font-family:'Bebas Neue',sans-serif;line-height:1;margin-bottom:4px}
-.pc-price .rp{font-size:18px;color:var(--muted);vertical-align:top;margin-top:5px;display:inline-block;margin-right:2px}
-.basic .pc-price{font-size:54px;color:var(--white)}
-.silver .pc-price{font-size:58px;color:var(--purple)}
-.gold .pc-price{font-size:54px;color:var(--gold)}
-.pc-price .ribu{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:300}
-
-.pc-breakdown{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.pc-pm-lbl{font-size:11.5px;color:var(--muted)}
-.pc-pm-val{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:700}
-.silver .pc-pm-val{color:var(--purple)}.gold .pc-pm-val{color:var(--gold)}
-.pc-pm-strike{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-decoration:line-through;opacity:.5}
-
-.pc-saving{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:6px}
-.basic .pc-saving{background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--muted)}
-.silver .pc-saving{background:rgba(107,95,212,.08);border:1px solid rgba(107,95,212,.2);color:var(--purple)}
-.silver .pc-saving strong{color:var(--white)}
-.gold .pc-saving{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.28);color:var(--gold)}
-.gold .pc-saving strong{color:var(--white)}
-
-.pc-divider{height:1px;background:var(--border);margin:20px 0}
-.pc-feats{display:flex;flex-direction:column;gap:0}
-.pc-feat{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.025)}
-.pc-feat:last-child{border-bottom:none}
-.pc-feat.dim{color:var(--muted)}
-
-.pc-btn{display:block;width:100%;margin-top:26px;padding:15px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;border:none;border-radius:8px;cursor:pointer;text-align:center;transition:all .25s;letter-spacing:.2px}
-.basic .pc-btn{background:var(--dim);color:var(--white);border:1px solid var(--border)}
-.basic .pc-btn:hover{background:var(--muted);transform:translateY(-1px)}
-.silver .pc-btn{background:var(--purple);color:var(--bg)}
-.silver .pc-btn:hover{background:#fff;box-shadow:0 12px 40px rgba(107,95,212,.3);transform:translateY(-2px)}
-.gold .pc-btn{background:var(--gold);color:#1a1200}
-.gold .pc-btn:hover{background:#ffe680;box-shadow:0 12px 36px rgba(201,168,76,.25);transform:translateY(-2px)}
-
-/* ── LIFETIME BANNER ── */
-.lifetime-wrap{margin-top:20px;position:relative}
-.lifetime-wrap::before{content:'';position:absolute;inset:-2px;background:linear-gradient(135deg,#7C3AED,#C084FC,#7C3AED);border-radius:18px;z-index:0;opacity:.6;filter:blur(1px);animation:lifetimePulse 3s ease-in-out infinite}
-@keyframes lifetimePulse{0%,100%{opacity:.4;filter:blur(1px)}50%{opacity:.75;filter:blur(2px)}}
-
-.pc.lifetime{position:relative;z-index:1;display:grid;grid-template-columns:180px 1fr 240px;align-items:center;gap:0 48px;padding:36px 44px;background:linear-gradient(135deg,#0D0A1F 0%,#120828 40%,#0A1020 100%);border:1px solid rgba(192,132,252,.4);border-radius:16px;box-shadow:0 0 80px rgba(124,58,237,.15),0 0 0 1px rgba(192,132,252,.1),inset 0 1px 0 rgba(192,132,252,.08)}
-.pc.lifetime::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,#7C3AED 20%,#C084FC 50%,#7C3AED 80%,transparent 100%);background-size:200% 100%;animation:shimmer 2.5s linear infinite;border-radius:16px 16px 0 0}
-@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
-.pc.lifetime::after{content:'';position:absolute;inset:0;border-radius:16px;background:radial-gradient(circle at 15% 50%,rgba(124,58,237,.12) 0%,transparent 50%),radial-gradient(circle at 85% 30%,rgba(192,132,252,.08) 0%,transparent 40%);pointer-events:none}
-
-.lifetime-left{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
-.lifetime-middle{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px 16px}
-.lifetime-right{position:relative;z-index:1;display:flex;flex-direction:column;align-items:stretch;gap:14px}
-
-.pc.lifetime .pc-tier{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;background:linear-gradient(90deg,#C084FC,#E9D5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.pc.lifetime .pc-dur-block{margin:2px 0 8px;justify-content:center;align-items:center}
-.pc.lifetime .pc-dur-n{font-size:72px;font-family:'Bebas Neue',sans-serif;line-height:1;letter-spacing:-2px;background:linear-gradient(135deg,#A855F7,#C084FC,#E9D5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(192,132,252,.5))}
-.pc.lifetime .pc-dur-u{font-size:22px;letter-spacing:3px;padding-bottom:6px;background:linear-gradient(90deg,#C084FC,rgba(192,132,252,.6));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.pc.lifetime .pc-price{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;background:linear-gradient(135deg,#E9D5FF,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;text-align:center}
-.pc.lifetime .pc-price .rp{font-size:16px;-webkit-text-fill-color:rgba(192,132,252,.6);color:rgba(192,132,252,.6);vertical-align:top;margin-top:5px;display:inline-block;margin-right:2px}
-.pc.lifetime .pc-price .ribu{font-family:'DM Sans',sans-serif;font-size:18px;font-weight:300;-webkit-text-fill-color:rgba(192,132,252,.7)}
-.pc.lifetime .pc-breakdown{justify-content:center;margin-bottom:8px;gap:6px}
-.pc.lifetime .pc-pm-lbl{font-size:12px;color:rgba(192,132,252,.6)}
-.pc.lifetime .pc-pm-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;background:linear-gradient(90deg,#C084FC,#E9D5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.pc.lifetime .pc-saving{background:rgba(124,58,237,.15);border:1px solid rgba(192,132,252,.3);color:#E9D5FF;font-size:11.5px;justify-content:center;margin-bottom:0;box-shadow:inset 0 1px 0 rgba(192,132,252,.1)}
-.pc.lifetime .pc-saving strong{color:#fff;font-weight:700}
-.pc.lifetime .pc-divider{display:none}
-.lifetime-middle .pc-feat{font-size:12.5px;padding:7px 0;border-bottom:1px solid rgba(192,132,252,.08);color:rgba(232,213,255,.85)}
-.lifetime-middle .pc-feat:last-child{border-bottom:none}
-.pc.lifetime .pc-btn{margin-top:0;padding:17px;font-size:15px;font-weight:800;letter-spacing:.5px;background:linear-gradient(135deg,#7C3AED 0%,#A855F7 50%,#C084FC 100%);background-size:200% 100%;color:#fff;border:none;border-radius:10px;box-shadow:0 8px 32px rgba(124,58,237,.4),0 0 0 1px rgba(192,132,252,.2);transition:all .3s;animation:btnPulse 2.5s ease-in-out infinite}
-@keyframes btnPulse{0%,100%{box-shadow:0 8px 32px rgba(124,58,237,.4),0 0 0 1px rgba(192,132,252,.2)}50%{box-shadow:0 12px 48px rgba(124,58,237,.6),0 0 0 1px rgba(192,132,252,.4)}}
-.pc.lifetime .pc-btn:hover{background-position:100% 0;transform:translateY(-3px);box-shadow:0 16px 56px rgba(124,58,237,.55),0 0 0 1px rgba(192,132,252,.4);animation:none}
-.ribbon-life{background:linear-gradient(135deg,#7C3AED,#C084FC);color:#fff;box-shadow:0 4px 16px rgba(124,58,237,.4)}
-
-.price-note{text-align:center;margin-top:22px;font-size:11.5px;color:var(--muted)}
+/* ── BUTTONS ── */
+.btn-basic{font-family:'DM Sans',sans-serif;font-weight:600;font-size:12px;padding:8px 20px;cursor:pointer;background:var(--dim);color:var(--purple);border:1px solid #3D3069;border-radius:100px;transition:all .2s}
+.btn-basic:hover{background:var(--purple4);color:var(--purple2)}
+.btn-silver{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;padding:9px 22px;cursor:pointer;background:var(--purple);color:var(--white);border:none;border-radius:100px;box-shadow:0 0 18px rgba(107,95,212,.35);transition:all .2s}
+.btn-silver:hover{background:var(--purple2);box-shadow:0 0 28px rgba(107,95,212,.5);transform:translateY(-1px)}
+.btn-lifetime{font-family:'DM Sans',sans-serif;font-weight:800;font-size:12px;padding:10px 22px;cursor:pointer;background:linear-gradient(135deg,#5B4FC4,#8B7FE8,#C084FC);color:#fff;border:none;border-radius:100px;box-shadow:0 0 20px rgba(139,127,232,.4);position:relative;overflow:hidden;transition:all .2s}
+.btn-lifetime::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transform:skewX(-15deg);animation:swpLT 3s ease-in-out infinite}
+@keyframes swpLT{0%,40%{left:-80%}70%,100%{left:130%}}
+.btn-annual{font-family:'DM Sans',sans-serif;font-weight:800;font-size:15px;padding:16px 44px;cursor:pointer;background:var(--gold);color:#07060F;border:none;border-radius:100px;box-shadow:0 0 28px rgba(201,168,76,.45),0 0 8px rgba(201,168,76,.2);position:relative;overflow:hidden;transition:all .2s}
+.btn-annual::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-15deg);animation:swpAU 2.4s ease-in-out infinite}
+@keyframes swpAU{0%,35%{left:-80%}65%,100%{left:130%}}
+.btn-annual:hover{background:#DDB85A;transform:translateY(-2px);box-shadow:0 0 40px rgba(201,168,76,.6)}
 
 /* ── FAQ ── */
-.faq-sec{padding:88px 48px;max-width:740px;margin:0 auto}
+.faq-sec{padding:88px 48px;max-width:760px;margin:0 auto}
 .faq-list{margin-top:46px}
-.faq-item{border-bottom:1px solid var(--border);padding:20px 0}
-.faq-q{display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:16px}
-.faq-q span{font-size:14.5px;font-weight:500;transition:color .2s;line-height:1.5}
-.faq-q:hover span{color:var(--purple)}
-.faq-ico{width:26px;height:26px;flex-shrink:0;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple);transition:transform .3s,background .25s}
-.faq-item.open .faq-ico{transform:rotate(45deg);background:var(--purple3)}
-.faq-a{font-size:13.5px;color:var(--muted);line-height:1.85;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s}
-.faq-item.open .faq-a{max-height:300px;padding-top:14px}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:20px 0;gap:16px;user-select:none}
+.faq-q span{font-size:14px;font-weight:600;color:#8B8E9A;transition:color .2s;line-height:1.5}
+.faq-q:hover span,.faq-item.open .faq-q span{color:var(--white)}
+.faq-ico{width:28px;height:28px;flex-shrink:0;border:1px solid var(--dim);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple);transition:transform .3s,background .25s;line-height:1}
+.faq-item.open .faq-ico{transform:rotate(45deg);background:var(--purple4);border-color:var(--purple3)}
+.faq-a{font-size:13px;color:var(--muted);line-height:1.9;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s}
+.faq-item.open .faq-a{max-height:200px;padding-bottom:20px}
+.faq-a b{color:var(--purple2)}
 
 /* ── FOOTER ── */
 footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
 .foot-brand{display:flex;align-items:center;gap:10px}
-.foot-logo{height:30px;width:30px;object-fit:contain}
-.foot-txt{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:var(--white)}
-.foot-txt .slash{color:var(--purple);margin:0 1px}
-.foot-copy{font-size:11px;color:var(--muted)}
-.foot-right{font-size:11px;color:var(--muted);letter-spacing:.5px}
+.foot-logo{height:28px;width:28px;object-fit:contain}
+.foot-txt{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;color:var(--white)}
+.foot-txt .slash{color:var(--purple4);margin:0 2px}
+.foot-txt .dim{color:var(--purple4)}
+.foot-copy{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
 
-/* ── ANIMS ── */
+/* ── ANIMATIONS ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
 .reveal.visible{opacity:1;transform:none}
 .rd1{transition-delay:.07s}.rd2{transition-delay:.14s}.rd3{transition-delay:.21s}
 
-/* ── CHECK SVG HELPERS ── */
-.chk-c{color:var(--purple)}.chk-y{color:var(--gold)}.chk-x{color:var(--dim)}
+/* ── HERO CHART ── */
+.hero-right{position:relative;z-index:2;padding:60px 0 60px 32px;display:flex;flex-direction:column;gap:12px}
+.hero-chart-wrap{background:rgba(10,8,24,.95);border:1px solid var(--border);overflow:hidden;backdrop-filter:blur(8px)}
+.hero-chart-bar{background:#0A0818;border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.hero-chart-dots{display:flex;gap:5px}
+.hero-chart-dots span:nth-child(1){background:#FF5F57}
+.hero-chart-dots span:nth-child(1){background:#FF5F57}
+.hero-chart-dots span:nth-child(2){background:#FEBC2E}
+.hero-chart-dots span:nth-child(3){background:#27C93F}
+.hero-chart-sym{color:var(--purple2);font-weight:700;font-size:10px}
+.hero-chart-pair{color:var(--muted)}
+.hero-chart-live{margin-left:auto;display:flex;align-items:center;gap:5px;color:var(--purple2);font-size:9px;letter-spacing:1px}
+.hero-live-dot{width:5px;height:5px;background:var(--purple);border-radius:50%;animation:pls 2s ease infinite;flex-shrink:0}
+#heroChart{display:block;width:100%;height:340px}
+.hero-chart-legend{background:#0A0818;border-top:1px solid var(--border);padding:7px 14px;display:flex;gap:14px}
+.hero-leg-item{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:.5px}
+.hero-leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+
+.chart-sec{padding:0 48px 88px}
+.chart-sec-inner{max-width:1120px;margin:0 auto}
+.chart-label-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;gap:16px}
+.chart-label-left .chart-caption{font-size:12px;color:var(--muted);margin-top:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
+.chart-label-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.chart-pill{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px}
+.chart-pill-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.chart-pill-dot.buy{background:#4CAF7D}
+.chart-pill-dot.sell{background:#CF4B4B}
+.chart-pill-dot.pending{background:#5B9BD5}
+.chart-shell{background:var(--card);border:1px solid var(--border);border-radius:4px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 0 1px rgba(107,95,212,.05),inset 0 1px 0 rgba(255,255,255,.03)}
+.chart-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.chart-dots{display:flex;gap:6px;margin-right:4px}
+.chart-dots span{width:11px;height:11px;border-radius:50%}
+.chart-dots span:nth-child(1){background:#FF5F57}
+.chart-dots span:nth-child(2){background:#FEBC2E}
+.chart-dots span:nth-child(3){background:#27C93F}
+.chart-sym{color:var(--purple2);font-weight:700;font-size:11px}
+.chart-pair{color:var(--muted);font-size:10px}
+.chart-price{margin-left:auto;color:var(--white);font-size:10px}
+.chart-chg{color:var(--purple2)}
+.chart-img-wrap{position:relative;line-height:0}
+.chart-img{width:100%;display:block;opacity:.95}
+.chart-overlay-tl{position:absolute;top:14px;left:14px}
+.chart-badge-live{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--purple2);background:rgba(12,10,26,.85);border:1px solid rgba(107,95,212,.3);padding:4px 12px;letter-spacing:2px;backdrop-filter:blur(8px)}
+.chart-badge-dot{width:5px;height:5px;background:var(--purple);border-radius:50%;animation:pls 2s ease infinite}
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
-  nav{padding:14px 20px}.nav-links{display:none}
-  .hero{grid-template-columns:1fr;padding:100px 22px 60px;min-height:auto;gap:36px}
-  .hero h1{font-size:clamp(48px,12vw,72px)}
-  .hero-ghost{font-size:140px}
-  .stats-bar{flex-wrap:wrap;gap:20px;padding:28px 22px}
-  .stat-sep{display:none}
-  .stat-item{min-width:120px}
-  .feat-sec,.hiw-sec,.demo-sec,.price-sec,.faq-sec{padding:56px 22px}
-  .feat-list{grid-template-columns:1fr}
-  .hiw-grid{grid-template-columns:1fr 1fr;gap:28px}.hiw-grid::before{display:none}
-  .demo-inner{grid-template-columns:1fr;gap:36px}
-  .price-grid{grid-template-columns:1fr}
-  .pc.silver{transform:none}.pc.silver:hover{transform:translateY(-5px)}
-  .lifetime-wrap::before{display:none}
-  .pc.lifetime{grid-template-columns:1fr!important;gap:22px!important;padding:28px 22px!important}
-  .lifetime-middle{grid-template-columns:1fr 1fr!important}
-  .lifetime-right{width:100%}
-  .pc.lifetime .pc-dur-n{font-size:60px!important;filter:none}
-  .pc.lifetime .pc-price{font-size:36px!important}
-  footer{flex-direction:column;gap:12px;text-align:center;padding:28px 20px}
+  /* NAV */
+  nav{padding:0 20px;height:56px}
+  .nav-links{display:none}
+  .nav-cta{padding:7px 16px;font-size:11px}
+
+  /* TICKER */
+  .ticker-wrap{margin-top:56px}
+
+  /* HERO — stack vertically, left-aligned */
+  .hero{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto;
+    padding:32px 22px 36px;
+    min-height:auto;
+    gap:0
+  }
+  .hero-left{
+    padding:72px 0 24px;
+    align-items:flex-start;
+    text-align:left
+  }
+  .hero-eyebrow{justify-content:flex-start}
+  .hero-rule{margin-left:0}
+  .hero-sub{text-align:left;font-size:13px}
+  .hero-btns{justify-content:flex-start}
+  .hero-h1 .l1,.hero-h1 .l2,.hero-h1 .l3,.hero-h1 .l4{font-size:clamp(52px,14vw,84px)}
+  .hero-right{padding:0 0 24px;display:flex}
+  #heroChart{height:220px}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .hero-ghost{font-size:160px}
+
+  /* CHART PREVIEW */
+  .chart-sec{padding:40px 22px}
+  .chart-label-row{flex-direction:column;align-items:flex-start;gap:10px}
+  .chart-label-right{flex-wrap:wrap;gap:8px}
+
+  /* FEATURES */
+  .feat-sec{padding:48px 22px}
+  .feat-grid{grid-template-columns:1fr}
+  .fc{padding:24px 20px}
+
+  /* HOW IT WORKS */
+  .hiw-sec{padding:48px 0}
+  .hiw-sec .hiw-inner{padding:0 22px}
+  .hiw-grid{grid-template-columns:1fr 1fr;gap:24px}
+  .hiw-line{display:none}
+  .hiw-step{padding:0 8px}
+  .step-c{width:44px;height:44px;font-size:18px}
+
+  /* PRICING */
+  .price-sec{padding:48px 22px}
+  .f-outer{grid-template-columns:1fr}
+  .f-big{padding:24px 20px;border-top:2px solid var(--gold)}
+  .f-big-dur{font-size:64px}
+  .f-big-price{font-size:40px}
+  .f-big-bottom{flex-direction:column;gap:12px;align-items:flex-start}
+  .btn-annual{width:100%;text-align:center}
+
+  /* FAQ */
+  .faq-sec{padding:48px 22px}
+
+  /* FOOTER */
+  footer{flex-direction:column;gap:12px;text-align:center;padding:24px 20px}
+}
+
+@media(max-width:480px){
+  .hero-h1 .l1,.hero-h1 .l2,.hero-h1 .l3,.hero-h1 .l4{font-size:clamp(44px,16vw,64px)}
+  .hiw-grid{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .f-big-details{grid-template-columns:1fr 1fr}
+  .f-s-feats{gap:6px}
+  .price-sec,.feat-sec,.faq-sec,.chart-sec{padding:36px 16px}
 }
 </style>
 </head>
@@ -305,128 +383,232 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 <nav>
   <a href="#" class="nav-brand">
     <img src="data/trxc-qrr-logo.png" alt="TRXC QRR" class="nav-logo-img"/>
-    <div class="nav-logo-txt">TRXC <span class="slash">/</span> QRR</div>
+    <div class="nav-logo-txt">TRXC<span class="slash">/</span><span class="dim">QRR</span></div>
   </a>
   <div class="nav-links">
     <a href="#features">Fitur</a>
     <a href="#pricing">Harga</a>
     <a href="#faq">FAQ</a>
   </div>
-  <a href="#pricing" class="nav-cta">Beli Sekarang &rarr;</a>
+  <a href="#pricing" class="nav-cta">Beli Sekarang →</a>
 </nav>
 
 <!-- TICKER -->
 <div class="ticker-wrap">
   <div class="ticker-track">
-    <span class="ticker-item">XAUUSD &nbsp;<span class="up">&triangleup; 5,227.89 +1.77%</span></span>
-    <span class="ticker-item">BTCUSD &nbsp;<span class="up">&triangleup; 71,278.00 +3.29%</span></span>
-    <span class="ticker-item">EURUSD &nbsp;<span class="up">&triangleup; 1.1629</span></span>
-    <span class="ticker-item">GBPUSD &nbsp;<span class="up">&triangleup; 1.3439</span></span>
-    <span class="ticker-item">USDJPY &nbsp;<span class="down">&triangledown; 157.67</span></span>
-    <span class="ticker-item">NASDAQ &nbsp;<span class="up">&triangleup; 21,319.00</span></span>
-    <span class="ticker-item">SP500 &nbsp;<span class="up">&triangleup; 6,805.00</span></span>
-    <span class="ticker-item">XAUUSD &nbsp;<span class="up">&triangleup; 5,227.89 +1.77%</span></span>
-    <span class="ticker-item">BTCUSD &nbsp;<span class="up">&triangleup; 71,278.00 +3.29%</span></span>
-    <span class="ticker-item">EURUSD &nbsp;<span class="up">&triangleup; 1.1629</span></span>
-    <span class="ticker-item">GBPUSD &nbsp;<span class="up">&triangleup; 1.3439</span></span>
-    <span class="ticker-item">USDJPY &nbsp;<span class="down">&triangledown; 157.67</span></span>
-    <span class="ticker-item">NASDAQ &nbsp;<span class="up">&triangleup; 21,319.00</span></span>
-    <span class="ticker-item">SP500 &nbsp;<span class="up">&triangleup; 6,805.00</span></span>
+    <div class="ticker-item"><span class="tick-pair">XAUUSD</span><span class="up">▲ 5,227.89 +1.77%</span></div>
+    <div class="ticker-item"><span class="tick-pair">BTCUSD</span><span class="up">▲ 71,278.00 +3.29%</span></div>
+    <div class="ticker-item"><span class="tick-pair">EURUSD</span><span class="up">▲ 1.1629</span></div>
+    <div class="ticker-item"><span class="tick-pair">GBPUSD</span><span class="up">▲ 1.3439</span></div>
+    <div class="ticker-item"><span class="tick-pair">USDJPY</span><span class="down">▼ 157.67</span></div>
+    <div class="ticker-item"><span class="tick-pair">NASDAQ</span><span class="up">▲ 21,319.00</span></div>
+    <div class="ticker-item"><span class="tick-pair">SP500</span><span class="up">▲ 6,805.00</span></div>
+    <div class="ticker-item"><span class="tick-pair">XAUUSD</span><span class="up">▲ 5,227.89 +1.77%</span></div>
+    <div class="ticker-item"><span class="tick-pair">BTCUSD</span><span class="up">▲ 71,278.00 +3.29%</span></div>
+    <div class="ticker-item"><span class="tick-pair">EURUSD</span><span class="up">▲ 1.1629</span></div>
+    <div class="ticker-item"><span class="tick-pair">GBPUSD</span><span class="up">▲ 1.3439</span></div>
+    <div class="ticker-item"><span class="tick-pair">USDJPY</span><span class="down">▼ 157.67</span></div>
+    <div class="ticker-item"><span class="tick-pair">NASDAQ</span><span class="up">▲ 21,319.00</span></div>
+    <div class="ticker-item"><span class="tick-pair">SP500</span><span class="up">▲ 6,805.00</span></div>
   </div>
 </div>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-scanlines"></div>
-  <div class="hero-vignette"></div>
+<section>
+<div class="hero">
   <div class="hero-glow-tl"></div>
   <div class="hero-glow-br"></div>
+  <div class="hero-scanlines"></div>
+  <div class="hero-vignette"></div>
   <div class="hero-ghost">144</div>
-
   <div class="hero-left">
-    <div class="hero-badge"><span class="pulse"></span>NOW SIGNALING &middot; TRADINGVIEW v5</div>
-    <h1>PREDICT<br/><span class="c">THE</span><br/><span class="g">MOVE</span><br/><span class="o">BEFORE</span></h1>
+    <div class="hero-eyebrow">
+      <div class="hero-dot"></div>
+      <div class="hero-eyebrow-txt">Now Signaling · TradingView Pine Script v5</div>
+    </div>
+    <div class="hero-h1">
+      <span class="l1">PREDICT</span>
+      <span class="l2">THE MOVE</span>
+      <span class="l3">BEFORE</span>
+      <span class="l4">IT HAPPENS</span>
+    </div>
     <div class="hero-rule"></div>
-    <p class="hero-sub">
-      Sinyal muncul <b>sebelum</b> harga sampai ke level target. Bukan reaktif. <b>Predictive.</b>
-    </p>
+    <p class="hero-sub">Indikator <strong>TRXC QRR</strong> — sinyal muncul sebelum harga sampai ke level target. Bukan reaktif. <strong>Predictive.</strong></p>
     <div class="hero-btns">
-      <a href="#pricing" class="btn-p">
-        Dapatkan Akses
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M9 4l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
-      <a href="#features" class="btn-g">Lihat Fitur</a>
+      <a href="#pricing" class="btn-hero-p">Dapatkan Akses <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M9 4l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a href="#features" class="btn-hero-g">Lihat Fitur</a>
     </div>
   </div>
-
   <div class="hero-right">
-    <div class="hero-sig">
-      <div class="sig-badge buy">&triangleup; BUY</div>
-      <div>
-        <div class="sig-pair">XAUUSD &middot; 1m</div>
-        <div class="sig-det">Entry @ 5,198.40 &middot; Order Block Demand</div>
-        <div class="sig-tags">
-          <span class="tag-tp">TP1 +50</span><span class="tag-tp">TP2 +100</span><span class="tag-tp">TP3 +150</span><span class="tag-sl">SL -100</span>
-        </div>
-        <div style="margin-top:8px"><span class="tag-hit">&check; TP2 HIT</span></div>
+    <div class="hero-chart-wrap">
+      <div class="hero-chart-bar">
+        <div class="hero-chart-dots"><span></span><span></span><span></span></div>
+        <span class="hero-chart-sym">TRXC QRR</span>
+        <span class="hero-chart-pair">· XAUUSD · 1m</span>
+        <span class="hero-chart-live"><span class="hero-live-dot"></span>LIVE</span>
+      </div>
+      <canvas id="heroChart"></canvas>
+      <div class="hero-chart-legend">
+        <div class="hero-leg-item"><span class="hero-leg-dot" style="background:#4CAF7D"></span>buy</div>
+        <div class="hero-leg-item"><span class="hero-leg-dot" style="background:#CF4B4B"></span>sell</div>
+        <div class="hero-leg-item"><span class="hero-leg-dot" style="background:rgba(92,122,196,.7)"></span>pending (predictive)</div>
       </div>
     </div>
-    <div class="hero-sig">
-      <div class="sig-badge sell">&triangledown; SELL</div>
-      <div>
-        <div class="sig-pair">XAUUSD &middot; 5m</div>
-        <div class="sig-det">Entry @ 5,224.60 &middot; Order Block Supply</div>
-        <div class="sig-tags">
-          <span class="tag-tp">TP1 +50</span><span class="tag-tp">TP2 +100</span><span class="tag-tp">TP3 +150</span><span class="tag-sl">SL -100</span>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item"><div class="stat-n">6</div><div class="stat-l">Core Features</div></div>
+    <div class="stat-item"><div class="stat-n">ALL</div><div class="stat-l">Timeframe</div></div>
+    <div class="stat-item"><div class="stat-n">0</div><div class="stat-l">Repaint</div></div>
+    <div class="stat-item"><div class="stat-n">V5</div><div class="stat-l">Pine Script</div></div>
+  </div>
+</div>
+</section>
+
+<!-- CHART PREVIEW -->
+<section>
+  <div class="chart-sec reveal">
+    <div class="chart-sec-inner">
+      <div class="chart-label-row">
+        <div class="chart-label-left">
+          <div class="sec-lbl">// Live Chart Preview</div>
+          <div class="chart-caption">TRXC QRR · XAUUSD · 1m — sinyal buy/sell + pending zone aktif di semua kondisi market</div>
         </div>
-        <div style="margin-top:8px"><span class="tag-hit">&check; TP3 HIT</span></div>
+        <div class="chart-label-right">
+          <div class="chart-pill"><span class="chart-pill-dot buy"></span>buy signal</div>
+          <div class="chart-pill"><span class="chart-pill-dot sell"></span>sell signal</div>
+          <div class="chart-pill"><span class="chart-pill-dot pending"></span>pending zone</div>
+        </div>
+      </div>
+      <div class="chart-shell">
+        <div class="chart-bar">
+          <div class="chart-dots"><span></span><span></span><span></span></div>
+          <span class="chart-sym">TRXC QRR</span>
+          <span class="chart-pair">&nbsp;·&nbsp; XAUUSD · 1m · OANDA</span>
+          <span class="chart-price">C 4,813.380 <span class="chart-chg">▲ +1.515 (+0.03%)</span></span>
+        </div>
+        <div class="chart-img-wrap">
+          <img src="data/chart-preview.png" alt="TRXC QRR live chart XAUUSD dengan sinyal buy sell dan pending zone" class="chart-img"/>
+          <div class="chart-overlay-tl">
+            <div class="chart-badge-live"><span class="chart-badge-dot"></span>LIVE SIGNAL ACTIVE</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
-
-<!-- STATS BAR -->
-<div class="stats-bar reveal">
-  <div class="stat-item"><div class="stat-n">6</div><div class="stat-l">Core Features</div></div>
-  <div class="stat-sep"></div>
-  <div class="stat-item"><div class="stat-n">ALL</div><div class="stat-l">Timeframes</div></div>
-  <div class="stat-sep"></div>
-  <div class="stat-item"><div class="stat-n">0</div><div class="stat-l">Repaint</div></div>
-  <div class="stat-sep"></div>
-  <div class="stat-item"><div class="stat-n">v5</div><div class="stat-l">Pine Script</div></div>
-</div>
 
 <!-- FEATURES -->
 <section id="features">
   <div class="feat-sec">
     <div class="feat-head reveal">
       <div class="sec-lbl">// Fitur Unggulan</div>
-      <div class="sec-ttl">CORE <span class="c">FEATURES</span></div>
+      <div class="sec-ttl">CORE <span>FEATURES</span></div>
     </div>
-    <div class="feat-list">
-      <div class="feat-row reveal">
-        <div class="feat-num">01</div>
-        <div class="feat-body"><h3>Predictive Market Move</h3><p>Sinyal muncul sebelum harga ke level target &mdash; bukan indikator lagging.</p></div>
+    <div class="feat-grid">
+      <div class="fc reveal">
+        <div class="fc-num">01</div>
+        <div class="fc-title">Predictive Market Move</div>
+        <div class="fc-desc">Sinyal muncul sebelum harga sampai ke level target — bukan indikator yang ketinggalan momentum.</div>
+        <div class="viz">
+          <svg viewBox="0 0 260 70" fill="none" style="width:100%;display:block">
+            <polyline points="0,55 30,50 60,43 90,47 115,36" stroke="#2D2459" stroke-width="1.2" fill="none"/>
+            <polyline points="115,36 145,30 175,24 210,20 250,16" stroke="#1E1A35" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
+            <line x1="115" y1="8" x2="115" y2="65" stroke="#2D2459" stroke-width=".8" stroke-dasharray="3 2"/>
+            <circle cx="115" cy="36" r="5" fill="#6B5FD4"/><circle cx="115" cy="36" r="9" fill="none" stroke="#6B5FD4" stroke-width=".8" opacity=".35"/>
+            <text x="8" y="66" font-family="JetBrains Mono" font-size="7" fill="#4B3FA0" letter-spacing="1">SIGNAL</text>
+            <text x="118" y="12" font-family="JetBrains Mono" font-size="7" fill="#2D2459">NOW</text>
+            <text x="176" y="18" font-family="JetBrains Mono" font-size="7" fill="#1E1A35">target →</text>
+          </svg>
+        </div>
       </div>
-      <div class="feat-row reveal rd1">
-        <div class="feat-num">02</div>
-        <div class="feat-body"><h3>All Timeframe Ready</h3><p>Dari 1 menit scalping hingga Weekly swing. Logika konsisten.</p></div>
+      <div class="fc reveal rd1">
+        <div class="fc-num">02</div>
+        <div class="fc-title">All Timeframe Ready</div>
+        <div class="fc-desc">Dari 1 menit scalping hingga Weekly swing. Logika konsisten di semua timeframe.</div>
+        <div class="viz">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+            <div style="background:#100E20;border:1px solid rgba(107,95,212,.3);padding:7px 5px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8B7FE8">1m</div><div style="height:2px;background:#6B5FD4;margin-top:5px"></div></div>
+            <div style="background:#100E20;border:1px solid rgba(107,95,212,.3);padding:7px 5px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8B7FE8">5m</div><div style="height:2px;background:#6B5FD4;margin-top:5px"></div></div>
+            <div style="background:#100E20;border:1px solid rgba(107,95,212,.3);padding:7px 5px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8B7FE8">15m</div><div style="height:2px;background:#6B5FD4;margin-top:5px"></div></div>
+            <div style="background:#100E20;border:1px solid rgba(107,95,212,.3);padding:7px 5px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8B7FE8">30m</div><div style="height:2px;background:#6B5FD4;margin-top:5px"></div></div>
+            <div style="background:#100E20;border:1px solid rgba(107,95,212,.3);padding:7px 5px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8B7FE8">1H</div><div style="height:2px;background:#6B5FD4;margin-top:5px"></div></div>
+            <div style="background:#100E20;border:1px solid rgba(107,95,212,.3);padding:7px 5px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8B7FE8">4H</div><div style="height:2px;background:#6B5FD4;margin-top:5px"></div></div>
+            <div style="background:#100E20;border:1px solid rgba(107,95,212,.3);padding:7px 5px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8B7FE8">D</div><div style="height:2px;background:#6B5FD4;margin-top:5px"></div></div>
+            <div style="background:#100E20;border:1px solid rgba(107,95,212,.3);padding:7px 5px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#8B7FE8">W</div><div style="height:2px;background:#6B5FD4;margin-top:5px"></div></div>
+          </div>
+        </div>
       </div>
-      <div class="feat-row reveal">
-        <div class="feat-num">03</div>
-        <div class="feat-body"><h3>Dual Signal System</h3><p>BUY dan SELL berjalan paralel independen. Zero konflik sinyal.</p></div>
+      <div class="fc reveal">
+        <div class="fc-num">03</div>
+        <div class="fc-title">Dual Signal System</div>
+        <div class="fc-desc">BUY dan SELL berjalan paralel dan independen. Tidak ada konflik sinyal, tidak ada noise.</div>
+        <div class="viz">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:#8B7FE8;background:rgba(107,95,212,.12);border:1px solid rgba(107,95,212,.2);padding:4px 8px;text-align:center;margin-bottom:8px">▲ BUY</div><div style="display:flex;gap:3px;justify-content:center;padding:8px 0"><div style="width:6px;height:6px;border-radius:50%;background:#6B5FD4"></div><div style="width:6px;height:6px;border-radius:50%;background:#1E1A35"></div><div style="width:6px;height:6px;border-radius:50%;background:#6B5FD4"></div><div style="width:6px;height:6px;border-radius:50%;background:#1E1A35"></div><div style="width:6px;height:6px;border-radius:50%;background:#6B5FD4"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2D2459;text-align:center">5 aktif</div></div>
+            <div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:#E8637A;background:rgba(232,99,122,.1);border:1px solid rgba(232,99,122,.2);padding:4px 8px;text-align:center;margin-bottom:8px">▼ SELL</div><div style="display:flex;gap:3px;justify-content:center;padding:8px 0"><div style="width:6px;height:6px;border-radius:50%;background:#1E1A35"></div><div style="width:6px;height:6px;border-radius:50%;background:#E8637A"></div><div style="width:6px;height:6px;border-radius:50%;background:#1E1A35"></div><div style="width:6px;height:6px;border-radius:50%;background:#E8637A"></div><div style="width:6px;height:6px;border-radius:50%;background:#1E1A35"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2D2459;text-align:center">4 aktif</div></div>
+          </div>
+          <div style="border-top:1px solid #12101E;margin-top:8px;padding-top:8px;font-family:'JetBrains Mono',monospace;font-size:8px;color:#2D2459;text-align:center">berjalan <span style="color:#4B3FA0">independen</span></div>
+        </div>
       </div>
-      <div class="feat-row reveal rd1">
-        <div class="feat-num">04</div>
-        <div class="feat-body"><h3>Zero Repaint</h3><p>Dikunci setelah konfirmasi bar close. Tidak pernah berubah.</p></div>
+      <div class="fc reveal rd1">
+        <div class="fc-num">04</div>
+        <div class="fc-title">Zero Repaint</div>
+        <div class="fc-desc">Sinyal dikunci setelah konfirmasi bar close. Apa yang kamu lihat adalah apa yang terjadi.</div>
+        <div class="viz">
+          <div style="display:flex;gap:10px;align-items:flex-end">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#3D3560;letter-spacing:1px">BAR OPEN</div><div style="display:flex;gap:4px;align-items:flex-end;height:44px"><div style="display:flex;flex-direction:column;align-items:center"><div style="width:1px;height:12px;background:#2D2459"></div><div style="width:10px;height:18px;background:#3D6B3A;border-radius:1px"></div><div style="width:1px;height:7px;background:#2D2459"></div></div><div style="display:flex;flex-direction:column;align-items:center"><div style="width:1px;height:9px;background:#2D2459"></div><div style="width:10px;height:14px;background:#6B3A40;border-radius:1px"></div><div style="width:1px;height:9px;background:#2D2459"></div></div><div style="display:flex;flex-direction:column;align-items:center"><div style="width:8px;height:8px;border-radius:50%;border:1.5px dashed #3D3560;margin-bottom:3px"></div><div style="width:1px;height:10px;background:#2D2459"></div><div style="width:10px;height:16px;background:#3D6B3A;opacity:.4;border-radius:1px"></div><div style="width:1px;height:5px;background:#2D2459"></div></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#2D2459">belum pasti</div></div>
+            <div style="color:#2D2459;font-size:14px;padding-bottom:16px">→</div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px"><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#3D3560;letter-spacing:1px">BAR CLOSE</div><div style="display:flex;gap:4px;align-items:flex-end;height:44px"><div style="display:flex;flex-direction:column;align-items:center"><div style="width:1px;height:12px;background:#2D2459"></div><div style="width:10px;height:18px;background:#3D6B3A;border-radius:1px"></div><div style="width:1px;height:7px;background:#2D2459"></div></div><div style="display:flex;flex-direction:column;align-items:center"><div style="width:1px;height:9px;background:#2D2459"></div><div style="width:10px;height:14px;background:#6B3A40;border-radius:1px"></div><div style="width:1px;height:9px;background:#2D2459"></div></div><div style="display:flex;flex-direction:column;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:#6B5FD4;margin-bottom:3px"></div><div style="width:1px;height:10px;background:#2D2459"></div><div style="width:10px;height:16px;background:#3D6B3A;border-radius:1px"></div><div style="width:1px;height:5px;background:#2D2459"></div></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#6B5FD4;border:1px solid #2D2459;padding:2px 6px">LOCKED ✓</div></div>
+          </div>
+        </div>
       </div>
-      <div class="feat-row reveal">
-        <div class="feat-num">05</div>
-        <div class="feat-body"><h3>Pending Zone Visibility</h3><p>Lihat area potensial sebelum harga tiba. Persiapkan entry.</p></div>
+      <div class="fc reveal">
+        <div class="fc-num">05</div>
+        <div class="fc-title">Pending Zone Visibility</div>
+        <div class="fc-desc">Lihat area potensial sebelum harga tiba. Persiapkan entry, bukan kejar harga.</div>
+        <div class="viz">
+          <svg viewBox="0 0 260 100" fill="none" style="width:100%;display:block">
+            <rect x="0" y="35" width="260" height="26" fill="rgba(107,95,212,0.07)"/>
+            <line x1="0" y1="35" x2="260" y2="35" stroke="#6B5FD4" stroke-width=".8" stroke-dasharray="5 3" opacity=".5"/>
+            <line x1="0" y1="61" x2="260" y2="61" stroke="#4B3FA0" stroke-width=".8" stroke-dasharray="5 3" opacity=".4"/>
+            <text x="6" y="31" font-family="JetBrains Mono" font-size="7" fill="#6B5FD4" letter-spacing="2" opacity=".8">PENDING ZONE</text>
+            <line x1="30" y1="88" x2="30" y2="78" stroke="#3D6B3A" stroke-width="1"/><rect x="26" y="78" width="8" height="10" rx="1" fill="#3D6B3A"/>
+            <line x1="46" y1="85" x2="46" y2="74" stroke="#3D6B3A" stroke-width="1"/><rect x="42" y="74" width="8" height="11" rx="1" fill="#3D6B3A"/>
+            <line x1="62" y1="82" x2="62" y2="70" stroke="#3D6B3A" stroke-width="1"/><rect x="58" y="70" width="8" height="12" rx="1" fill="#3D6B3A"/>
+            <line x1="78" y1="78" x2="78" y2="65" stroke="#3D6B3A" stroke-width="1"/><rect x="74" y="65" width="8" height="13" rx="1" fill="#3D6B3A"/>
+            <line x1="94" y1="74" x2="94" y2="59" stroke="#3D6B3A" stroke-width="1"/><rect x="90" y="61" width="8" height="13" rx="1" fill="#3D6B3A"/>
+            <circle cx="94" cy="53" r="5" fill="#6B5FD4" opacity=".9"/>
+            <circle cx="94" cy="53" r="9" fill="none" stroke="#6B5FD4" stroke-width=".8" opacity=".3"/>
+            <text x="106" y="51" font-family="JetBrains Mono" font-size="7" fill="#8B7FE8" letter-spacing="1">SIGNAL</text>
+            <line x1="110" y1="72" x2="110" y2="52" stroke="#1E1A35" stroke-width="1"/><rect x="106" y="52" width="8" height="20" rx="1" fill="#1E1A35" opacity=".5"/>
+            <line x1="126" y1="68" x2="126" y2="46" stroke="#1E1A35" stroke-width="1"/><rect x="122" y="46" width="8" height="22" rx="1" fill="#1E1A35" opacity=".4"/>
+            <path d="M138 48 L200 48" stroke="#4B3FA0" stroke-width=".8" stroke-dasharray="3 2"/>
+            <path d="M196 44 L204 48 L196 52" stroke="#4B3FA0" stroke-width=".8" fill="none"/>
+            <text x="72" y="97" font-family="JetBrains Mono" font-size="7" fill="#2D2459">siap sebelum harga tiba</text>
+          </svg>
+        </div>
       </div>
-      <div class="feat-row reveal rd1">
-        <div class="feat-num">06</div>
-        <div class="feat-body"><h3>Swing-Based Entry</h3><p>Berbasis struktur market nyata &mdash; bukan MA, bukan RSI.</p></div>
+      <div class="fc reveal rd1">
+        <div class="fc-num">06</div>
+        <div class="fc-title">Leading Indicator</div>
+        <div class="fc-desc">Membaca pergerakan pasar di depan — bukan konfirmasi setelah terjadi. Selalu selangkah lebih awal.</div>
+        <div class="viz">
+          <svg viewBox="0 0 260 100" fill="none" style="width:100%;display:block">
+            <line x1="0" y1="30" x2="260" y2="30" stroke="#12101E" stroke-width=".5"/>
+            <line x1="0" y1="55" x2="260" y2="55" stroke="#12101E" stroke-width=".5"/>
+            <line x1="0" y1="80" x2="260" y2="80" stroke="#12101E" stroke-width=".5"/>
+            <polyline points="0,75 25,68 50,60 75,65 100,54 125,58 150,46 175,50 200,40 225,43 250,34" stroke="#2D2459" stroke-width="1.2" fill="none"/>
+            <polyline points="30,75 55,68 80,60 105,65 130,54 155,58 180,46 205,50 230,40 255,43" stroke="#1A1630" stroke-width="1.5" fill="none" stroke-dasharray="4 2"/>
+            <polyline points="0,62 25,54 50,46 75,51 100,40 125,44 150,33 175,37 200,27 225,30 250,22" stroke="#6B5FD4" stroke-width="1.5" fill="none"/>
+            <line x1="130" y1="8" x2="130" y2="88" stroke="#2D2459" stroke-width=".8" stroke-dasharray="3 2"/>
+            <text x="132" y="14" font-family="JetBrains Mono" font-size="7" fill="#2D2459">NOW</text>
+            <text x="4" y="90" font-family="JetBrains Mono" font-size="7" fill="#2D2459">PRICE</text>
+            <text x="174" y="90" font-family="JetBrains Mono" font-size="7" fill="#1A1630">LAGGING</text>
+            <text x="212" y="20" font-family="JetBrains Mono" font-size="7" fill="#6B5FD4">TRXC QRR</text>
+            <path d="M100 44 Q115 40 130 33" stroke="#6B5FD4" stroke-width=".8" fill="none" opacity=".5"/>
+            <text x="86" y="35" font-family="JetBrains Mono" font-size="7" fill="#8B7FE8">+ahead</text>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -435,45 +617,17 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 <!-- HOW IT WORKS -->
 <section>
   <div class="hiw-sec">
-    <div class="reveal" style="text-align:center">
-      <div class="sec-lbl">// Cara Kerja</div>
-      <div class="sec-ttl">SIMPLE. <span class="c">POWERFUL.</span></div>
-    </div>
-    <div class="hiw-grid">
-      <div class="hiw-step reveal"><div class="step-c">01</div><h4>Pasang di TradingView</h4><p>Tambahkan script private ke chart TradingView dengan akses yang kami berikan setelah pembayaran.</p></div>
-      <div class="hiw-step reveal rd1"><div class="step-c">02</div><h4>Analisis Otomatis</h4><p>Order Block, FVG, dan level HTF terdeteksi otomatis di semua pair dan timeframe.</p></div>
-      <div class="hiw-step reveal rd2"><div class="step-c">03</div><h4>Tunggu Sinyal</h4><p>Sinyal <b>&triangleup; BUY</b> atau <b>&triangledown; SELL</b> muncul saat kondisi confluence terpenuhi.</p></div>
-      <div class="hiw-step reveal rd3"><div class="step-c">04</div><h4>Eksekusi + TP/SL</h4><p>Garis TP1, TP2, TP3 dan SL muncul otomatis. Tinggal eksekusi dan manage posisi.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- DEMO SIGNALS -->
-<section class="demo-sec">
-  <div class="demo-inner">
-    <div class="reveal">
-      <div class="sec-lbl">// Live Signal Demo</div>
-      <div class="sec-ttl" style="font-size:clamp(32px,5vw,54px)">SINYAL YANG<br/><span class="c">ACTIONABLE</span></div>
-      <p style="color:var(--muted);margin-top:18px;font-size:13.5px;line-height:1.85;max-width:360px">Setiap sinyal dilengkapi TP1/TP2/TP3 &amp; SL otomatis. Bila TP1 sudah hit lalu SL kena &mdash; indikator mencatat sebagai <b style="color:var(--white)">partial profit</b>.</p>
-    </div>
-    <div class="sig-list reveal">
-      <div class="sig-card">
-        <div class="sig-badge buy">&triangleup; BUY</div>
-        <div><div class="sig-pair">XAUUSD &middot; 1m</div><div class="sig-det">Entry @ 5,198.40 &middot; Order Block Demand</div>
-        <div class="sig-tags"><span class="tag-tp">TP1 +50</span><span class="tag-tp">TP2 +100</span><span class="tag-tp">TP3 +150</span><span class="tag-sl">SL -100</span></div>
-        <div style="margin-top:8px"><span class="tag-hit">&check; TP2 HIT</span></div></div>
+    <div class="hiw-inner">
+      <div class="hiw-top reveal">
+        <div class="sec-lbl" style="text-align:center">// Cara Kerja</div>
+        <div class="sec-ttl" style="text-align:center">SIMPLE. <span>POWERFUL.</span></div>
       </div>
-      <div class="sig-card">
-        <div class="sig-badge sell">&triangledown; SELL</div>
-        <div><div class="sig-pair">XAUUSD &middot; 5m</div><div class="sig-det">Entry @ 5,224.60 &middot; Order Block Supply</div>
-        <div class="sig-tags"><span class="tag-tp">TP1 +50</span><span class="tag-tp">TP2 +100</span><span class="tag-tp">TP3 +150</span><span class="tag-sl">SL -100</span></div>
-        <div style="margin-top:8px"><span class="tag-hit">&check; TP3 HIT</span></div></div>
-      </div>
-      <div class="sig-card">
-        <div class="sig-badge buy">&triangleup; BUY</div>
-        <div><div class="sig-pair">BTCUSD &middot; 15m</div><div class="sig-det">Entry @ 70,840 &middot; Order Block Demand</div>
-        <div class="sig-tags"><span class="tag-tp">TP1 +50</span><span class="tag-tp">TP2 +100</span><span class="tag-tp">TP3 +150</span><span class="tag-sl">SL -100</span></div>
-        <div style="margin-top:8px"><span class="tag-hit">&check; TP1 HIT</span></div></div>
+      <div class="hiw-grid">
+        <div class="hiw-line"></div>
+        <div class="hiw-step reveal"><div class="step-c">01</div><h4>Pasang di TradingView</h4><p>Tambahkan script private ke chart TradingView dengan akses yang kami berikan setelah pembayaran.</p></div>
+        <div class="hiw-step reveal rd1"><div class="step-c">02</div><h4>Analisis Otomatis</h4><p>Pending zone, swing points, dan level HTF terdeteksi otomatis di semua pair dan timeframe.</p></div>
+        <div class="hiw-step reveal rd2"><div class="step-c">03</div><h4>Tunggu Sinyal</h4><p>Sinyal <b>▲ BUY</b> atau <b>▼ SELL</b> muncul saat harga mendekati zona — sebelum konfirmasi.</p></div>
+        <div class="hiw-step reveal rd3"><div class="step-c">04</div><h4>Eksekusi + TP/SL</h4><p>TP1, TP2, TP3 dan SL muncul otomatis. Tinggal eksekusi dan manage posisi.</p></div>
       </div>
     </div>
   </div>
@@ -483,116 +637,111 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 <section id="pricing">
   <div class="price-sec">
     <div class="price-head reveal">
-      <div class="sec-lbl">// Pilih Paket</div>
-      <div class="sec-ttl">INVESTASI <span class="c">TERBAIK</span><br/>UNTUK TRADINGMU</div>
-      <p>Semua paket dapat fitur yang sama. Semakin lama, semakin hemat.</p>
+      <div class="sec-lbl" style="text-align:center">// Pilih Paket</div>
+      <div class="sec-ttl" style="text-align:center">PILIH <span>AKSES</span> KAMU</div>
+      <p>Semua paket dapat fitur penuh · Semakin lama semakin hemat per hari</p>
     </div>
-    <div class="price-grid">
-
-      <!-- BASIC -->
-      <div class="pc basic reveal">
-        <div class="pc-tier">Basic</div>
-        <div class="pc-dur-block"><div class="pc-dur-n">1</div><div class="pc-dur-u">BULAN</div></div>
-        <div class="pc-price"><span class="rp">Rp</span>288<span class="ribu">.888</span></div>
-        <div class="pc-breakdown"><span class="pc-pm-lbl">per bulan</span><span class="pc-pm-val" style="color:var(--white)">Rp 288.888</span></div>
-        <div class="pc-saving"><span>Harga dasar &middot; coba selama 1 bulan</span></div>
-        <div class="pc-divider"></div>
-        <div class="pc-feats">
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG</div>
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div>
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Auto</div>
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection</div>
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div>
-          <div class="pc-feat dim"><svg class="chk-x" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 4l6 6M10 4l-6 6" stroke="#1E1A35" stroke-width="1.3" stroke-linecap="round"/></svg>Update fitur baru</div>
+    <div class="f-outer reveal">
+      <div class="f-left">
+        <!-- BASIC -->
+        <div class="f-small basic">
+          <div class="f-s-top">
+            <div><div class="f-s-tier">Basic</div><div class="f-s-dur">1</div><div class="f-s-dur-u">Bulan</div></div>
+            <div style="text-align:right"><div class="f-s-price"><span class="rp">Rp</span>290K</div><div class="f-s-perday">≈ Rp 9.667/hari</div></div>
+          </div>
+          <div class="f-s-feats">
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#2D2459" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#2D2459" stroke-width=".9" stroke-linecap="round"/></svg>Predictive Signal</div>
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#2D2459" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#2D2459" stroke-width=".9" stroke-linecap="round"/></svg>Dual Signal</div>
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#2D2459" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#2D2459" stroke-width=".9" stroke-linecap="round"/></svg>Zero Repaint</div>
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#2D2459" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#2D2459" stroke-width=".9" stroke-linecap="round"/></svg>All TF</div>
+          </div>
+          <div class="f-s-bottom">
+            <div class="f-s-saving">Harga dasar · coba dulu</div>
+            <button class="btn-basic" onclick="window.location.href=getCheckoutUrl('checkout-basic.html')">Pilih 1 Bulan →</button>
+          </div>
         </div>
-        <button class="pc-btn" onclick="window.location.href=getCheckoutUrl('checkout-basic.html')">Mulai 1 Bulan &rarr;</button>
+        <!-- SILVER -->
+        <div class="f-small silver">
+          <div class="f-s-top">
+            <div><div class="f-s-tier">Silver</div><div class="f-s-dur">3</div><div class="f-s-dur-u">Bulan · Populer</div></div>
+            <div style="text-align:right"><div class="f-s-price"><span class="rp">Rp</span>659K</div><div class="f-s-perday">≈ Rp 7.322/hari</div></div>
+          </div>
+          <div class="f-s-feats">
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#4B3FA0" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#4B3FA0" stroke-width=".9" stroke-linecap="round"/></svg>Predictive Signal</div>
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#4B3FA0" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#4B3FA0" stroke-width=".9" stroke-linecap="round"/></svg>Dual Signal</div>
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#4B3FA0" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#4B3FA0" stroke-width=".9" stroke-linecap="round"/></svg>Zero Repaint</div>
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#4B3FA0" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#4B3FA0" stroke-width=".9" stroke-linecap="round"/></svg>All TF</div>
+            <div class="f-s-feat"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="#4B3FA0" stroke-width=".8"/><path d="M2.5 5l1.5 1.5 3-3" stroke="#4B3FA0" stroke-width=".9" stroke-linecap="round"/></svg>Update fitur</div>
+          </div>
+          <div class="f-s-bottom">
+            <div class="f-s-saving">Hemat Rp 211K vs 3× Basic</div>
+            <button class="btn-silver" onclick="window.location.href=getCheckoutUrl('checkout-silver.html')">Pilih 3 Bulan →</button>
+          </div>
+        </div>
+        <!-- LIFETIME -->
+        <div class="f-lifetime">
+          <div class="f-lt-topline"></div>
+          <div class="f-lt-glow"></div>
+          <div class="f-lt-scanlines"></div>
+          <div class="f-lt-ghost">∞</div>
+          <div class="f-lt-inner">
+            <div class="f-lt-top">
+              <div><div class="f-lt-tier">Lifetime</div><div class="f-lt-dur">∞</div><div class="f-lt-dur-u">Selamanya</div></div>
+              <div style="text-align:right"><div class="f-lt-price"><span class="rp">Rp</span>21Jt</div><div class="f-lt-perday">bayar sekali saja</div></div>
+            </div>
+            <div class="f-lt-sep"></div>
+            <div class="f-lt-feats">
+              <div class="f-lt-feat hl"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C084FC" stroke-width="1"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C084FC" stroke-width="1.2" stroke-linecap="round"/></svg>Semua fitur aktif selamanya</div>
+              <div class="f-lt-feat hl"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C084FC" stroke-width="1"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C084FC" stroke-width="1.2" stroke-linecap="round"/></svg>Update fitur baru — tanpa biaya tambahan</div>
+              <div class="f-lt-feat dim"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#6B5FD4" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#6B5FD4" stroke-width="1" stroke-linecap="round"/></svg>All Timeframe · Predictive · Dual Signal</div>
+              <div class="f-lt-feat dim"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#6B5FD4" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#6B5FD4" stroke-width="1" stroke-linecap="round"/></svg>Zero Repaint · Pending Zone · Leading Indicator</div>
+            </div>
+            <div class="f-lt-bottom">
+              <div class="f-lt-saving">Tidak ada biaya lagi setelah ini</div>
+              <button class="btn-lifetime" onclick="window.location.href=getCheckoutUrl('checkout-lifetime.html')">✦ Pilih Lifetime →</button>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <!-- SILVER -->
-      <div class="pc silver reveal rd1">
-        <div class="pc-ribbon ribbon-pop">POPULER</div>
-        <div class="pc-tier">Silver</div>
-        <div class="pc-dur-block"><div class="pc-dur-n">3</div><div class="pc-dur-u">BULAN</div></div>
-        <div class="pc-price"><span class="rp">Rp</span>788<span class="ribu">.888</span></div>
-        <div class="pc-breakdown"><span class="pc-pm-lbl">per bulan hanya</span><span class="pc-pm-val">Rp 262.963</span><span class="pc-pm-strike">Rp 288.888</span></div>
-        <div class="pc-saving"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.3 3.9H12L8.9 7.5l1.1 3.9-3.5-2.5L3 11.4l1.1-3.9L1 5h4.2z" fill="#6B5FD4"/></svg><span>Hemat <strong>Rp 77.776</strong> vs 3&times; Basic</span></div>
-        <div class="pc-divider"></div>
-        <div class="pc-feats">
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Auto</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>Update fitur baru</div>
-        </div>
-        <button class="pc-btn" onclick="window.location.href=getCheckoutUrl('checkout-silver.html')">Mulai 3 Bulan &rarr;</button>
-      </div>
-
-      <!-- GOLD -->
-      <div class="pc gold reveal rd2">
-        <div class="pc-ribbon ribbon-best">TERBAIK</div>
-        <div class="pc-tier">Gold</div>
-        <div class="pc-dur-block"><div class="pc-dur-n">6</div><div class="pc-dur-u">BULAN</div></div>
-        <div class="pc-price"><span class="rp">Rp</span>1.188<span class="ribu">.888</span></div>
-        <div class="pc-breakdown"><span class="pc-pm-lbl">per bulan hanya</span><span class="pc-pm-val">Rp 198.148</span><span class="pc-pm-strike">Rp 288.888</span></div>
-        <div class="pc-saving"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.3 3.9H12L8.9 7.5l1.1 3.9-3.5-2.5L3 11.4l1.1-3.9L1 5h4.2z" fill="#C9A84C"/></svg><span>Hemat <strong>Rp 544.440</strong> vs 6&times; Basic</span></div>
-        <div class="pc-divider"></div>
-        <div class="pc-feats">
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#C9A84C" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#C9A84C" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#C9A84C" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Auto</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#C9A84C" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#C9A84C" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#C9A84C" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#C9A84C" stroke-width="1.3" stroke-linecap="round"/></svg>Update fitur baru</div>
-        </div>
-        <button class="pc-btn" onclick="window.location.href=getCheckoutUrl('checkout-gold.html')">Mulai 6 Bulan &rarr;</button>
-      </div>
-
-    </div><!-- end .price-grid -->
-
-    <!-- LIFETIME BANNER -->
-    <div class="lifetime-wrap reveal">
-      <div class="pc lifetime">
-        <div class="pc-ribbon ribbon-life">LIFETIME</div>
-
-        <div class="lifetime-left">
-          <div class="pc-tier">Lifetime</div>
-          <div class="pc-dur-block">
-            <div class="pc-dur-n">&infin;</div>
-            <div class="pc-dur-u">SELAMANYA</div>
+      <!-- ANNUAL -->
+      <div class="f-big">
+        <div class="f-big-glow"></div><div class="f-big-glow2"></div><div class="f-big-scanlines"></div><div class="f-big-ghost">1</div>
+        <div class="f-big-inner">
+          <div>
+            <div class="f-big-badge"><div class="f-big-badge-dot"></div>Paket Terbaik · Gold</div>
+            <div class="f-big-tier-row"><div class="f-big-dur">1</div><div class="f-big-unit">TAHUN</div></div>
+            <div class="f-big-tagline">Akses penuh 12 bulan — semua fitur, semua update. Per hari lebih murah dari kopi.</div>
           </div>
-          <div class="pc-price"><span class="rp">Rp</span>8.888<span class="ribu">.888</span></div>
-          <div class="pc-breakdown">
-            <span class="pc-pm-lbl">bayar</span>
-            <span class="pc-pm-val">&nbsp;sekali</span>
+          <div class="f-big-details">
+            <div class="f-big-stat"><div class="f-big-stat-label">Per Hari</div><div class="f-big-stat-val">Rp 5.859</div><div class="f-big-stat-sub">lebih murah dari Basic</div></div>
+            <div class="f-big-stat"><div class="f-big-stat-label">Hemat vs Silver 4×</div><div class="f-big-stat-val">Rp 1.329K</div><div class="f-big-stat-sub">langsung di depan</div></div>
+            <div class="f-big-stat"><div class="f-big-stat-label">Durasi</div><div class="f-big-stat-val">365 Hari</div><div class="f-big-stat-sub">akses tidak terputus</div></div>
+            <div class="f-big-stat"><div class="f-big-stat-label">Update Fitur</div><div class="f-big-stat-val">✓ Included</div><div class="f-big-stat-sub">selama masa aktif</div></div>
           </div>
-          <div class="pc-saving">
-            <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.3 3.9H12L8.9 7.5l1.1 3.9-3.5-2.5L3 11.4l1.1-3.9L1 5h4.2z" fill="#C084FC"/></svg>
-            <span>Hemat <strong>Rp 25.466.624</strong> vs Basic tiap bulan</span>
+          <div class="f-big-feats">
+            <div class="f-big-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C9A84C" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C9A84C" stroke-width="1" stroke-linecap="round"/></svg>Predictive Market Move</div>
+            <div class="f-big-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C9A84C" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C9A84C" stroke-width="1" stroke-linecap="round"/></svg>Dual Signal System (BUY + SELL paralel)</div>
+            <div class="f-big-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C9A84C" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C9A84C" stroke-width="1" stroke-linecap="round"/></svg>Zero Repaint — dikunci setelah bar close</div>
+            <div class="f-big-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C9A84C" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C9A84C" stroke-width="1" stroke-linecap="round"/></svg>All Timeframe (1m sampai Weekly)</div>
+            <div class="f-big-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C9A84C" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C9A84C" stroke-width="1" stroke-linecap="round"/></svg>Pending Zone Visibility</div>
+            <div class="f-big-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C9A84C" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C9A84C" stroke-width="1" stroke-linecap="round"/></svg>Leading Indicator — selangkah lebih awal</div>
+            <div class="f-big-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#C9A84C" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="#C9A84C" stroke-width="1" stroke-linecap="round"/></svg>Update fitur selama masa aktif</div>
+          </div>
+          <div class="f-big-bottom">
+            <div>
+              <div class="f-big-price"><span class="rp">Rp</span>2.139K</div>
+              <div class="f-big-perday">≈ Rp 5.859 / hari</div>
+              <div class="f-big-saving">Hemat Rp 1.329K vs Silver 4×</div>
+            </div>
+            <div>
+              <button class="btn-annual" onclick="window.location.href=getCheckoutUrl('checkout-gold.html')">Pilih 1 Tahun →</button>
+              <div class="f-big-note">Akses langsung setelah pembayaran</div>
+            </div>
           </div>
         </div>
-
-        <div class="lifetime-middle">
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#A855F7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#A855F7" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#A855F7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#A855F7" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#A855F7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#A855F7" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Auto</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#A855F7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#A855F7" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#A855F7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#A855F7" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#C084FC" stroke-width="1.5"/><path d="M4 7l2 2 4-4" stroke="#C084FC" stroke-width="1.5" stroke-linecap="round"/></svg><strong style="color:#E9D5FF">Update fitur baru selamanya</strong></div>
-        </div>
-
-        <div class="lifetime-right">
-          <div style="text-align:center;line-height:1.7;font-size:13px">
-            <span style="color:rgba(232,213,255,.6)">Bayar </span><strong style="color:#C084FC;font-size:15px">sekali</strong><span style="color:rgba(232,213,255,.6)">, pakai</span><br/>
-            <strong style="color:#E9D5FF;font-size:15px">selamanya</strong><span style="color:rgba(232,213,255,.5)"> &mdash; tidak ada biaya lagi</span>
-          </div>
-          <button class="pc-btn" onclick="window.location.href=getCheckoutUrl('checkout-lifetime.html')">&#10022; Mulai Lifetime &rarr;</button>
-          <div style="font-size:11px;color:rgba(192,132,252,.5);text-align:center;letter-spacing:.3px">Termasuk semua update fitur mendatang</div>
-        </div>
-
       </div>
     </div>
-    <p class="price-note">Untuk member TRXC QRR &middot; Bukan financial advice &middot; Harga dapat berubah sewaktu-waktu</p>
+    <p class="price-note">⚠️ Untuk member TRXC QRR · Bukan financial advice · Harga dapat berubah sewaktu-waktu</p>
   </div>
 </section>
 
@@ -601,15 +750,15 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
   <div class="faq-sec">
     <div class="reveal" style="text-align:center">
       <div class="sec-lbl">// FAQ</div>
-      <div class="sec-ttl">PERTANYAAN <span class="c">UMUM</span></div>
+      <div class="sec-ttl">PERTANYAAN <span>UMUM</span></div>
     </div>
     <div class="faq-list">
-      <div class="faq-item"><div class="faq-q"><span>Cocok untuk pair apa saja?</span><div class="faq-ico">+</div></div><div class="faq-a">Indikator dioptimalkan untuk <b>XAU/USD (Gold)</b> dan <b>BTC/USD</b>. Kalkulasi pip TP/SL sudah otomatis disesuaikan untuk kedua pair tersebut. Bisa juga digunakan di pair forex lainnya.</div></div>
-      <div class="faq-item"><div class="faq-q"><span>Setelah beli, bagaimana cara aksesnya?</span><div class="faq-ico">+</div></div><div class="faq-a">Setelah pembayaran dikonfirmasi, username TradingView kamu akan di-invite sebagai collaborator script private. Prosesnya biasanya dalam 1&times;24 jam hari kerja.</div></div>
-      <div class="faq-item"><div class="faq-q"><span>Bisa dipakai di semua timeframe?</span><div class="faq-ico">+</div></div><div class="faq-a">Ya, bekerja di semua timeframe. Untuk scalping, timeframe 1m dan 5m paling banyak digunakan. Untuk swing, timeframe 1H ke atas lebih direkomendasikan.</div></div>
-      <div class="faq-item"><div class="faq-q"><span>Bagaimana cara kerja TP/SL otomatis?</span><div class="faq-ico">+</div></div><div class="faq-a">Setelah sinyal muncul, garis TP1/TP2/TP3 dan SL tergambar otomatis. Bila TP1 atau TP2 sudah tercapai kemudian SL kena, indikator mencatat sebagai partial profit &mdash; bukan full loss.</div></div>
-      <div class="faq-item"><div class="faq-q"><span>Apa beda Basic, Silver, dan Gold?</span><div class="faq-ico">+</div></div><div class="faq-a">Fitur identik di ketiga paket. Perbedaannya hanya durasi: Basic 1 bulan (Rp 288.888), Silver 3 bulan (Rp 788.888, hemat 9%), Gold 6 bulan (Rp 1.188.888, hemat 31%), Lifetime (Rp 8.888.888, akses selamanya). Makin lama makin hemat per bulannya.</div></div>
-      <div class="faq-item"><div class="faq-q"><span>Apakah ada jaminan profit?</span><div class="faq-ico">+</div></div><div class="faq-a">Tidak ada indikator yang menjamin profit. Indikator ini adalah alat bantu analisis &mdash; keputusan trading tetap ada di tanganmu. Selalu gunakan manajemen risiko yang baik.</div></div>
+      <div class="faq-item"><div class="faq-q"><span>Cocok untuk pair apa saja?</span><div class="faq-ico">+</div></div><div class="faq-a">Dioptimalkan untuk <b>XAU/USD (Gold)</b> dan <b>BTC/USD</b>. Bisa juga dipakai di pair forex lainnya — logika indikator universal untuk semua pair dengan struktur market yang jelas.</div></div>
+      <div class="faq-item"><div class="faq-q"><span>Setelah beli, bagaimana cara aksesnya?</span><div class="faq-ico">+</div></div><div class="faq-a">Username TradingView kamu akan di-invite ke <b>Script Hanya Undangan</b> secara <b>Instant Setelah Pembayaran</b>. Pastikan <b>Username TradingView</b> kamu tidak salah saat mengisi form checkout.</div></div>
+      <div class="faq-item"><div class="faq-q"><span>Bisa dipakai di semua timeframe?</span><div class="faq-ico">+</div></div><div class="faq-a">Ya, bekerja di semua timeframe dari <b>1 menit</b> hingga <b>Weekly</b>. Untuk scalping, 1m dan 5m paling optimal. Untuk swing trading, 1H ke atas lebih direkomendasikan.</div></div>
+      <div class="faq-item"><div class="faq-q"><span>Bagaimana cara kerja TP/SL otomatis?</span><div class="faq-ico">+</div></div><div class="faq-a">Setelah sinyal muncul, garis <b>TP1/TP2/TP3</b> dan <b>SL</b> tergambar otomatis di chart. Smart logic — bila TP1 atau TP2 sudah tercapai kemudian SL kena, indikator mencatat sebagai <b>partial profit</b>, bukan full loss.</div></div>
+      <div class="faq-item"><div class="faq-q"><span>Apa beda Basic, Silver, Gold, dan Lifetime?</span><div class="faq-ico">+</div></div><div class="faq-a">Fitur identik di semua paket. Perbedaannya hanya durasi: <b>Basic</b> 1 bulan (Rp 290K), <b>Silver</b> 3 bulan (Rp 659K), <b>Gold</b> 1 tahun (Rp 2.139K), <b>Lifetime</b> selamanya (Rp 21Jt — bayar sekali, tidak ada biaya lagi).</div></div>
+      <div class="faq-item"><div class="faq-q"><span>Apakah ada jaminan profit?</span><div class="faq-ico">+</div></div><div class="faq-a">Tidak ada indikator yang menjamin profit. TRXC QRR adalah alat bantu analisis — keputusan trading tetap ada di tanganmu. Selalu gunakan manajemen risiko yang baik.</div></div>
     </div>
   </div>
 </section>
@@ -618,10 +767,9 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 <footer>
   <div class="foot-brand">
     <img src="data/trxc-qrr-logo.png" alt="TRXC QRR" class="foot-logo"/>
-    <div class="foot-txt">TRXC <span class="slash">/</span> QRR</div>
+    <div class="foot-txt">TRXC<span class="slash">/</span><span class="dim">QRR</span></div>
   </div>
-  <div class="foot-copy">&copy; 2026 TRXC QRR &middot; Not Financial Advice &middot; Pine Script v5</div>
-  <div class="foot-right">Invite-Only &middot; TradingView</div>
+  <div class="foot-copy">© 2026 TRXC QRR · Not Financial Advice · Pine Script v5</div>
 </footer>
 
 <script>
@@ -722,11 +870,11 @@ function getCheckoutUrl(base) {
   return ref ? base + '?ref=' + encodeURIComponent(ref) : base;
 }
 
-// ── CUSTOM CURSOR ──
+// ── CURSOR ──
 var cur=document.getElementById('cur'),curR=document.getElementById('curR'),mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY});
 (function loop(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;cur.style.left=mx+'px';cur.style.top=my+'px';curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(loop);})();
-document.querySelectorAll('a,button,.faq-q,.feat-row,.sig-card,.hero-sig,.pc').forEach(function(el){
+document.querySelectorAll('a,button,.faq-q,.fc,.sig-card').forEach(function(el){
   el.addEventListener('mouseenter',function(){curR.style.width='44px';curR.style.height='44px';curR.style.opacity='.4'});
   el.addEventListener('mouseleave',function(){curR.style.width='32px';curR.style.height='32px';curR.style.opacity='1'});
 });
@@ -735,7 +883,177 @@ document.querySelectorAll('a,button,.faq-q,.feat-row,.sig-card,.hero-sig,.pc').f
 var obs=new IntersectionObserver(function(entries){entries.forEach(function(e,i){if(e.isIntersecting){setTimeout(function(){e.target.classList.add('visible')},i*60);obs.unobserve(e.target);}});},{threshold:.08});
 document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
 
-// ── FAQ ACCORDION ──
+// ── HERO CHART ANIMATION ──
+(function(){
+  var canvas = document.getElementById('heroChart');
+  if (!canvas) return;
+  function init() {
+    var W = canvas.parentElement.offsetWidth || 500;
+    var H = 340;
+    var DPR = window.devicePixelRatio || 1;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.scale(DPR, DPR);
+
+    var candles = [
+      [.48,.55,.44,.52],[.52,.58,.50,.57],[.57,.62,.54,.60],[.60,.65,.57,.58],
+      [.58,.63,.53,.55],[.55,.60,.48,.50],[.50,.54,.45,.47],[.47,.52,.43,.49],
+      [.49,.56,.46,.54],[.54,.59,.51,.57],[.57,.63,.54,.61],[.61,.67,.58,.65],
+      [.65,.70,.62,.63],[.63,.67,.58,.60],[.60,.65,.55,.57],[.57,.61,.52,.54],
+      [.54,.57,.48,.50],[.50,.54,.45,.47],[.47,.53,.44,.51],[.51,.57,.48,.55],
+      [.55,.60,.52,.58],[.58,.64,.55,.62],[.62,.67,.59,.65],[.65,.69,.62,.64],
+    ];
+    var PAD_L=6, PAD_R=130, PAD_T=18, PAD_B=24;
+    var cw = (W - PAD_L - PAD_R) / candles.length;
+    var cBody = cw * 0.55;
+
+    function pY(v){ return PAD_T + (1-v)*(H-PAD_T-PAD_B); }
+
+    var signals = [
+      {i:0,type:'sell'},{i:4,type:'buy'},{i:9,type:'sell'},
+      {i:14,type:'buy'},{i:19,type:'sell'}
+    ];
+    var pending = [
+      {x:W-PAD_R+14, y:pY(.50), type:'buy', label:'pending buy'},
+      {x:W-PAD_R+46, y:pY(.68), type:'sell', label:'pending sell'},
+      {x:W-PAD_R+82, y:pY(.44), type:'buy', label:'pending buy'},
+      {x:W-PAD_R+114, y:pY(.73), type:'sell', label:'pending sell'},
+    ];
+
+    var frame=0, totalFrames=160;
+
+    function drawAll(t) {
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle='#07060F'; ctx.fillRect(0,0,W,H);
+      // grid
+      for(var i=0;i<=4;i++){
+        var gy=PAD_T+i*(H-PAD_T-PAD_B)/4;
+        ctx.strokeStyle='rgba(107,95,212,0.04)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();
+      }
+      // divider
+      var divX=W-PAD_R+6;
+      ctx.strokeStyle='rgba(107,95,212,0.18)';ctx.lineWidth=1;
+      ctx.setLineDash([3,4]);
+      ctx.beginPath();ctx.moveTo(divX,PAD_T-4);ctx.lineTo(divX,H-PAD_B+4);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='rgba(107,95,212,0.4)';
+      ctx.font='8px JetBrains Mono,monospace';
+      ctx.fillText('NOW',divX+3,PAD_T-2);
+
+      // candles
+      var vis = t * candles.length * 1.4;
+      for(var i=0;i<candles.length;i++){
+        var prog = Math.min(1, vis - i);
+        if(prog<=0) continue;
+        var c=candles[i];
+        var x=PAD_L+i*cw+cw/2;
+        var bull=c[3]>=c[0];
+        ctx.globalAlpha=Math.min(1,prog*3);
+        var bc = (i%3===0) ? (bull?'#4BE0C8':'#5B3A6A') : (bull?'#7B6FE8':'#3D2D5A');
+        var wc = (i%3===0) ? (bull?'#30C4AC':'#4A2D5A') : (bull?'#5B4FC4':'#4B3A6A');
+        ctx.strokeStyle=wc;ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(x,pY(c[1]));ctx.lineTo(x,pY(c[2]));ctx.stroke();
+        var bT=pY(Math.max(c[0],c[3])),bB=pY(Math.min(c[0],c[3]));
+        ctx.fillStyle=bc;ctx.fillRect(x-cBody/2,bT,cBody,Math.max(2,bB-bT));
+        ctx.globalAlpha=1;
+      }
+
+      // signals + trails
+      signals.forEach(function(sig){
+        var sv=(sig.i+2)/candles.length;
+        var sa=Math.min(1,(t-sv)/0.08);
+        if(sa<=0) return;
+        var c=candles[sig.i];
+        var x=PAD_L+sig.i*cw+cw/2;
+        var buy=sig.type==='buy';
+        // trail arc
+        var ta=Math.min(0.5,(t-sv)/0.12);
+        if(ta>0){
+          var ei=Math.min(sig.i+5,candles.length-1);
+          var ex=PAD_L+ei*cw+cw/2;
+          var sy=buy?pY(c[2])+12:pY(c[1])-12;
+          var ey=buy?pY(candles[ei][3])-4:pY(candles[ei][3])+4;
+          ctx.globalAlpha=ta;
+          ctx.strokeStyle=buy?'rgba(76,175,125,0.35)':'rgba(207,75,75,0.35)';
+          ctx.lineWidth=1;ctx.setLineDash([2,3]);
+          ctx.beginPath();ctx.moveTo(x,sy);
+          ctx.quadraticCurveTo((x+ex)/2,sy,ex,ey);
+          ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+        }
+        // tag
+        var tagY=buy?pY(c[2])+12:pY(c[1])-8;
+        var bg=buy?'#1A3D2A':'#3D1A1A';
+        var tc=buy?'#4CAF7D':'#CF4B4B';
+        var lbl=buy?'▲ buy':'▼ sell';
+        ctx.globalAlpha=sa;
+        ctx.fillStyle=bg;
+        if(buy){
+          ctx.beginPath();ctx.moveTo(x,pY(c[2])+3);ctx.lineTo(x-3,pY(c[2])+9);ctx.lineTo(x+3,pY(c[2])+9);ctx.closePath();ctx.fill();
+        } else {
+          ctx.beginPath();ctx.moveTo(x,pY(c[1])-3);ctx.lineTo(x-3,pY(c[1])-9);ctx.lineTo(x+3,pY(c[1])-9);ctx.closePath();ctx.fill();
+        }
+        var tw=38,th=14;
+        ctx.fillStyle=bg;ctx.fillRect(x-tw/2,tagY-(buy?0:th),tw,th);
+        ctx.strokeStyle=tc;ctx.lineWidth=0.5;ctx.strokeRect(x-tw/2,tagY-(buy?0:th),tw,th);
+        ctx.fillStyle=tc;ctx.font='700 8px JetBrains Mono,monospace';ctx.textAlign='center';
+        ctx.fillText(lbl,x,tagY+(buy?10:-3));
+        ctx.textAlign='left';ctx.globalAlpha=1;
+      });
+
+      // pending zones
+      var ps=0.75;
+      pending.forEach(function(p,idx){
+        var pa=Math.min(1,(t-ps-idx*0.04)/0.08);
+        if(pa<=0) return;
+        var buy=p.type==='buy';
+        var tc=buy?'#7B9FE8':'#C46070';
+        var bg=buy?'rgba(92,122,196,0.16)':'rgba(180,60,80,0.14)';
+        var bc=buy?'rgba(107,127,212,0.4)':'rgba(180,80,100,0.35)';
+        ctx.globalAlpha=pa;
+        ctx.fillStyle=tc;ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle=tc;ctx.lineWidth=0.5;ctx.setLineDash([2,3]);
+        ctx.beginPath();ctx.moveTo(W-PAD_R+8,p.y);ctx.lineTo(p.x-4,p.y);ctx.stroke();
+        ctx.setLineDash([]);
+        var tw=70,th=15;
+        ctx.fillStyle=bg;ctx.fillRect(p.x+4,p.y-th/2,tw,th);
+        ctx.strokeStyle=bc;ctx.lineWidth=0.5;ctx.strokeRect(p.x+4,p.y-th/2,tw,th);
+        ctx.fillStyle=bg;ctx.beginPath();ctx.moveTo(p.x+4,p.y-3);ctx.lineTo(p.x+4,p.y+3);ctx.lineTo(p.x+1,p.y);ctx.closePath();ctx.fill();
+        ctx.fillStyle=tc;ctx.font='600 8px JetBrains Mono,monospace';
+        ctx.fillText(p.label,p.x+8,p.y+4);
+        ctx.globalAlpha=1;
+      });
+
+      // price line + badge
+      var li=Math.min(Math.floor(t*candles.length*1.4),candles.length-1);
+      if(li>=0){
+        var ply=pY(candles[li][3]);
+        ctx.strokeStyle='rgba(139,127,232,0.25)';ctx.lineWidth=0.5;ctx.setLineDash([3,4]);
+        ctx.beginPath();ctx.moveTo(0,ply);ctx.lineTo(W-PAD_R+6,ply);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle='#6B5FD4';ctx.fillRect(W-PAD_R-38,ply-7,46,14);
+        ctx.fillStyle='#F0EFF8';ctx.font='600 8px JetBrains Mono,monospace';ctx.textAlign='center';
+        ctx.fillText('4813.38',W-PAD_R-15,ply+4);ctx.textAlign='left';
+      }
+    }
+
+    function loop(){
+      var t=frame/totalFrames;
+      drawAll(Math.min(1,t));
+      frame++;
+      if(frame<=totalFrames+50) requestAnimationFrame(loop);
+      else setTimeout(function(){ frame=0; loop(); }, 2800);
+    }
+    setTimeout(loop, 400);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  } else {
+    setTimeout(init,100);
+  }
+})();
 document.querySelectorAll('.faq-item').forEach(function(item){
   item.querySelector('.faq-q').addEventListener('click',function(){
     var o=item.classList.contains('open');
