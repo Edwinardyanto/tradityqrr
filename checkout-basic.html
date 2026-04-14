@@ -369,6 +369,22 @@ var API = 'https://tradity-qrr-server-production.up.railway.app';
 var PRODUCT_KEY = 'basic';
 var PRICE_LABEL = 'Rp 288.888';
 
+// Fetch product name from DB
+(function() {
+  var currentPage = window.location.pathname.split('/').pop();
+  fetch(API + '/products')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var match = data.products.find(function(p) {
+        return p.checkout_url && p.checkout_url.indexOf(currentPage) !== -1;
+      });
+      if (match) {
+        window._productName = match.product_name;
+      }
+    })
+    .catch(function() {});
+})();
+
 // Read ref code from URL (hidden — not shown to customer)
 var urlParams = new URLSearchParams(window.location.search);
 var refCode = urlParams.get('ref') || null;
@@ -406,6 +422,11 @@ function showCheckoutAlert(msg, type) {
 }
 
 async function submitOrder() {
+  if (!window._productName) {
+    showCheckoutAlert('Produk tidak ditemukan. Refresh halaman dan coba lagi.', 'error');
+    return;
+  }
+
   var name = document.getElementById('f-name').value.trim();
   var email = document.getElementById('f-email').value.trim();
   var phone = document.getElementById('f-phone').value.trim();
@@ -444,7 +465,7 @@ async function submitOrder() {
 
   try {
     var body = {
-      product: PRODUCT_KEY,
+      product_name: window._productName || '',
       tv_username: tvuser,
       customer_name: name,
       customer_email: email,
