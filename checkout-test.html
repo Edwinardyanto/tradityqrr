@@ -127,8 +127,9 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
 
     <div class="co-name">TRXC QRR<br/>Indikator</div>
 
-    <div class="co-price-row">
-      <div class="co-price"><span class="co-rp">Rp</span>10<span class="co-ribu">.000</span></div>
+    <div class="co-price-row" id="price-display">
+      <div id="orig-price" class="co-price" style="transition:all .3s"><span class="co-rp">Rp</span>10<span class="co-ribu">.000</span></div>
+      <div id="disc-price" class="co-price" style="display:none;color:#22c55e;transition:all .3s"><span class="co-rp" style="color:#22c55e">Rp</span><span id="disc-price-val"></span></div>
       <div class="co-pm-sub">total</div>
     </div>
 
@@ -147,8 +148,9 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
     <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">Yang kamu dapatkan</div>
     <div class="co-feats"><div class="co-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG Detection</div><div class="co-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div><div class="co-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Otomatis</div><div class="co-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection (EQH/EQL)</div><div class="co-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div><div class="co-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Market Structure (HH/HL/LH/LL)</div></div>
 
-    <div class="co-breakdown">
+    <div class="co-breakdown" id="price-breakdown">
       <h4>Rincian Harga</h4>
+      <div id="promo-row" style="display:none" class="co-row"><span style="color:#22c55e">🎟️ Promo</span><span id="promo-discount-val" style="color:#22c55e;font-family:JetBrains Mono,monospace;font-weight:700"></span></div>
       <div class="co-row"><span>Total tagihan</span><span style="color:var(--white);font-family:JetBrains Mono,monospace">Rp 10.000</span></div><div class="co-row"><span>Durasi akses</span><span style="color:var(--white);font-family:JetBrains Mono,monospace">1 bulan (test)</span></div><div class="co-row total"><span>Mode</span><span style="color:#FF4444;font-family:JetBrains Mono,monospace">TEST</span></div>
     </div>
 
@@ -351,6 +353,8 @@ document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY});
 
 // ── Checkout Logic ────────────────────────────────────────────────
 var API = 'https://tradity-qrr-server-production.up.railway.app';
+var PRICE_LABEL = 'Rp 10.000';
+var PRICE_AMOUNT = 10000;
 
 // Fetch product name from DB
 (function() {
@@ -374,33 +378,120 @@ var refCode = urlParams.get('ref') || null;
 
 var _promoValid = false;
 var _promoCode = null;
+var _discountAmount = 0;
+
+function formatRupiah(amount) {
+  return 'Rp ' + amount.toLocaleString('id-ID');
+}
+
+function updatePriceDisplay(discountAmount) {
+  var finalAmount = PRICE_AMOUNT - discountAmount;
+  var origEl = document.getElementById('orig-price');
+  var discEl = document.getElementById('disc-price');
+  var discVal = document.getElementById('disc-price-val');
+  var promoRow = document.getElementById('promo-row');
+  var promoDiscVal = document.getElementById('promo-discount-val');
+  var btn = document.getElementById('submit-btn');
+
+  if (discountAmount > 0) {
+    if (origEl) { origEl.style.textDecoration = 'line-through'; origEl.style.opacity = '0.4'; origEl.style.fontSize = '32px'; }
+    if (discEl && discVal) {
+      var finalFormatted = finalAmount.toLocaleString('id-ID');
+      var parts = finalFormatted.split('.');
+      if (parts.length > 1) {
+        discVal.innerHTML = parts.slice(0, -1).join('.') + '<span style="font-family:\'DM Sans\',sans-serif;font-size:22px;font-weight:300">.' + parts[parts.length-1] + '</span>';
+      } else {
+        discVal.textContent = finalFormatted;
+      }
+      discEl.style.display = '';
+    }
+    if (promoRow) promoRow.style.display = '';
+    if (promoDiscVal) promoDiscVal.textContent = '- ' + formatRupiah(discountAmount);
+    if (btn) btn.textContent = 'Bayar Sekarang — ' + formatRupiah(finalAmount);
+  } else {
+    resetPriceDisplay();
+  }
+}
+
+function resetPriceDisplay() {
+  var origEl = document.getElementById('orig-price');
+  var discEl = document.getElementById('disc-price');
+  var promoRow = document.getElementById('promo-row');
+  var btn = document.getElementById('submit-btn');
+  if (origEl) { origEl.style.textDecoration = ''; origEl.style.opacity = '1'; origEl.style.fontSize = ''; }
+  if (discEl) discEl.style.display = 'none';
+  if (promoRow) promoRow.style.display = 'none';
+  if (btn) btn.textContent = 'Bayar Sekarang — ' + PRICE_LABEL;
+}
 
 async function applyPromo() {
   var code = document.getElementById('f-promo').value.trim();
   var promoResult = document.getElementById('promo-result');
   var promoBtn = document.getElementById('promo-btn');
-  if (!code) { promoResult.style.display = 'none'; _promoValid = false; _promoCode = null; return; }
+
+  if (!code) {
+    promoResult.style.display = 'none';
+    _promoValid = false; _promoCode = null; _discountAmount = 0;
+    resetPriceDisplay();
+    return;
+  }
+
   promoBtn.textContent = '...'; promoBtn.disabled = true;
+
   try {
     var res = await fetch(API + '/promo/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code }) });
     var data = await res.json();
+
     if (data.valid) {
-      _promoValid = true; _promoCode = code;
-      promoResult.style.display = 'block'; promoResult.style.background = 'rgba(107,95,212,.08)'; promoResult.style.border = '1px solid rgba(107,95,212,.2)'; promoResult.style.color = '#6B5FD4';
-      promoResult.textContent = '\u2705 ' + data.message + ' applied!';
+      var discount = 0;
+      if (data.discount_type === 'percentage') {
+        discount = Math.floor(PRICE_AMOUNT * data.discount_value / 100);
+      } else {
+        discount = Math.floor(data.discount_value);
+      }
+      discount = Math.min(discount, PRICE_AMOUNT);
+
+      _promoValid = true; _promoCode = code; _discountAmount = discount;
+
+      promoResult.style.display = 'block';
+      promoResult.style.background = 'rgba(34,197,94,.08)';
+      promoResult.style.border = '1px solid rgba(34,197,94,.2)';
+      promoResult.style.color = '#16a34a';
+      promoResult.textContent = '✅ ' + data.message + ' — hemat ' + formatRupiah(discount) + '!';
+
+      updatePriceDisplay(discount);
     } else {
-      _promoValid = false; _promoCode = null;
-      promoResult.style.display = 'block'; promoResult.style.background = 'rgba(255,68,68,.06)'; promoResult.style.border = '1px solid rgba(255,68,68,.15)'; promoResult.style.color = '#CC3333';
-      promoResult.textContent = '\u274C ' + (data.reason || 'Invalid promo code');
+      _promoValid = false; _promoCode = null; _discountAmount = 0;
+      resetPriceDisplay();
+
+      promoResult.style.display = 'block';
+      promoResult.style.background = 'rgba(255,68,68,.06)';
+      promoResult.style.border = '1px solid rgba(255,68,68,.15)';
+      promoResult.style.color = '#CC3333';
+      promoResult.textContent = '❌ ' + (data.reason || 'Invalid promo code');
     }
   } catch (err) {
-    promoResult.style.display = 'block'; promoResult.style.background = 'rgba(255,68,68,.06)'; promoResult.style.border = '1px solid rgba(255,68,68,.15)'; promoResult.style.color = '#CC3333';
-    promoResult.textContent = '\u274C Failed to validate promo code'; _promoValid = false; _promoCode = null;
+    promoResult.style.display = 'block';
+    promoResult.style.background = 'rgba(255,68,68,.06)';
+    promoResult.style.border = '1px solid rgba(255,68,68,.15)';
+    promoResult.style.color = '#CC3333';
+    promoResult.textContent = '❌ Failed to validate promo code';
+    _promoValid = false; _promoCode = null; _discountAmount = 0;
+    resetPriceDisplay();
   } finally { promoBtn.textContent = 'Apply'; promoBtn.disabled = false; }
 }
 document.addEventListener('DOMContentLoaded', function() {
   var pi = document.getElementById('f-promo');
-  if (pi) pi.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); applyPromo(); } });
+  if (pi) {
+    pi.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); applyPromo(); } });
+    pi.addEventListener('input', function() {
+      if (!this.value.trim()) {
+        document.getElementById('promo-result').style.display = 'none';
+        _promoValid = false; _promoCode = null; _discountAmount = 0;
+        resetPriceDisplay();
+      }
+    });
+  }
 });
 
 // Hide VA options when other payment selected
@@ -510,7 +601,7 @@ async function submitOrder() {
   } catch (err) {
     showCheckoutAlert(err.message, 'error');
     btn.disabled = false;
-    btn.textContent = 'Bayar Sekarang — Rp 10.000';
+    btn.textContent = 'Bayar Sekarang — ' + PRICE_LABEL;
     btn.style.opacity = '1';
   }
 }
