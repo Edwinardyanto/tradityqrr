@@ -166,7 +166,7 @@ footer{border-top:1px solid var(--border);padding:24px 48px;display:flex;align-i
       <div class="co-dur-unit">SELAMANYA</div>
       <div class="co-name">TRXC QRR Indikator</div>
       <div class="co-price-block" id="price-display">
-        <div id="orig-price" class="co-price" style="transition:all .3s"><span class="rp">Rp</span>21Jt</div>
+        <div id="orig-price" class="co-price" style="transition:all .3s"><span class="rp">Rp</span>20.999K</div>
         <div id="disc-price" class="co-price" style="display:none;color:#22c55e;transition:all .3s"><span class="rp" style="color:#22c55e">Rp</span><span id="disc-price-val"></span></div>
         <div class="co-perday">bayar sekali, pakai selamanya</div>
       </div>
@@ -180,7 +180,7 @@ footer{border-top:1px solid var(--border);padding:24px 48px;display:flex;align-i
       <div class="co-summary-box" id="price-breakdown">
         <div class="co-sum-row"><span>Paket</span><span>Lifetime</span></div><div class="co-sum-row"><span>Durasi</span><span>Selamanya</span></div>
         <div id="promo-row" style="display:none" class="co-sum-row"><span style="color:#22c55e">🎟️ Promo</span><span id="promo-discount-val" style="color:#22c55e;font-family:JetBrains Mono,monospace;font-weight:700"></span></div>
-        <div class="co-sum-row total"><span>Total</span><span>Rp 21Jt</span></div>
+        <div class="co-sum-row total"><span>Total</span><span>Rp 20.999K</span></div>
       </div>
       <div class="co-trust">
         <div class="co-trust-item"><div class="co-trust-dot"></div>TradingView Verified</div>
@@ -279,7 +279,7 @@ var API='https://tradity-qrr-server-production.up.railway.app';
 (function(){var currentPage=window.location.pathname.split('/').pop();fetch(API+'/products').then(function(r){return r.json();}).then(function(data){var match=data.products.find(function(p){return p.checkout_url&&p.checkout_url.indexOf(currentPage)!==-1;});if(match)window._productName=match.product_name;}).catch(function(){});})();
 var urlParams=new URLSearchParams(window.location.search);var refCode=urlParams.get('ref')||null;
 var PRICE_LABEL='✦ Pilih Lifetime →';
-var PRICE_AMOUNT=21000000;
+var PRICE_AMOUNT=20999000;
 var _promoValid=false;var _promoCode=null;var _discountAmount=0;
 
 function formatRupiah(a){return 'Rp '+a.toLocaleString('id-ID');}

@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta property="og:title" content="Checkout Gold 1 Tahun — TRXC QRR Indikator"/>
+<meta property="og:title" content="Checkout Gold 12 Bulan — TRXC QRR Indikator"/>
 <meta property="og:image" content="data/og-trxc-qrr.png"/>
 <link rel="icon" type="image/png" href="data/trxc_logo.jpg"/>
-<title>Checkout — TRXC QRR Gold 1 Tahun</title>
+<title>Checkout — TRXC QRR Gold 12 Bulan</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
 
@@ -162,13 +162,13 @@ footer{border-top:1px solid var(--border);padding:24px 48px;display:flex;align-i
     <div class="co-ghost">1</div>
     <div class="co-left-inner">
       <div class="co-tier-badge"><div class="co-tier-dot"></div>TRXC QRR · Gold</div>
-      <div class="co-dur">1</div>
-      <div class="co-dur-unit">TAHUN</div>
+      <div class="co-dur">12</div>
+      <div class="co-dur-unit">BULAN</div>
       <div class="co-name">TRXC QRR Indikator</div>
       <div class="co-price-block" id="price-display">
-        <div id="orig-price" class="co-price" style="transition:all .3s"><span class="rp">Rp</span>2.139K</div>
+        <div id="orig-price" class="co-price" style="transition:all .3s"><span class="rp">Rp</span>3.999K</div>
         <div id="disc-price" class="co-price" style="display:none;color:#22c55e;transition:all .3s"><span class="rp" style="color:#22c55e">Rp</span><span id="disc-price-val"></span></div>
-        <div class="co-perday">≈ Rp 5.859 / hari</div>
+        <div class="co-perday">≈ Rp 10.956 / hari</div>
       </div>
       <div class="co-feat-list">
         <div class="co-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="var(--accent)" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="var(--accent)" stroke-width="1" stroke-linecap="round"/></svg>Predictive Market Move</div>
@@ -178,9 +178,9 @@ footer{border-top:1px solid var(--border);padding:24px 48px;display:flex;align-i
         <div class="co-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="var(--accent)" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="var(--accent)" stroke-width="1" stroke-linecap="round"/></svg>All Timeframe 1m–Weekly</div>
         <div class="co-feat"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="var(--accent)" stroke-width=".8"/><path d="M3.5 6l1.5 1.5 3-3" stroke="var(--accent)" stroke-width="1" stroke-linecap="round"/></svg>Leading Indicator</div></div>
       <div class="co-summary-box" id="price-breakdown">
-        <div class="co-sum-row"><span>Paket</span><span>Gold</span></div><div class="co-sum-row"><span>Durasi</span><span>1 tahun</span></div>
+        <div class="co-sum-row"><span>Paket</span><span>Gold</span></div><div class="co-sum-row"><span>Durasi</span><span>12 bulan</span></div>
         <div id="promo-row" style="display:none" class="co-sum-row"><span style="color:#22c55e">🎟️ Promo</span><span id="promo-discount-val" style="color:#22c55e;font-family:JetBrains Mono,monospace;font-weight:700"></span></div>
-        <div class="co-sum-row total"><span>Total</span><span>Rp 2.139K</span></div>
+        <div class="co-sum-row total"><span>Total</span><span>Rp 3.999K</span></div>
       </div>
       <div class="co-trust">
         <div class="co-trust-item"><div class="co-trust-dot"></div>TradingView Verified</div>
@@ -256,7 +256,7 @@ footer{border-top:1px solid var(--border);padding:24px 48px;display:flex;align-i
       <div class="after-step"><div class="after-num">2</div>Login TradingView → Indicators → Personal → Invite-only → TRXC QRR</div>
       <div class="after-step"><div class="after-num">3</div>Kendala? <strong style="color:var(--accent-light)">@TrxcQRR di Telegram</strong></div>
     </div>
-    <button class="co-btn" id="submit-btn" onclick="submitOrder()">Pilih 1 Tahun →</button>
+    <button class="co-btn" id="submit-btn" onclick="submitOrder()">Pilih 12 Bulan →</button>
     <div class="disclaimer">⚠️ Tidak ada jaminan profit · Bukan financial advice<br/>Akses diberikan sebagai undangan TradingView Private Script</div>
   </div>
 </div>
@@ -278,8 +278,8 @@ document.querySelectorAll('a,button,.pm-opt').forEach(function(el){el.addEventLi
 var API='https://tradity-qrr-server-production.up.railway.app';
 (function(){var currentPage=window.location.pathname.split('/').pop();fetch(API+'/products').then(function(r){return r.json();}).then(function(data){var match=data.products.find(function(p){return p.checkout_url&&p.checkout_url.indexOf(currentPage)!==-1;});if(match)window._productName=match.product_name;}).catch(function(){});})();
 var urlParams=new URLSearchParams(window.location.search);var refCode=urlParams.get('ref')||null;
-var PRICE_LABEL='Pilih 1 Tahun →';
-var PRICE_AMOUNT=2139000;
+var PRICE_LABEL='Pilih 12 Bulan →';
+var PRICE_AMOUNT=3999000;
 var _promoValid=false;var _promoCode=null;var _discountAmount=0;
 
 function formatRupiah(a){return 'Rp '+a.toLocaleString('id-ID');}
