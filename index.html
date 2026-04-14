@@ -3,27 +3,30 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TRADITY RQQ — Indikator Premium TradingView</title>
-<link rel="icon" type="image/png" href="data/tradity-rqq-logo.png"/>
+<title>TRXC QRR — Predictive Market Indicator</title>
+<link rel="icon" type="image/png" href="data/trxc-qrr-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --navy:    #080F1A;
-  --navy2:   #0C1628;
-  --navy3:   #0F1E35;
-  --card:    #0D1B30;
-  --card2:   #111F35;
-  --cyan:    #00C8D7;
-  --cyan2:   #18B0C0;
-  --cyan3:   #0A4A52;
-  --cyan4:   #052830;
-  --white:   #EEF6FF;
-  --muted:   #4A7080;
-  --dim:     #1A3040;
-  --border:  #162438;
-  --red:     #FF4444;
-  --gold:    #F5C842;
-  --silver:  #8BB8C8;
+  --navy:   #07060F;
+  --navy2:  #0C0A1A;
+  --navy3:  #100E20;
+  --card:   #0C0A1A;
+  --card2:  #100E20;
+  --purple: #6B5FD4;
+  --purple2:#8B7FE8;
+  --purple3:#4B3FA0;
+  --purple4:#2D2459;
+  --white:  #F0EFF8;
+  --muted:  #3D3560;
+  --dim:    #1E1A35;
+  --border: #12101E;
+  --red:    #E8637A;
+  --gold:   #C9A84C;
+  --silver: #6B5FD4;
+  --cyan:   #6B5FD4;
+  --cyan2:  #8B7FE8;
+  --cyan3:  #4B3FA0;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -32,20 +35,20 @@ body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;
 /* grid bg */
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(0,200,215,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,215,.02) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(107,95,212,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(107,95,212,0.025) 1px,transparent 1px);
   background-size:56px 56px;
 }
 
 /* cursor */
 .cur{position:fixed;width:8px;height:8px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
-.cur-ring{position:fixed;width:32px;height:32px;border:1.5px solid rgba(0,200,215,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,opacity .25s}
+.cur-ring{position:fixed;width:32px;height:32px;border:1.5px solid rgba(107,95,212,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,opacity .25s}
 
 /* ── NAV ── */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:500;
   display:flex;align-items:center;justify-content:space-between;
   padding:14px 48px;
-  background:rgba(8,15,26,.92);backdrop-filter:blur(18px);
+  background:rgba(7,6,15,.92);backdrop-filter:blur(18px);
   border-bottom:1px solid var(--border);
 }
 .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
@@ -57,7 +60,7 @@ nav{
 .nav-links a:hover{color:var(--cyan)}
 .nav-cta{
   display:inline-flex;align-items:center;gap:8px;
-  padding:9px 22px;background:var(--cyan);color:var(--navy);
+  padding:9px 22px;background:#6B5FD4;color:#F0EFF8;
   font-family:'DM Sans',sans-serif;font-weight:700;font-size:12.5px;
   border:none;border-radius:4px;cursor:pointer;text-decoration:none;
   letter-spacing:.3px;transition:all .2s;
@@ -79,9 +82,10 @@ nav{
 }
 .hero-glow{
   position:absolute;width:900px;height:900px;
-  background:radial-gradient(circle,rgba(0,200,215,.07) 0%,transparent 65%);
+  background:radial-gradient(circle,rgba(75,63,160,0.15) 0%,transparent 65%);
   top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;
 }
+.scanlines{position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(107,95,212,0.018) 2px,rgba(107,95,212,0.018) 3px);pointer-events:none;z-index:0}
 .hero-badge{
   display:inline-flex;align-items:center;gap:9px;
   padding:5px 18px;border:1px solid var(--cyan3);border-radius:100px;
@@ -112,11 +116,11 @@ nav{
 }
 .btn-p{
   display:inline-flex;align-items:center;gap:10px;
-  padding:15px 34px;background:var(--cyan);color:var(--navy);
+  padding:15px 34px;background:#6B5FD4;color:#F0EFF8;
   font-weight:700;font-size:15px;border:none;border-radius:4px;
   text-decoration:none;cursor:pointer;transition:all .25s;letter-spacing:.2px;
 }
-.btn-p:hover{background:#fff;transform:translateY(-2px);box-shadow:0 16px 48px rgba(0,200,215,.25)}
+.btn-p:hover{background:#fff;transform:translateY(-2px);box-shadow:0 16px 48px rgba(107,95,212,0.35)}
 .btn-g{
   padding:15px 28px;border:1px solid var(--border);color:var(--muted);
   background:transparent;font-size:14px;font-weight:500;border-radius:4px;
@@ -140,7 +144,7 @@ nav{
 }
 .chart-shell{
   background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;
-  box-shadow:0 40px 120px rgba(0,0,0,.8),0 0 0 1px rgba(0,200,215,.04),inset 0 1px 0 rgba(255,255,255,.03);
+  box-shadow:0 40px 120px rgba(0,0,0,.8),0 0 0 1px rgba(107,95,212,.04),inset 0 1px 0 rgba(255,255,255,.03);
 }
 .chart-bar{
   background:var(--navy2);border-bottom:1px solid var(--border);
@@ -204,14 +208,14 @@ section{position:relative;z-index:1}
 }
 .sig-card:hover{border-color:var(--cyan3);transform:translateX(5px)}
 .sig-badge{padding:4px 12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
-.sig-badge.buy{background:rgba(0,200,215,.14);color:var(--cyan)}
+.sig-badge.buy{background:rgba(107,95,212,.14);color:var(--cyan)}
 .sig-badge.sell{background:rgba(255,68,68,.14);color:var(--red)}
 .sig-pair{font-weight:600;font-size:13.5px;margin-bottom:3px}
 .sig-det{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
 .sig-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.tag-tp{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;background:rgba(0,200,215,.08);color:var(--cyan2)}
+.tag-tp{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;background:rgba(107,95,212,.08);color:var(--cyan2)}
 .tag-sl{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;background:rgba(255,68,68,.08);color:var(--red)}
-.tag-hit{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;background:rgba(0,200,215,.12);color:var(--cyan)}
+.tag-hit{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;background:rgba(107,95,212,.12);color:var(--cyan)}
 
 /* ── PRICING ── */
 .price-sec{padding:88px 48px;max-width:1080px;margin:0 auto}
@@ -382,7 +386,7 @@ section{position:relative;z-index:1}
 .pc:hover{transform:translateY(-5px)}
 
 .pc.basic::before{background:linear-gradient(90deg,transparent,var(--muted),transparent)}
-.pc.silver{border-color:rgba(0,200,215,.25);box-shadow:0 0 60px rgba(0,200,215,.07);transform:translateY(-10px)}
+.pc.silver{border-color:rgba(107,95,212,.25);box-shadow:0 0 60px rgba(107,95,212,.07);transform:translateY(-10px)}
 .pc.silver::before{background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
 .pc.silver:hover{transform:translateY(-16px)}
 .pc.gold{border-color:rgba(245,200,66,.2)}
@@ -402,7 +406,7 @@ section{position:relative;z-index:1}
 .pc-dur-n{font-family:'Bebas Neue',sans-serif;line-height:1;font-size:82px;letter-spacing:-3px}
 .pc-dur-u{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;padding-bottom:8px}
 .basic .pc-dur-n{color:var(--muted)}.basic .pc-dur-u{color:var(--dim)}
-.silver .pc-dur-n{color:var(--cyan);text-shadow:0 0 40px rgba(0,200,215,.3)}.silver .pc-dur-u{color:var(--cyan2)}
+.silver .pc-dur-n{color:var(--cyan);text-shadow:0 0 40px rgba(107,95,212,.3)}.silver .pc-dur-u{color:var(--cyan2)}
 .gold .pc-dur-n{color:var(--gold);text-shadow:0 0 40px rgba(245,200,66,.25)}.gold .pc-dur-u{color:rgba(245,200,66,.7)}
 
 .pc-price{font-family:'Bebas Neue',sans-serif;line-height:1;margin-bottom:4px}
@@ -420,7 +424,7 @@ section{position:relative;z-index:1}
 
 .pc-saving{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:6px}
 .basic .pc-saving{background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--muted)}
-.silver .pc-saving{background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.2);color:var(--cyan)}
+.silver .pc-saving{background:rgba(107,95,212,.08);border:1px solid rgba(107,95,212,.2);color:var(--cyan)}
 .silver .pc-saving strong{color:var(--white)}
 .gold .pc-saving{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.28);color:var(--gold)}
 .gold .pc-saving strong{color:var(--white)}
@@ -440,7 +444,7 @@ section{position:relative;z-index:1}
 .basic .pc-btn{background:var(--dim);color:var(--white);border:1px solid var(--border)}
 .basic .pc-btn:hover{background:var(--muted);transform:translateY(-1px)}
 .silver .pc-btn{background:var(--cyan);color:var(--navy)}
-.silver .pc-btn:hover{background:#fff;box-shadow:0 12px 40px rgba(0,200,215,.3);transform:translateY(-2px)}
+.silver .pc-btn:hover{background:#fff;box-shadow:0 12px 40px rgba(107,95,212,.3);transform:translateY(-2px)}
 .gold .pc-btn{background:var(--gold);color:#1a1200}
 .gold .pc-btn:hover{background:#ffe680;box-shadow:0 12px 36px rgba(245,200,66,.25);transform:translateY(-2px)}
 /* lifetime base overrides now in banner section above */
@@ -504,8 +508,8 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-brand">
-    <img src="data/tradity-rqq-logo.png" alt="TRADITY RQQ" class="nav-logo-img"/>
-    <div class="nav-logo-txt">TRADITY <span>RQQ</span></div>
+    <img src="data/trxc-qrr-logo.png" alt="TRXC QRR" class="nav-logo-img"/>
+    <div class="nav-logo-txt">TRXC <span>QRR</span></div>
   </a>
   <div class="nav-links">
     <a href="#features">Fitur</a>
@@ -538,11 +542,11 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 <!-- HERO -->
 <section class="hero">
   <div class="hero-glow"></div>
+  <div class="scanlines"></div>
   <div class="hero-badge"><span class="pulse"></span>LIVE · TRADINGVIEW PINE SCRIPT v5</div>
   <h1>ANALISIS<br/><span class="c">SMART MONEY</span><br/>DALAM <span class="o">SATU KLIK</span></h1>
   <p class="hero-sub">
-    Indikator premium <b>TRADITY RQQ</b> — deteksi Order Block, FVG &amp; sinyal entry
-    otomatis dengan <b>TP/SL presisi</b> langsung di chart TradingView.
+    Indikator <b>TRXC QRR</b> — sinyal muncul sebelum harga sampai ke level target. Bukan reaktif. <b>Predictive.</b>
   </p>
   <div class="hero-btns">
     <a href="#pricing" class="btn-p">
@@ -571,7 +575,7 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
       <span style="margin-left:auto">O&nbsp;5,136.81&nbsp;&nbsp;H&nbsp;5,228.64&nbsp;&nbsp;L&nbsp;5,117.71&nbsp;&nbsp;<span class="chg">C&nbsp;5,227.89 ▲ +1.77%</span></span>
     </div>
     <div class="chart-img">
-      <img src="data/tradity-rqq-premium.png" alt="TRADITY RQQ Indikator — Live chart XAUUSD"/>
+      <img src="data/tradity-rqq-premium.png" alt="TRXC QRR Indikator — Live chart XAUUSD"/>
     </div>
   </div>
 </div>
@@ -588,89 +592,89 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
         <div class="fc-n">01</div>
         <div class="fc-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect x="4" y="10" width="5" height="14" rx="1.5" fill="#18B0C0" opacity=".8"/>
-            <rect x="6" y="6" width="1.5" height="4" fill="#18B0C0" opacity=".5"/>
-            <rect x="6" y="24" width="1.5" height="4" fill="#18B0C0" opacity=".5"/>
-            <rect x="13.5" y="7" width="5" height="18" rx="1.5" fill="#00C8D7"/>
-            <rect x="15.7" y="3" width="1.5" height="4" fill="#00C8D7" opacity=".6"/>
-            <rect x="15.7" y="25" width="1.5" height="4" fill="#00C8D7" opacity=".6"/>
+            <rect x="4" y="10" width="5" height="14" rx="1.5" fill="#8B7FE8" opacity=".8"/>
+            <rect x="6" y="6" width="1.5" height="4" fill="#8B7FE8" opacity=".5"/>
+            <rect x="6" y="24" width="1.5" height="4" fill="#8B7FE8" opacity=".5"/>
+            <rect x="13.5" y="7" width="5" height="18" rx="1.5" fill="#6B5FD4"/>
+            <rect x="15.7" y="3" width="1.5" height="4" fill="#6B5FD4" opacity=".6"/>
+            <rect x="15.7" y="25" width="1.5" height="4" fill="#6B5FD4" opacity=".6"/>
             <rect x="23" y="13" width="5" height="10" rx="1.5" fill="#FF4040" opacity=".8"/>
             <rect x="25.2" y="9" width="1.5" height="4" fill="#FF4040" opacity=".5"/>
             <rect x="25.2" y="23" width="1.5" height="4" fill="#FF4040" opacity=".5"/>
           </svg>
         </div>
-        <h3>Order Block Detection</h3>
-        <p>Deteksi otomatis area demand &amp; supply dengan label <b>BUY AREA</b> / <b>SELL AREA</b>. Tersedia versi regular dan <b>Order Block Super</b>.</p>
+        <h3>Predictive Market Move</h3>
+        <p>Sinyal muncul sebelum harga ke level target — bukan indikator lagging.</p>
       </div>
       <div class="fc reveal rd1">
         <div class="fc-n">02</div>
         <div class="fc-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M18 4L8 18h8l-2 10 14-16h-9l3-8z" fill="#00C8D7" opacity=".9"/>
+            <path d="M18 4L8 18h8l-2 10 14-16h-9l3-8z" fill="#6B5FD4" opacity=".9"/>
           </svg>
         </div>
-        <h3>Sinyal BUY / SELL Otomatis</h3>
-        <p>Sinyal <b>▲ BUY</b> &amp; <b>▼ SELL</b> muncul otomatis saat price menyentuh Order Block valid — tanpa noise, tanpa repaint.</p>
+        <h3>All Timeframe Ready</h3>
+        <p>Dari 1 menit scalping hingga Weekly swing. Logika konsisten.</p>
       </div>
       <div class="fc reveal rd2">
         <div class="fc-n">03</div>
         <div class="fc-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="10" stroke="#00C8D7" stroke-width="1.5" opacity=".5"/>
-            <circle cx="16" cy="16" r="5.5" stroke="#18B0C0" stroke-width="1.5"/>
-            <circle cx="16" cy="16" r="2" fill="#00C8D7"/>
-            <line x1="16" y1="2" x2="16" y2="8" stroke="#00C8D7" stroke-width="1.5" opacity=".5"/>
-            <line x1="16" y1="24" x2="16" y2="30" stroke="#00C8D7" stroke-width="1.5" opacity=".5"/>
-            <line x1="2" y1="16" x2="8" y2="16" stroke="#00C8D7" stroke-width="1.5" opacity=".5"/>
-            <line x1="24" y1="16" x2="30" y2="16" stroke="#00C8D7" stroke-width="1.5" opacity=".5"/>
+            <circle cx="16" cy="16" r="10" stroke="#6B5FD4" stroke-width="1.5" opacity=".5"/>
+            <circle cx="16" cy="16" r="5.5" stroke="#8B7FE8" stroke-width="1.5"/>
+            <circle cx="16" cy="16" r="2" fill="#6B5FD4"/>
+            <line x1="16" y1="2" x2="16" y2="8" stroke="#6B5FD4" stroke-width="1.5" opacity=".5"/>
+            <line x1="16" y1="24" x2="16" y2="30" stroke="#6B5FD4" stroke-width="1.5" opacity=".5"/>
+            <line x1="2" y1="16" x2="8" y2="16" stroke="#6B5FD4" stroke-width="1.5" opacity=".5"/>
+            <line x1="24" y1="16" x2="30" y2="16" stroke="#6B5FD4" stroke-width="1.5" opacity=".5"/>
           </svg>
         </div>
-        <h3>TP / SL Otomatis &amp; Custom</h3>
-        <p>Garis TP1, TP2, TP3 &amp; SL muncul otomatis. Smart logic — TP1/TP2 hit lalu SL = tetap dihitung <b>profit</b>.</p>
+        <h3>Dual Signal System</h3>
+        <p>BUY dan SELL berjalan paralel independen. Zero konflik.</p>
       </div>
       <div class="fc reveal">
         <div class="fc-n">04</div>
         <div class="fc-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect x="3" y="8" width="26" height="5" rx="1.5" fill="#18B0C0" opacity=".2"/>
-            <rect x="3" y="8" width="26" height="1" rx=".5" fill="#18B0C0" opacity=".8"/>
-            <rect x="3" y="12" width="26" height="1" rx=".5" fill="#18B0C0" opacity=".8"/>
-            <rect x="3" y="19" width="26" height="5" rx="1.5" fill="#00C8D7" opacity=".15"/>
-            <rect x="3" y="19" width="26" height="1" rx=".5" fill="#00C8D7" opacity=".7"/>
-            <rect x="3" y="23" width="26" height="1" rx=".5" fill="#00C8D7" opacity=".7"/>
-            <text x="16" y="17" text-anchor="middle" font-family="JetBrains Mono" font-size="5" fill="#00C8D7" opacity=".6">FVG</text>
+            <rect x="3" y="8" width="26" height="5" rx="1.5" fill="#8B7FE8" opacity=".2"/>
+            <rect x="3" y="8" width="26" height="1" rx=".5" fill="#8B7FE8" opacity=".8"/>
+            <rect x="3" y="12" width="26" height="1" rx=".5" fill="#8B7FE8" opacity=".8"/>
+            <rect x="3" y="19" width="26" height="5" rx="1.5" fill="#6B5FD4" opacity=".15"/>
+            <rect x="3" y="19" width="26" height="1" rx=".5" fill="#6B5FD4" opacity=".7"/>
+            <rect x="3" y="23" width="26" height="1" rx=".5" fill="#6B5FD4" opacity=".7"/>
+            <text x="16" y="17" text-anchor="middle" font-family="JetBrains Mono" font-size="5" fill="#6B5FD4" opacity=".6">FVG</text>
           </svg>
         </div>
-        <h3>Fair Value Gap (FVG)</h3>
-        <p>Deteksi Imbalance / FVG otomatis dengan kotak visual dan label <b>FVG</b>. Hilang otomatis saat harga mengisi gap.</p>
+        <h3>Zero Repaint</h3>
+        <p>Dikunci setelah konfirmasi bar close. Tidak berubah.</p>
       </div>
       <div class="fc reveal rd1">
         <div class="fc-n">05</div>
         <div class="fc-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M3 22 Q8 8 16 14 Q24 20 29 6" stroke="#00C8D7" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-            <circle cx="16" cy="14" r="3" fill="#00C8D7" opacity=".8"/>
+            <path d="M3 22 Q8 8 16 14 Q24 20 29 6" stroke="#6B5FD4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <circle cx="16" cy="14" r="3" fill="#6B5FD4" opacity=".8"/>
             <line x1="3" y1="22" x2="29" y2="22" stroke="#FF4040" stroke-width="1" stroke-dasharray="4 3" opacity=".6"/>
             <text x="4" y="28" font-family="JetBrains Mono" font-size="4.5" fill="#FF4040" opacity=".7">$$$</text>
           </svg>
         </div>
-        <h3>Liquidity Detection</h3>
-        <p>EQH/EQL dengan label <b>($$$)</b>, Liquidity Trendline, Wick Sweep, dan Target Liquidity Sweep dalam satu indikator.</p>
+        <h3>Pending Zone Visibility</h3>
+        <p>Lihat area potensial sebelum harga tiba. Persiapkan entry.</p>
       </div>
       <div class="fc reveal rd2">
         <div class="fc-n">06</div>
         <div class="fc-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
             <line x1="3" y1="9" x2="29" y2="9" stroke="#F5C842" stroke-width="1.2" stroke-dasharray="5 3"/>
-            <line x1="3" y1="16" x2="29" y2="16" stroke="#00C8D7" stroke-width="1.2" stroke-dasharray="5 3"/>
+            <line x1="3" y1="16" x2="29" y2="16" stroke="#6B5FD4" stroke-width="1.2" stroke-dasharray="5 3"/>
             <line x1="3" y1="23" x2="29" y2="23" stroke="#8BB8C8" stroke-width="1.2" stroke-dasharray="5 3"/>
             <text x="3" y="7" font-family="JetBrains Mono" font-size="4" fill="#F5C842" opacity=".8">PWH</text>
-            <text x="3" y="14" font-family="JetBrains Mono" font-size="4" fill="#00C8D7" opacity=".8">PDH</text>
+            <text x="3" y="14" font-family="JetBrains Mono" font-size="4" fill="#6B5FD4" opacity=".8">PDH</text>
             <text x="3" y="21" font-family="JetBrains Mono" font-size="4" fill="#8BB8C8" opacity=".8">PDL</text>
           </svg>
         </div>
-        <h3>Multi Timeframe Levels</h3>
-        <p>Previous Day/Week/Month High &amp; Low (PDH/PDL, PWH/PWL, PMH/PML) otomatis tampil di chart setiap hari.</p>
+        <h3>Swing-Based Entry</h3>
+        <p>Berbasis struktur market nyata — bukan MA, bukan RSI.</p>
       </div>
     </div>
   </div>
@@ -742,11 +746,11 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
         <div class="pc-saving"><span>Harga dasar · coba selama 1 bulan</span></div>
         <div class="pc-divider"></div>
         <div class="pc-feats">
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#18B0C0" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#18B0C0" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG</div>
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#18B0C0" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#18B0C0" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div>
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#18B0C0" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#18B0C0" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Auto</div>
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#18B0C0" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#18B0C0" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection</div>
-          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#18B0C0" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#18B0C0" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div>
+          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG</div>
+          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div>
+          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Auto</div>
+          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection</div>
+          <div class="pc-feat"><svg class="chk-c" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#8B7FE8" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#8B7FE8" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div>
           <div class="pc-feat dim"><svg class="chk-x" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 4l6 6M10 4l-6 6" stroke="#1A3040" stroke-width="1.3" stroke-linecap="round"/></svg>Update fitur baru</div>
         </div>
         <button class="pc-btn" onclick="window.location.href=getCheckoutUrl('checkout-basic.html')">Mulai 1 Bulan →</button>
@@ -759,15 +763,15 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
         <div class="pc-dur-block"><div class="pc-dur-n">3</div><div class="pc-dur-u">BULAN</div></div>
         <div class="pc-price"><span class="rp">Rp</span>788<span class="ribu">.888</span></div>
         <div class="pc-breakdown"><span class="pc-pm-lbl">per bulan hanya</span><span class="pc-pm-val">Rp 262.963</span><span class="pc-pm-strike">Rp 288.888</span></div>
-        <div class="pc-saving"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.3 3.9H12L8.9 7.5l1.1 3.9-3.5-2.5L3 11.4l1.1-3.9L1 5h4.2z" fill="#00C8D7"/></svg><span>Hemat <strong>Rp 77.776</strong> vs 3× Basic</span></div>
+        <div class="pc-saving"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.3 3.9H12L8.9 7.5l1.1 3.9-3.5-2.5L3 11.4l1.1-3.9L1 5h4.2z" fill="#6B5FD4"/></svg><span>Hemat <strong>Rp 77.776</strong> vs 3× Basic</span></div>
         <div class="pc-divider"></div>
         <div class="pc-feats">
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#00C8D7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#00C8D7" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#00C8D7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#00C8D7" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#00C8D7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#00C8D7" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Auto</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#00C8D7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#00C8D7" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#00C8D7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#00C8D7" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div>
-          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#00C8D7" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#00C8D7" stroke-width="1.3" stroke-linecap="round"/></svg>Update fitur baru</div>
+          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>Order Block + FVG</div>
+          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>Sinyal BUY / SELL Otomatis</div>
+          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>TP1 / TP2 / TP3 + SL Auto</div>
+          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>Liquidity Detection</div>
+          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>MTF Levels PDH/PDL/PWH/PWL</div>
+          <div class="pc-feat"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#6B5FD4" stroke-width="1"/><path d="M4 7l2 2 4-4" stroke="#6B5FD4" stroke-width="1.3" stroke-linecap="round"/></svg>Update fitur baru</div>
         </div>
         <button class="pc-btn" onclick="window.location.href=getCheckoutUrl('checkout-silver.html')">Mulai 3 Bulan →</button>
       </div>
@@ -840,7 +844,7 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 
       </div>
     </div>
-    <p class="price-note">⚠️ Untuk member TRADITY RQQ · Bukan financial advice · Harga dapat berubah sewaktu-waktu</p>
+    <p class="price-note">⚠️ Untuk member TRXC QRR · Bukan financial advice · Harga dapat berubah sewaktu-waktu</p>
   </div>
 </section>
 
@@ -865,10 +869,10 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
 <!-- FOOTER -->
 <footer>
   <div class="foot-brand">
-    <img src="data/tradity-rqq-logo.png" alt="TRADITY RQQ" class="foot-logo"/>
-    <div class="foot-txt">TRADITY <span>RQQ</span></div>
+    <img src="data/trxc-qrr-logo.png" alt="TRXC QRR" class="foot-logo"/>
+    <div class="foot-txt">TRXC <span>QRR</span></div>
   </div>
-  <div class="foot-copy">© 2026 TRADITY RQQ · Not Financial Advice · Pine Script v5</div>
+  <div class="foot-copy">© 2026 TRXC QRR · Not Financial Advice · Pine Script v5</div>
 </footer>
 
 <script>

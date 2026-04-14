@@ -3,23 +3,27 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TRADITY RQQ Affiliate Portal</title>
-<link rel="icon" type="image/png" href="../data/tradity-rqq-logo.png"/>
+<title>TRXC QRR Affiliate Portal</title>
+<link rel="icon" type="image/png" href="../data/trxc-qrr-logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg: #080F1A;
-  --bg2: #0C1628;
-  --card: #0D1B30;
-  --card2: #111F35;
-  --border: #162438;
-  --cyan: #00C8D7;
-  --cyan2: #18B0C0;
-  --white: #EEF6FF;
-  --muted: #4A7080;
-  --red: #FF4444;
+  --navy: #07060F;
+  --navy2: #0C0A1A;
+  --navy3: #100E20;
+  --bg: #07060F;
+  --bg2: #0C0A1A;
+  --card: #0C0A1A;
+  --card2: #100E20;
+  --border: #12101E;
+  --cyan: #6B5FD4;
+  --cyan2: #8B7FE8;
+  --cyan3: #4B3FA0;
+  --white: #F0EFF8;
+  --muted: #3D3560;
+  --red: #E8637A;
   --green: #00D48A;
-  --gold: #F5C842;
+  --gold: #C9A84C;
 }
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--white); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
@@ -27,7 +31,7 @@ body { background: var(--bg); color: var(--white); font-family: 'DM Sans', sans-
 /* NAV */
 nav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(8,15,26,.95); backdrop-filter: blur(20px);
+  background: rgba(7,6,15,.95); backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   padding: 0 32px;
   display: flex; align-items: center; gap: 0;
@@ -51,7 +55,7 @@ nav {
 .nav-user { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
 .nav-ref {
   font-size: 11px; font-family: 'JetBrains Mono', monospace;
-  background: rgba(0,200,215,.12); color: var(--cyan); padding: 3px 10px;
+  background: rgba(107,95,212,.12); color: var(--cyan); padding: 3px 10px;
   border-radius: 100px;
 }
 
@@ -137,7 +141,7 @@ nav {
   transition: all .2s;
 }
 .filter-tab:hover { color: var(--white); border-color: rgba(255,255,255,.15); }
-.filter-tab.active { background: rgba(0,200,215,.12); color: var(--cyan); border-color: rgba(0,200,215,.3); }
+.filter-tab.active { background: rgba(107,95,212,.12); color: var(--cyan); border-color: rgba(107,95,212,.3); }
 
 /* TABLE */
 .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; overflow-x: auto; }
@@ -163,7 +167,7 @@ tr:hover td { background: rgba(255,255,255,.02); }
 .badge-green  { background: rgba(0,212,138,.15); color: var(--green); }
 .badge-red    { background: rgba(255,68,68,.15);  color: var(--red); }
 .badge-yellow { background: rgba(245,200,66,.15); color: var(--gold); }
-.badge-cyan   { background: rgba(0,200,215,.15);  color: var(--cyan); }
+.badge-cyan   { background: rgba(107,95,212,.15);  color: var(--cyan); }
 .badge-muted  { background: rgba(74,112,128,.15); color: var(--muted); }
 
 /* WITHDRAW */
@@ -175,7 +179,7 @@ tr:hover td { background: rgba(255,255,255,.02); }
   transition: all .2s;
 }
 .withdraw-item:hover { border-color: rgba(255,255,255,.1); }
-.withdraw-item.selected { border-color: rgba(0,200,215,.4); background: rgba(0,200,215,.05); }
+.withdraw-item.selected { border-color: rgba(107,95,212,.4); background: rgba(107,95,212,.05); }
 .withdraw-item input[type="checkbox"] { accent-color: var(--cyan); width: 16px; height: 16px; cursor: pointer; }
 .withdraw-item-info { flex: 1; }
 .withdraw-item-user { font-size: 13px; font-weight: 500; }
@@ -227,7 +231,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
 .alert.show { display: block; }
 .alert-success { background: rgba(0,212,138,.1); border: 1px solid rgba(0,212,138,.2); color: var(--green); }
 .alert-error { background: rgba(255,68,68,.1); border: 1px solid rgba(255,68,68,.2); color: var(--red); }
-.alert-info { background: rgba(0,200,215,.1); border: 1px solid rgba(0,200,215,.2); color: var(--cyan); }
+.alert-info { background: rgba(107,95,212,.1); border: 1px solid rgba(107,95,212,.2); color: var(--cyan); }
 
 /* EMPTY */
 .empty { text-align: center; padding: 48px; color: var(--muted); font-size: 13px; }
@@ -278,7 +282,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
     position: fixed;
     bottom: 0; left: 0; right: 0;
     z-index: 200;
-    background: rgba(8,15,26,.97);
+    background: rgba(7,6,15,.97);
     backdrop-filter: blur(16px);
     border-top: 1px solid var(--border);
     padding: 0;
@@ -384,7 +388,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
 <body>
 
 <nav>
-  <div class="nav-brand">TRADITY <span>RQQ</span> · AFFILIATE</div>
+  <div class="nav-brand">TRXC <span>QRR</span> · AFFILIATE</div>
   <div class="nav-tabs" id="nav-tabs"></div>
   <div class="nav-right" id="nav-right" style="display:none">
     <span class="nav-user" id="nav-user"></span>
@@ -396,7 +400,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
 <!-- LOGIN -->
 <div class="auth-screen active" id="screen-login">
   <div class="auth-box">
-    <h2>AFFILIATE LOGIN</h2>
+    <h2>TRXC QRR Affiliate</h2>
     <p class="subtitle">Masuk ke portal affiliate kamu</p>
     <div class="alert alert-error" id="login-error"></div>
     <div class="form-group">
@@ -415,7 +419,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
 <!-- REGISTER -->
 <div class="auth-screen" id="screen-register">
   <div class="auth-box">
-    <h2>DAFTAR AFFILIATE</h2>
+    <h2>Daftar Affiliate TRXC QRR</h2>
     <p class="subtitle" id="reg-subtitle">Buat akun affiliate baru</p>
     <div class="alert alert-info" id="recruit-info" style="display:none"></div>
     <div class="alert" id="register-alert"></div>
@@ -645,7 +649,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
         <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
           font-family:'JetBrains Mono',monospace;margin-bottom:20px;">Meta Pixel</div>
 
-        <div style="background:rgba(0,200,215,.06);border:1px solid rgba(0,200,215,.15);
+        <div style="background:rgba(107,95,212,.06);border:1px solid rgba(107,95,212,.15);
           border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.8;">
           Dengan mengisi Pixel ID dan Access Token Meta kamu, setiap pembelian yang terjadi lewat
           link referral kamu akan otomatis tercatat sebagai konversi di akun Meta Ads kamu.
@@ -680,7 +684,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
         <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
           font-family:'JetBrains Mono',monospace;margin-bottom:20px;">Google Ads</div>
 
-        <div style="background:rgba(0,200,215,.06);border:1px solid rgba(0,200,215,.15);
+        <div style="background:rgba(107,95,212,.06);border:1px solid rgba(107,95,212,.15);
           border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.8;">
           Dengan mengisi Google Ads Conversion ID dan Label, setiap kali ada yang buka
           halaman checkout lewat link kamu, pixel Google Ads kamu akan aktif untuk
