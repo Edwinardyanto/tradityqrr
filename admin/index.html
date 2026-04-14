@@ -913,7 +913,7 @@ async function loadProducts() {
             </label>
           </td>
           <td>
-            <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id}, \`${p.product_name.replace(/`/g,"'")}\`, ${p.months || ''}, \`${(p.checkout_url||'').replace(/`/g,"'")}\`, \`${(p.scalev_variant_id||'').replace(/`/g,"'")}\`)">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id}, \`${p.product_name.replace(/`/g,"'")}\`, ${p.months || 'null'}, \`${(p.checkout_url||'').replace(/`/g,"'")}\`, \`${(p.scalev_variant_id||'').replace(/`/g,"'")}\`)">Edit</button>
             <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="deleteProduct(${p.id})">Hapus</button>
           </td>
         </tr>`).join('')
