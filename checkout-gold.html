@@ -206,18 +206,17 @@ footer{border-top:1px solid var(--border);padding:28px 48px;display:flex;align-i
             <label class="pm-opt"><input type="radio" name="payment" value="qris"/> QRIS</label>
             <label class="pm-opt"><input type="radio" name="payment" value="shopeepay"/> ShopeePay</label>
             <label class="pm-opt"><input type="radio" name="payment" value="linkaja"/> LinkAja</label>
-            <label class="pm-opt" style="grid-column:span 2"><input type="radio" name="payment" value="va"/> Virtual Account (Transfer Bank)</label>
           </div>
-
-          <div id="va-options" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-            <label class="pm-opt"><input type="radio" name="va_bank" value="BNI"/> BNI</label>
-            <label class="pm-opt"><input type="radio" name="va_bank" value="BRI"/> BRI</label>
-            <label class="pm-opt"><input type="radio" name="va_bank" value="BSI"/> BSI</label>
-            <label class="pm-opt"><input type="radio" name="va_bank" value="BJB"/> BJB</label>
-            <label class="pm-opt"><input type="radio" name="va_bank" value="CIMB"/> CIMB Niaga</label>
-            <label class="pm-opt"><input type="radio" name="va_bank" value="MANDIRI"/> Mandiri</label>
-            <label class="pm-opt"><input type="radio" name="va_bank" value="PERMATA"/> Permata</label>
-            <label class="pm-opt"><input type="radio" name="va_bank" value="SAHABAT_SAMPOERNA"/> Sahabat Sampoerna</label>
+          <div style="font-size:11px;color:#4A7080;letter-spacing:1px;text-transform:uppercase;margin:8px 0 6px;font-family:'JetBrains Mono',monospace;">Transfer Bank (Virtual Account)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <label class="pm-opt"><input type="radio" name="payment" value="va_BNI"/> BNI</label>
+            <label class="pm-opt"><input type="radio" name="payment" value="va_BRI"/> BRI</label>
+            <label class="pm-opt"><input type="radio" name="payment" value="va_BSI"/> BSI</label>
+            <label class="pm-opt"><input type="radio" name="payment" value="va_BJB"/> BJB</label>
+            <label class="pm-opt"><input type="radio" name="payment" value="va_CIMB"/> CIMB Niaga</label>
+            <label class="pm-opt"><input type="radio" name="payment" value="va_MANDIRI"/> Mandiri</label>
+            <label class="pm-opt"><input type="radio" name="payment" value="va_PERMATA"/> Permata</label>
+            <label class="pm-opt"><input type="radio" name="payment" value="va_SAHABAT_SAMPOERNA"/> Sahabat Sampoerna</label>
           </div>
         </div>
 
@@ -361,8 +360,6 @@ var refCode = urlParams.get('ref') || null;
 
 document.querySelectorAll('input[name="payment"]').forEach(function(radio) {
   radio.addEventListener('change', function() {
-    var vaOpts = document.getElementById('va-options');
-    vaOpts.style.display = this.value === 'va' ? 'grid' : 'none';
     document.querySelectorAll('.pm-opt').forEach(function(el) {
       el.style.borderColor = '#dce3ea';
       el.style.background = '#fff';
@@ -413,14 +410,11 @@ async function submitOrder() {
     return;
   }
 
+  var payment_method = payment;
   var sub_payment_method = null;
-  if (payment === 'va') {
-    var vaEl = document.querySelector('input[name="va_bank"]:checked');
-    if (!vaEl) {
-      showCheckoutAlert('Pilih bank untuk Virtual Account', 'error');
-      return;
-    }
-    sub_payment_method = vaEl.value;
+  if (payment && payment.startsWith('va_')) {
+    payment_method = 'va';
+    sub_payment_method = payment.replace('va_', '');
   }
 
   var btn = document.getElementById('submit-btn');
@@ -436,7 +430,7 @@ async function submitOrder() {
       customer_name: name,
       customer_email: email,
       customer_phone: phone,
-      payment_method: payment
+      payment_method: payment_method
     };
     if (sub_payment_method) body.sub_payment_method = sub_payment_method;
     if (refCode) body.ref_code = refCode;
