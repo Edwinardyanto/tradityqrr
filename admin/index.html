@@ -656,10 +656,11 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
             <th>Used</th>
             <th>Max Uses</th>
             <th class="hide-mobile">Expires</th>
+            <th>Berlaku Untuk</th>
             <th>Status</th>
             <th>Actions</th>
           </tr></thead>
-          <tbody id="promo-tbody"><tr><td colspan="8" class="empty">Loading...</td></tr></tbody>
+          <tbody id="promo-tbody"><tr><td colspan="9" class="empty">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -707,6 +708,11 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
         <input id="pm-active" type="checkbox" checked style="width:16px;height:16px;accent-color:#6B5FD4;"/>
         Activate this promo code
       </label>
+    </div>
+    <div style="margin:12px 0 16px;">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">Berlaku untuk Produk</label>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Kosongkan = berlaku untuk semua produk</div>
+      <div id="pm-products" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closePromoModal()">Cancel</button>
@@ -1098,6 +1104,17 @@ function openPromoModal(promo) {
     ? new Date(promo.valid_until).toISOString().slice(0,16) : '';
   document.getElementById('pm-active').checked = promo ? promo.is_active : true;
   updatePromoValueLabel();
+  // Populate product checkboxes
+  var productsDiv = document.getElementById('pm-products');
+  productsDiv.innerHTML = '';
+  var productList = ['TRXCQRR-Basic', 'TRXCQRR-Silver', 'TRXCQRR-Gold', 'TRXCQRR-Lifetime', 'TRXCQRR-Test'];
+  var selected = promo && promo.applicable_products ? promo.applicable_products : [];
+  productList.forEach(function(pname) {
+    var checked = selected.includes(pname) ? 'checked' : '';
+    productsDiv.innerHTML += '<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--white);cursor:pointer;">' +
+      '<input type="checkbox" name="pm-product" value="' + pname + '" ' + checked + ' style="width:14px;height:14px;accent-color:#6B5FD4;"/>' +
+      pname + '</label>';
+  });
   document.getElementById('promo-modal').classList.add('open');
 }
 
@@ -1113,6 +1130,7 @@ async function savePromo() {
   var max_uses = document.getElementById('pm-maxuses').value;
   var valid_until = document.getElementById('pm-until').value;
   var is_active = document.getElementById('pm-active').checked;
+  var checkedProducts = Array.from(document.querySelectorAll('input[name="pm-product"]:checked')).map(function(el) { return el.value; });
 
   if (!code || !discount_value) {
     alert('Code and discount value are required');
@@ -1125,7 +1143,8 @@ async function savePromo() {
     discount_value: parseFloat(discount_value),
     max_uses: max_uses ? parseInt(max_uses) : null,
     valid_until: valid_until || null,
-    is_active: is_active
+    is_active: is_active,
+    applicable_products: checkedProducts.length > 0 ? checkedProducts : null
   };
 
   try {
@@ -1169,7 +1188,7 @@ async function loadPromos() {
     if (!tbody) return;
 
     if (!promo_codes || !promo_codes.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty">No promo codes yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="empty">No promo codes yet</td></tr>';
       return;
     }
 
@@ -1179,6 +1198,9 @@ async function loadPromos() {
         : 'Rp ' + parseInt(p.discount_value).toLocaleString('id-ID');
       var maxUsesLabel = p.max_uses ? p.max_uses : '∞';
       var untilLabel = p.valid_until ? new Date(p.valid_until).toLocaleDateString('en-GB') : 'Never';
+      var appliesTo = p.applicable_products && p.applicable_products.length > 0
+        ? p.applicable_products.map(function(n) { return n.replace('TRXCQRR-', ''); }).join(', ')
+        : 'Semua';
       var statusBadge = p.is_active
         ? '<span class="badge badge-green">Active</span>'
         : '<span class="badge" style="background:rgba(107,114,128,.15);color:#6B7280;">Inactive</span>';
@@ -1192,6 +1214,7 @@ async function loadPromos() {
         '<td>' + p.used_count + '</td>' +
         '<td style="color:var(--muted)">' + maxUsesLabel + '</td>' +
         '<td class="hide-mobile" style="color:var(--muted);font-size:12px">' + untilLabel + '</td>' +
+        '<td style="color:#9CA3AF;font-size:11px">' + appliesTo + '</td>' +
         '<td>' + statusBadge + '</td>' +
         '<td><div style="display:flex;gap:6px">' +
           '<button class="btn btn-ghost btn-sm" onclick="openPromoModal(JSON.parse(decodeURIComponent(\'' + encodeURIComponent(JSON.stringify(p)) + '\')))">Edit</button>' +
