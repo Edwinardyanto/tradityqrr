@@ -614,13 +614,14 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
               <th>Pixel</th>
               <th style="text-align:right;">Kunjungan</th>
               <th style="text-align:right;">Checkout</th>
+              <th style="text-align:right;">Form Fill</th>
               <th style="text-align:right;">Terbayar</th>
               <th style="text-align:right;">CR%</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="traffic-table">
-            <tr><td colspan="8" class="empty">Loading...</td></tr>
+            <tr><td colspan="9" class="empty">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -641,6 +642,7 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
           <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
             <div><div style="font-size:10px;color:var(--muted);">Visit</div><div id="td-today-visit" style="font-size:16px;color:var(--cyan);font-weight:700;">—</div></div>
             <div><div style="font-size:10px;color:var(--muted);">Checkout</div><div id="td-today-checkout" style="font-size:16px;color:var(--gold);font-weight:700;">—</div></div>
+            <div><div style="font-size:10px;color:var(--muted);">Form Fill</div><div id="td-today-formfill" style="font-size:16px;color:#C9A84C;font-weight:700;">—</div></div>
             <div><div style="font-size:10px;color:var(--muted);">Paid</div><div id="td-today-paid" style="font-size:16px;color:var(--green);font-weight:700;">—</div></div>
           </div>
         </div>
@@ -649,6 +651,7 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
           <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
             <div><div style="font-size:10px;color:var(--muted);">Visit</div><div id="td-week-visit" style="font-size:16px;color:var(--cyan);font-weight:700;">—</div></div>
             <div><div style="font-size:10px;color:var(--muted);">Checkout</div><div id="td-week-checkout" style="font-size:16px;color:var(--gold);font-weight:700;">—</div></div>
+            <div><div style="font-size:10px;color:var(--muted);">Form Fill</div><div id="td-week-formfill" style="font-size:16px;color:#C9A84C;font-weight:700;">—</div></div>
             <div><div style="font-size:10px;color:var(--muted);">Paid</div><div id="td-week-paid" style="font-size:16px;color:var(--green);font-weight:700;">—</div></div>
           </div>
         </div>
@@ -657,6 +660,7 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
           <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
             <div><div style="font-size:10px;color:var(--muted);">Visit</div><div id="td-all-visit" style="font-size:16px;color:var(--cyan);font-weight:700;">—</div></div>
             <div><div style="font-size:10px;color:var(--muted);">Checkout</div><div id="td-all-checkout" style="font-size:16px;color:var(--gold);font-weight:700;">—</div></div>
+            <div><div style="font-size:10px;color:var(--muted);">Form Fill</div><div id="td-all-formfill" style="font-size:16px;color:#C9A84C;font-weight:700;">—</div></div>
             <div><div style="font-size:10px;color:var(--muted);">Paid</div><div id="td-all-paid" style="font-size:16px;color:var(--green);font-weight:700;">—</div></div>
           </div>
         </div>
@@ -1680,16 +1684,17 @@ async function loadAdminTraffic() {
   document.getElementById('traffic-summary-view').style.display = '';
   document.getElementById('traffic-detail-view').style.display = 'none';
   const tbody = document.getElementById('traffic-table');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty">Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="9" class="empty">Loading...</td></tr>';
   try {
     const { affiliates } = await api('GET', '/admin/traffic');
     if (!affiliates.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty">Belum ada data</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="empty">Belum ada data</td></tr>';
       return;
     }
     tbody.innerHTML = affiliates.map(a => {
       const visits = parseInt(a.visits || 0);
       const checkouts = parseInt(a.checkouts || 0);
+      const formFills = parseInt(a.form_fills || 0);
       const paid = parseInt(a.paid || 0);
       const cr = visits > 0 ? ((paid / visits) * 100).toFixed(1) : '0.0';
       let pixelBadge = '';
@@ -1712,6 +1717,7 @@ async function loadAdminTraffic() {
         <td>${pixelBadge}</td>
         <td class="mono" style="text-align:right;color:var(--cyan);">${visits.toLocaleString('id-ID')}</td>
         <td class="mono" style="text-align:right;color:var(--gold);">${checkouts.toLocaleString('id-ID')}</td>
+        <td class="mono" style="text-align:right;color:#C9A84C;">${formFills.toLocaleString('id-ID')}</td>
         <td class="mono" style="text-align:right;color:var(--green);">${paid.toLocaleString('id-ID')}</td>
         <td class="mono" style="text-align:right;font-size:12px;">${cr}%</td>
         <td><button class="btn btn-ghost btn-sm" onclick="loadTrafficDetail(${a.id}, '${safeName}', '${a.ref_code}')">Detail</button></td>
@@ -1719,7 +1725,7 @@ async function loadAdminTraffic() {
     }).join('');
   } catch (e) {
     showAlert('traffic', e.message, 'error');
-    tbody.innerHTML = '<tr><td colspan="8" class="empty">Gagal memuat data</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">Gagal memuat data</td></tr>';
   }
 }
 
@@ -1730,15 +1736,18 @@ async function loadTrafficDetail(affiliateId, name, refCode) {
   document.getElementById('traffic-detail-refcode').textContent = refCode || '';
   try {
     const d = await api('GET', `/admin/traffic/${affiliateId}`);
-    document.getElementById('td-today-visit').textContent    = d.today.homepage.total.toLocaleString('id-ID');
-    document.getElementById('td-today-checkout').textContent = d.today.checkout.total.toLocaleString('id-ID');
-    document.getElementById('td-today-paid').textContent     = d.today.paid.total.toLocaleString('id-ID');
-    document.getElementById('td-week-visit').textContent     = d.last_7_days.homepage.total.toLocaleString('id-ID');
-    document.getElementById('td-week-checkout').textContent  = d.last_7_days.checkout.total.toLocaleString('id-ID');
-    document.getElementById('td-week-paid').textContent      = d.last_7_days.paid.total.toLocaleString('id-ID');
-    document.getElementById('td-all-visit').textContent      = d.all_time.homepage.total.toLocaleString('id-ID');
-    document.getElementById('td-all-checkout').textContent   = d.all_time.checkout.total.toLocaleString('id-ID');
-    document.getElementById('td-all-paid').textContent       = d.all_time.paid.total.toLocaleString('id-ID');
+    document.getElementById('td-today-visit').textContent     = d.today.homepage.total.toLocaleString('id-ID');
+    document.getElementById('td-today-checkout').textContent  = d.today.checkout.total.toLocaleString('id-ID');
+    document.getElementById('td-today-formfill').textContent  = (d.today.form_fill?.total || 0).toLocaleString('id-ID');
+    document.getElementById('td-today-paid').textContent      = d.today.paid.total.toLocaleString('id-ID');
+    document.getElementById('td-week-visit').textContent      = d.last_7_days.homepage.total.toLocaleString('id-ID');
+    document.getElementById('td-week-checkout').textContent   = d.last_7_days.checkout.total.toLocaleString('id-ID');
+    document.getElementById('td-week-formfill').textContent   = (d.last_7_days.form_fill?.total || 0).toLocaleString('id-ID');
+    document.getElementById('td-week-paid').textContent       = d.last_7_days.paid.total.toLocaleString('id-ID');
+    document.getElementById('td-all-visit').textContent       = d.all_time.homepage.total.toLocaleString('id-ID');
+    document.getElementById('td-all-checkout').textContent    = d.all_time.checkout.total.toLocaleString('id-ID');
+    document.getElementById('td-all-formfill').textContent    = (d.all_time.form_fill?.total || 0).toLocaleString('id-ID');
+    document.getElementById('td-all-paid').textContent        = d.all_time.paid.total.toLocaleString('id-ID');
 
     // 30-day trend chart
     const chart = document.getElementById('td-trend-chart');

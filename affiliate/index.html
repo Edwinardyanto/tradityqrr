@@ -1387,11 +1387,13 @@ async function loadTraffic() {
       return (paid / visits * 100).toFixed(1) + '%';
     }
 
-    const periodCard = (label, d) => `
+    const periodCard = (label, d) => {
+      const ff = d.form_fill || { total: 0, unique: 0 };
+      return `
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
         <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
           font-family:'JetBrains Mono',monospace;margin-bottom:16px;">${label}</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
           <div>
             <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Kunjungan</div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--cyan);">${d.homepage.unique}</div>
@@ -1401,6 +1403,11 @@ async function loadTraffic() {
             <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Checkout</div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);">${d.checkout.unique}</div>
             <div style="font-size:11px;color:var(--muted);">${d.checkout.total} total hit</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Form Fill</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#C9A84C;">${ff.total}</div>
+            <div style="font-size:11px;color:var(--muted);">order dibuat</div>
           </div>
           <div>
             <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Terbayar</div>
@@ -1414,6 +1421,7 @@ async function loadTraffic() {
           </div>
         </div>
       </div>`;
+    };
 
     let html = periodCard('Hari Ini', data.today);
     html += periodCard('7 Hari Terakhir', data.last_7_days);
