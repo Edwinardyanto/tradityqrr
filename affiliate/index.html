@@ -422,6 +422,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
     <h2>Daftar Affiliate TRXC QRR</h2>
     <p class="subtitle" id="reg-subtitle">Buat akun affiliate baru</p>
     <div class="alert alert-info" id="recruit-info" style="display:none"></div>
+    <div id="reg-type-banner" style="display:none;border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:13px;line-height:1.5;"></div>
     <div class="alert" id="register-alert"></div>
     <div class="form-group">
       <label>Nama Lengkap</label>
@@ -445,6 +446,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
       <input type="password" id="reg-password" placeholder="Minimal 6 karakter"/>
     </div>
     <input type="hidden" id="reg-recruitment-token" value=""/>
+    <input type="hidden" id="reg-affiliate-type" value="affiliate"/>
     <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doRegister()" id="register-btn">Daftar</button>
     <div class="auth-link" onclick="showScreen('login')">Sudah punya akun? Login di sini</div>
   </div>
@@ -792,8 +794,50 @@ async function api(method, path, body) {
   return json;
 }
 
+// ── Register Type (Master vs Standard Affiliate) ─────────────────
+function initRegisterType() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const rawType = (params.get('type') || '').toLowerCase();
+    const type = rawType === 'master' ? 'master' : 'affiliate';
+
+    const hidden = document.getElementById('reg-affiliate-type');
+    if (hidden) hidden.value = type;
+
+    const banner = document.getElementById('reg-type-banner');
+    if (!banner) return;
+
+    // Don't override the recruit-info banner when a recruitment_token is present
+    const tokenInput = document.getElementById('reg-recruitment-token');
+    if (tokenInput && tokenInput.value) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    if (type === 'master') {
+      banner.style.background = 'rgba(201,168,76,0.10)';
+      banner.style.border = '1px solid #C9A84C';
+      banner.style.color = '#F0EFF8';
+      banner.innerHTML =
+        '<div style="font-weight:800;color:#C9A84C;letter-spacing:1px;text-transform:uppercase;font-size:11px;margin-bottom:6px;">★ Master Affiliate</div>' +
+        '<div>Komisi <strong style="color:#C9A84C;">50%</strong> dari setiap penjualan via link referralmu.</div>';
+    } else {
+      banner.style.background = 'rgba(107,95,212,0.10)';
+      banner.style.border = '1px solid #6B5FD4';
+      banner.style.color = '#F0EFF8';
+      banner.innerHTML =
+        '<div style="font-weight:800;color:#6B5FD4;letter-spacing:1px;text-transform:uppercase;font-size:11px;margin-bottom:6px;">Affiliate</div>' +
+        '<div>Komisi <strong style="color:#6B5FD4;">30%</strong> dari setiap penjualan via link referralmu.</div>';
+    }
+    banner.style.display = 'block';
+  } catch (e) {
+    console.warn('initRegisterType error:', e);
+  }
+}
+
 // ── Screen Management ────────────────────────────────────────────
 function showScreen(name) {
+  if (name === 'register') initRegisterType();
   document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
   document.getElementById('app').style.display = 'none';
   document.getElementById('nav-tabs').innerHTML = '';
@@ -884,6 +928,7 @@ async function doRegister() {
   const ref_code = document.getElementById('reg-refcode').value.trim().toUpperCase();
   const password = document.getElementById('reg-password').value;
   const recruitment_token = document.getElementById('reg-recruitment-token').value;
+  const affiliate_type = (document.getElementById('reg-affiliate-type') || {}).value || 'affiliate';
 
   if (!name || !email || !password) {
     return showAuthAlert('register-alert', 'Nama, email, dan password wajib diisi', 'error');
@@ -896,7 +941,7 @@ async function doRegister() {
   btn.disabled = true; btn.textContent = 'Loading...';
 
   try {
-    const body = { name, email, phone: phone || undefined, password };
+    const body = { name, email, phone: phone || undefined, password, affiliate_type };
     if (ref_code) body.ref_code = ref_code;
     if (recruitment_token) body.recruitment_token = recruitment_token;
 
@@ -1745,9 +1790,10 @@ function updateRecruitSlider(maxComm) {
   // Check for recruitment join token in URL
   const urlParams = new URLSearchParams(window.location.search);
   const joinToken = urlParams.get('join');
+  const regType = (urlParams.get('type') || '').toLowerCase();
 
   const token = localStorage.getItem('affiliate_token');
-  if (token && !joinToken) {
+  if (token && !joinToken && !regType) {
     try {
       await api('GET', '/affiliate/me');
       showScreen('dashboard');
@@ -1775,6 +1821,12 @@ function updateRecruitSlider(maxComm) {
     } catch (e) {
       console.warn('Invalid join token:', e.message);
     }
+  }
+
+  // If a registration type is provided in URL, jump straight to register screen
+  if (regType === 'master' || regType === 'affiliate') {
+    showScreen('register');
+    return;
   }
 
   showScreen('login');
