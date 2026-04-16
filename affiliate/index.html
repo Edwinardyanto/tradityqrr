@@ -379,6 +379,16 @@ input:focus, select:focus { border-color: var(--cyan2); }
     gap: 10px !important;
   }
 
+  .stats-row-3col {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .stats-row-2col {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
   .stat-value {
     font-size: 24px !important;
   }
@@ -457,33 +467,62 @@ input:focus, select:focus { border-color: var(--cyan2); }
 
   <!-- OVERVIEW -->
   <div class="page" id="page-overview">
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total Komisi Earned</div>
-        <div class="stat-value" id="stat-total-earned">—</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px;">
+
+      <!-- Row 1: Sales -->
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;">PERFORMA PENJUALAN</div>
+      <div class="stats-row-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div class="stat-card" style="border-color:rgba(201,168,76,0.2);">
+          <div class="stat-label">Total Omzet</div>
+          <div class="stat-value" id="stat-total-omzet" style="color:#C9A84C;">—</div>
+          <div class="stat-sub">gross dari buyer kamu</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(201,168,76,0.2);">
+          <div class="stat-label">Total Transaksi</div>
+          <div class="stat-value" id="stat-total-transactions" style="color:#C9A84C;">—</div>
+          <div class="stat-sub">order berhasil</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(201,168,76,0.2);">
+          <div class="stat-label">Total Referral</div>
+          <div class="stat-value" id="stat-referrals" style="color:#C9A84C;">—</div>
+          <div class="stat-sub">unique buyer</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Pending</div>
-        <div class="stat-value" id="stat-pending">—</div>
-        <div class="stat-sub">Menunggu 5 hari kerja</div>
+
+      <!-- Row 2: Commission -->
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-top:8px;">KOMISI KAMU</div>
+      <div class="stats-row-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Komisi All Time</div>
+          <div class="stat-value" id="stat-total-earned" style="color:var(--cyan2);">—</div>
+          <div class="stat-sub">akumulasi semua komisi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Komisi Pending</div>
+          <div class="stat-value" id="stat-pending" style="color:#C9A84C;">—</div>
+          <div class="stat-sub">menunggu 5 hari kerja</div>
+        </div>
+        <div class="stat-card highlight" style="border-color:rgba(74,222,128,0.25);">
+          <div class="stat-label">Withdrawable</div>
+          <div class="stat-value green" id="stat-available">—</div>
+          <div class="stat-sub">siap ditarik sekarang</div>
+        </div>
       </div>
-      <div class="stat-card highlight">
-        <div class="stat-label">Available</div>
-        <div class="stat-value green" id="stat-available">—</div>
-        <div class="stat-sub">Siap ditarik</div>
+
+      <!-- Row 3: Paid out -->
+      <div class="stats-row-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:0;">
+        <div class="stat-card">
+          <div class="stat-label">Sedang Diproses</div>
+          <div class="stat-value" id="stat-requested" style="color:var(--muted);">—</div>
+          <div class="stat-sub">withdrawal diproses admin</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(74,222,128,0.15);">
+          <div class="stat-label">Sudah Dibayar</div>
+          <div class="stat-value" id="stat-paid" style="color:var(--green);">—</div>
+          <div class="stat-sub">total payout diterima</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Sedang Diproses</div>
-        <div class="stat-value" id="stat-requested">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Sudah Dibayar</div>
-        <div class="stat-value" id="stat-paid">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total Referral</div>
-        <div class="stat-value" id="stat-referrals">—</div>
-      </div>
+
     </div>
 
     <div class="ref-card">
@@ -1014,12 +1053,14 @@ async function loadDashboard() {
     renderCreateLinkForm(aff);
     loadDownline();
 
-    document.getElementById('stat-total-earned').textContent = fmtRp(s.total_earned);
-    document.getElementById('stat-pending').textContent = fmtRp(s.pending_amount);
-    document.getElementById('stat-available').textContent = fmtRp(s.available_amount);
-    document.getElementById('stat-requested').textContent = fmtRp(s.withdrawal_requested_amount);
-    document.getElementById('stat-paid').textContent = fmtRp(s.paid_amount);
-    document.getElementById('stat-referrals').textContent = s.total_referrals;
+    document.getElementById('stat-total-omzet').textContent        = fmtRp(s.total_omzet);
+    document.getElementById('stat-total-transactions').textContent = (s.total_transactions || 0) + 'x';
+    document.getElementById('stat-referrals').textContent          = s.total_referrals || 0;
+    document.getElementById('stat-total-earned').textContent       = fmtRp(s.total_earned);
+    document.getElementById('stat-pending').textContent            = fmtRp(s.pending_amount);
+    document.getElementById('stat-available').textContent          = fmtRp(s.available_amount);
+    document.getElementById('stat-requested').textContent          = fmtRp(s.withdrawal_requested_amount);
+    document.getElementById('stat-paid').textContent               = fmtRp(s.paid_amount);
 
     document.getElementById('ref-code-display').textContent = aff.ref_code;
     loadShareableLinks(aff.ref_code);
