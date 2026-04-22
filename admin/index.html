@@ -395,14 +395,14 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
     <div class="section" style="margin-top:8px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
         <div class="stat-card">
-          <div class="stat-label">Total Pending (Komisi)</div>
+          <div class="stat-label">Total Pending</div>
           <div class="stat-value" id="admin-stat-pending" style="font-size:18px;">—</div>
-          <div class="stat-sub">belum dicairkan affiliator</div>
+          <div class="stat-sub" id="admin-stat-pending-sub">order belum dibayar</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Income Affiliator</div>
+          <div class="stat-label">Total Revenue</div>
           <div class="stat-value" id="admin-stat-income" style="font-size:18px;">—</div>
-          <div class="stat-sub">komisi terkonfirmasi all time</div>
+          <div class="stat-sub" id="admin-stat-income-sub">total transaksi paid</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
@@ -1118,10 +1118,16 @@ async function loadAdminIncomeChart() {
       return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
     });
 
-    const pendingEl = document.getElementById('admin-stat-pending');
-    const incomeEl  = document.getElementById('admin-stat-income');
+    const pendingEl    = document.getElementById('admin-stat-pending');
+    const incomeEl     = document.getElementById('admin-stat-income');
+    const pendingSubEl = document.getElementById('admin-stat-pending-sub');
+    const incomeSubEl  = document.getElementById('admin-stat-income-sub');
     if (pendingEl) pendingEl.textContent = _adminFmtRpFull(data.total_pending || 0);
     if (incomeEl)  incomeEl.textContent  = _adminFmtRpFull(data.total_income  || 0);
+    if (pendingSubEl && data.total_pending_count !== undefined)
+      pendingSubEl.textContent = (data.total_pending_count || 0) + ' order belum dibayar';
+    if (incomeSubEl && data.total_income_count !== undefined)
+      incomeSubEl.textContent = (data.total_income_count || 0) + ' transaksi paid';
 
     if (adminChartIncome) adminChartIncome.destroy();
     const ctx = document.getElementById('admin-chart-income');
