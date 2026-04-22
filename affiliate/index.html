@@ -389,6 +389,11 @@ input:focus, select:focus { border-color: var(--cyan2); }
     gap: 10px !important;
   }
 
+  .settings-pixel-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
   .stat-value {
     font-size: 24px !important;
   }
@@ -715,6 +720,43 @@ input:focus, select:focus { border-color: var(--cyan2); }
   <!-- WITHDRAW -->
   <div class="page" id="page-withdraw">
     <div class="section">
+
+      <!-- REKENING BANK -->
+      <div style="margin-bottom:28px;">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:14px;">REKENING BANK PENCAIRAN</div>
+        <div class="alert" id="bank-alert"></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px;background:rgba(107,95,212,.06);border:1px solid rgba(107,95,212,.15);border-radius:8px;padding:10px 14px;">
+            Info rekening ini digunakan admin untuk mentransfer komisi kamu. Pastikan data benar sesuai buku tabungan/KTP.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Bank</label>
+              <select id="bank-name" style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;">
+                <option value="">-- Pilih Bank --</option>
+                <option>BCA</option><option>BNI</option><option>BRI</option><option>BSI</option>
+                <option>Mandiri</option><option>CIMB Niaga</option><option>Permata</option>
+                <option>Danamon</option><option>BTN</option><option>Maybank</option>
+                <option>GoPay</option><option>OVO</option><option>Dana</option><option>ShopeePay</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Nomor rekening</label>
+              <input type="text" id="bank-number" placeholder="Contoh: 1234567890"
+                style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none;"/>
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Nama pemilik rekening</label>
+            <input type="text" id="bank-holder" placeholder="Sesuai buku tabungan / KTP"
+              style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;outline:none;"/>
+          </div>
+          <button onclick="saveBankAccount()" class="btn btn-primary">Simpan Rekening</button>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin-bottom:24px;"></div>
+
       <div class="section-header">
         <div class="section-title">Tarik Komisi</div>
         <button class="btn btn-ghost btn-sm" onclick="loadWithdrawable()">↻ Refresh</button>
@@ -748,7 +790,8 @@ input:focus, select:focus { border-color: var(--cyan2); }
       <div class="section-title" style="margin-bottom:20px;">Pengaturan Pixel</div>
       <div class="alert" id="settings-alert"></div>
 
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:560px;">
+      <div class="settings-pixel-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
         <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
           font-family:'JetBrains Mono',monospace;margin-bottom:20px;">Meta Pixel</div>
 
@@ -783,7 +826,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
       </div>
 
       <!-- Google Ads section -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:560px;margin-top:20px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
         <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
           font-family:'JetBrains Mono',monospace;margin-bottom:20px;">Google Ads</div>
 
@@ -821,41 +864,8 @@ input:focus, select:focus { border-color: var(--cyan2); }
           <button class="btn btn-ghost" onclick="clearGadsSettings()">Hapus Google Ads</button>
         </div>
       </div>
+      </div><!-- end .settings-pixel-grid -->
 
-      <div style="height:1px;background:var(--border);margin:28px 0;max-width:560px;"></div>
-
-      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:16px;">REKENING BANK PENCAIRAN</div>
-      <div class="alert" id="bank-alert"></div>
-
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:560px;">
-        <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:20px;background:rgba(107,95,212,.06);border:1px solid rgba(107,95,212,.15);border-radius:8px;padding:12px 14px;">
-          Info rekening ini digunakan admin untuk mentransfer komisi kamu. Pastikan data benar sesuai buku tabungan/KTP.
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-          <div>
-            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Bank</label>
-            <select id="bank-name" style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;">
-              <option value="">-- Pilih Bank --</option>
-              <option>BCA</option><option>BNI</option><option>BRI</option><option>BSI</option>
-              <option>Mandiri</option><option>CIMB Niaga</option><option>Permata</option>
-              <option>Danamon</option><option>BTN</option><option>Maybank</option>
-              <option>GoPay</option><option>OVO</option><option>Dana</option><option>ShopeePay</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Nomor rekening</label>
-            <input type="text" id="bank-number" placeholder="Contoh: 1234567890"
-              style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none;"/>
-          </div>
-        </div>
-        <div style="margin-bottom:20px;">
-          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Nama pemilik rekening</label>
-          <input type="text" id="bank-holder" placeholder="Sesuai buku tabungan / KTP"
-            style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;outline:none;"/>
-        </div>
-        <button onclick="saveBankAccount()" class="btn btn-primary">Simpan Rekening</button>
-      </div>
     </div>
   </div>
 
@@ -1027,9 +1037,9 @@ function showPage(name) {
   }
   if (name === 'overview') loadOverviewCharts();
   if (name === 'traffic') loadTraffic();
-  if (name === 'withdraw') loadWithdrawable();
+  if (name === 'withdraw') { loadWithdrawable(); loadBankAccount(); }
   if (name === 'payouts') loadPayouts();
-  if (name === 'settings') { loadPixelSettings(); loadBankAccount(); }
+  if (name === 'settings') loadPixelSettings();
 
   // Sync bottom nav active state
   document.querySelectorAll('.bottom-nav-item').forEach(t => {
