@@ -556,15 +556,22 @@ input:focus, select:focus { border-color: var(--cyan2); }
     <div style="margin-top:24px;">
       <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;">TRAFFIC HARIAN (30 HARI)</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
-        <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#7F77DD;display:inline-block;"></span>Kunjungan</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Checkout</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Form diisi</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#D85A30;display:inline-block;"></span>Paid</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+          <div style="display:flex;flex-wrap:wrap;gap:14px;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+              <span style="width:10px;height:10px;border-radius:0;background:#7F77DD;display:inline-block;"></span>Kunjungan</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+              <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Checkout</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+              <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Form diisi</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+              <span style="width:10px;height:10px;border-radius:0;background:#D85A30;display:inline-block;"></span>Paid</div>
+          </div>
+          <div style="display:flex;gap:4px;" id="traffic-period-toggle">
+            <button onclick="setTrafficPeriod(7,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">7D</button>
+            <button onclick="setTrafficPeriod(30,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:#6B5FD4;color:#fff;cursor:pointer;">30D</button>
+            <button onclick="setTrafficPeriod(90,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">90D</button>
+          </div>
         </div>
         <div style="position:relative;width:100%;height:200px;">
           <canvas id="chart-traffic" role="img" aria-label="Stacked bar chart traffic harian 30 hari terakhir">Traffic harian stacked bar.</canvas>
@@ -588,11 +595,18 @@ input:focus, select:focus { border-color: var(--cyan2); }
             <div style="font-size:11px;color:var(--muted);margin-top:2px;">komisi terkonfirmasi</div>
           </div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Income (komisi paid)</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Pending (form diisi, est.)</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+          <div style="display:flex;flex-wrap:wrap;gap:14px;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+              <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Income (komisi paid)</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+              <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Pending (form diisi, est.)</div>
+          </div>
+          <div style="display:flex;gap:4px;" id="income-period-toggle">
+            <button onclick="setIncomePeriod(7,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">7D</button>
+            <button onclick="setIncomePeriod(30,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:#6B5FD4;color:#fff;cursor:pointer;">30D</button>
+            <button onclick="setIncomePeriod(90,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">90D</button>
+          </div>
         </div>
         <div style="position:relative;width:100%;height:185px;">
           <canvas id="chart-income" role="img" aria-label="Stacked bar chart pending dan income harian">Pending dan income harian.</canvas>
@@ -1548,8 +1562,10 @@ async function loadTraffic() {
 // bar is on a comparable Rp scale to "Income".
 const PENDING_AVG_RP = 50000;
 
-let chartTraffic = null;
-let chartIncome  = null;
+let chartTraffic  = null;
+let chartIncome   = null;
+let trafficPeriod = 30;
+let incomePeriod  = 30;
 
 function _fmtRpShort(v) {
   if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
@@ -1558,22 +1574,15 @@ function _fmtRpShort(v) {
 }
 function _fmtRpFull(v) { return 'Rp ' + Math.round(v).toLocaleString('id-ID'); }
 
-async function loadOverviewCharts() {
+async function loadTrafficChart() {
   if (typeof Chart === 'undefined') {
-    console.warn('Chart.js not loaded yet — skipping charts');
+    console.warn('Chart.js not loaded yet — skipping traffic chart');
     return;
   }
-
   const gridColor = 'rgba(255,255,255,0.06)';
   const tickColor = '#888';
-
   try {
-    const [trafficData, incomeData] = await Promise.all([
-      api('GET', '/affiliate/stats/traffic'),
-      api('GET', '/affiliate/stats/daily-income')
-    ]);
-
-    // ── TRAFFIC stacked bar ────────────────────────────────────
+    const trafficData = await api('GET', '/affiliate/stats/traffic?days=' + trafficPeriod);
     const trendDays = trafficData.trend || [];
     const tLabels = trendDays.map(d => {
       const dt = new Date(d.date);
@@ -1582,37 +1591,46 @@ async function loadOverviewCharts() {
 
     if (chartTraffic) chartTraffic.destroy();
     const ctx1 = document.getElementById('chart-traffic');
-    if (ctx1) {
-      chartTraffic = new Chart(ctx1, {
-        type: 'bar',
-        data: {
-          labels: tLabels,
-          datasets: [
-            { label: 'Paid',       data: trendDays.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a',
-              borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
-            { label: 'Form diisi', data: trendDays.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 0 },
-            { label: 'Checkout',   data: trendDays.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
-            { label: 'Kunjungan',  data: trendDays.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 0 },
-          ]
+    if (!ctx1) return;
+    chartTraffic = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: tLabels,
+        datasets: [
+          { label: 'Paid',       data: trendDays.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
+          { label: 'Form diisi', data: trendDays.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 0 },
+          { label: 'Checkout',   data: trendDays.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
+          { label: 'Kunjungan',  data: trendDays.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 0 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', callbacks: {
+            title: c => c[0].label,
+            label: c => '  ' + c.dataset.label + ': ' + c.parsed.y
+          }}
         },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { mode: 'index', callbacks: {
-              title: c => c[0].label,
-              label: c => '  ' + c.dataset.label + ': ' + c.parsed.y
-            }}
-          },
-          scales: {
-            x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 }, grid: { color: gridColor } },
-            y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
-          }
+        scales: {
+          x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 }, grid: { color: gridColor } },
+          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
         }
-      });
-    }
+      }
+    });
+  } catch (e) { console.error('loadTrafficChart error:', e); }
+}
 
-    // ── INCOME stacked bar ─────────────────────────────────────
+async function loadIncomeChart() {
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not loaded yet — skipping income chart');
+    return;
+  }
+  const gridColor = 'rgba(255,255,255,0.06)';
+  const tickColor = '#888';
+  try {
+    const incomeData = await api('GET', '/affiliate/stats/daily-income?days=' + incomePeriod);
     const daily = incomeData.daily || [];
     const iLabels = daily.map(d => {
       const dt = new Date(d.date);
@@ -1626,36 +1644,59 @@ async function loadOverviewCharts() {
 
     if (chartIncome) chartIncome.destroy();
     const ctx2 = document.getElementById('chart-income');
-    if (ctx2) {
-      chartIncome = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-          labels: iLabels,
-          datasets: [
-            { label: 'Income',  data: daily.map(d => d.income || 0),                              backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
-            { label: 'Pending', data: daily.map(d => (d.pending_count || 0) * PENDING_AVG_RP),    backgroundColor: '#EF9F27', stack: 'a',
-              borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
-          ]
+    if (!ctx2) return;
+    chartIncome = new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: iLabels,
+        datasets: [
+          { label: 'Income',  data: daily.map(d => d.income || 0),                              backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
+          { label: 'Pending', data: daily.map(d => (d.pending_count || 0) * PENDING_AVG_RP),    backgroundColor: '#EF9F27', stack: 'a',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', callbacks: {
+            title: c => c[0].label,
+            label: c => '  ' + c.dataset.label + ': ' + _fmtRpFull(c.parsed.y)
+          }}
         },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { mode: 'index', callbacks: {
-              title: c => c[0].label,
-              label: c => '  ' + c.dataset.label + ': ' + _fmtRpFull(c.parsed.y)
-            }}
-          },
-          scales: {
-            x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 }, grid: { color: gridColor } },
-            y: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, callback: v => _fmtRpShort(v) }, grid: { color: gridColor }, beginAtZero: true }
-          }
+        scales: {
+          x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 12, maxRotation: 0 }, grid: { color: gridColor } },
+          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, callback: v => _fmtRpShort(v) }, grid: { color: gridColor }, beginAtZero: true }
         }
-      });
-    }
-  } catch (e) {
-    console.error('loadOverviewCharts error:', e);
-  }
+      }
+    });
+  } catch (e) { console.error('loadIncomeChart error:', e); }
+}
+
+async function loadOverviewCharts() {
+  await Promise.all([loadTrafficChart(), loadIncomeChart()]);
+}
+
+// ── Period toggle handlers (active = purple #6B5FD4 / white) ──────
+function _resetToggle(containerId) {
+  document.querySelectorAll('#' + containerId + ' button').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--muted)';
+  });
+}
+function setTrafficPeriod(days, btn) {
+  trafficPeriod = days;
+  _resetToggle('traffic-period-toggle');
+  btn.style.background = '#6B5FD4';
+  btn.style.color = '#fff';
+  loadTrafficChart();
+}
+function setIncomePeriod(days, btn) {
+  incomePeriod = days;
+  _resetToggle('income-period-toggle');
+  btn.style.background = '#6B5FD4';
+  btn.style.color = '#fff';
+  loadIncomeChart();
 }
 
 // ── Bank Account ────────────────────────────────────────────────
