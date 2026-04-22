@@ -551,6 +551,54 @@ input:focus, select:focus { border-color: var(--cyan2); }
       </div>
       <div id="downline-content"><div class="empty"><span class="spinner"></span> Loading...</div></div>
     </div>
+
+    <!-- TRAFFIC CHART -->
+    <div style="margin-top:24px;">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;">TRAFFIC HARIAN (30 HARI)</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#7F77DD;display:inline-block;"></span>Kunjungan</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Checkout</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Form diisi</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#D85A30;display:inline-block;"></span>Paid</div>
+        </div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="chart-traffic" role="img" aria-label="Stacked bar chart traffic harian 30 hari terakhir">Traffic harian stacked bar.</canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDING & INCOME CHART -->
+    <div style="margin-top:8px;">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;">PENDING &amp; INCOME HARIAN (30 HARI)</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Total pending</div>
+            <div style="font-size:18px;font-weight:500;color:#EF9F27;" id="chart-total-pending">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">menunggu 5 hari kerja</div>
+          </div>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Total income</div>
+            <div style="font-size:18px;font-weight:500;color:#1D9E75;" id="chart-total-income">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">komisi terkonfirmasi</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Income (komisi paid)</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Pending (form diisi, est.)</div>
+        </div>
+        <div style="position:relative;width:100%;height:185px;">
+          <canvas id="chart-income" role="img" aria-label="Stacked bar chart pending dan income harian">Pending dan income harian.</canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- COMMISSIONS -->
@@ -759,6 +807,41 @@ input:focus, select:focus { border-color: var(--cyan2); }
           <button class="btn btn-ghost" onclick="clearGadsSettings()">Hapus Google Ads</button>
         </div>
       </div>
+
+      <div style="height:1px;background:var(--border);margin:28px 0;max-width:560px;"></div>
+
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:16px;">REKENING BANK PENCAIRAN</div>
+      <div class="alert" id="bank-alert"></div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:560px;">
+        <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:20px;background:rgba(107,95,212,.06);border:1px solid rgba(107,95,212,.15);border-radius:8px;padding:12px 14px;">
+          Info rekening ini digunakan admin untuk mentransfer komisi kamu. Pastikan data benar sesuai buku tabungan/KTP.
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Bank</label>
+            <select id="bank-name" style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;">
+              <option value="">-- Pilih Bank --</option>
+              <option>BCA</option><option>BNI</option><option>BRI</option><option>BSI</option>
+              <option>Mandiri</option><option>CIMB Niaga</option><option>Permata</option>
+              <option>Danamon</option><option>BTN</option><option>Maybank</option>
+              <option>GoPay</option><option>OVO</option><option>Dana</option><option>ShopeePay</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Nomor rekening</label>
+            <input type="text" id="bank-number" placeholder="Contoh: 1234567890"
+              style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none;"/>
+          </div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Nama pemilik rekening</label>
+          <input type="text" id="bank-holder" placeholder="Sesuai buku tabungan / KTP"
+            style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;outline:none;"/>
+        </div>
+        <button onclick="saveBankAccount()" class="btn btn-primary">Simpan Rekening</button>
+      </div>
     </div>
   </div>
 
@@ -776,6 +859,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const API = 'https://tradity-qrr-server-production.up.railway.app';
 
@@ -927,10 +1011,11 @@ function showPage(name) {
     loadRecruitLinks();
     loadDownline();
   }
+  if (name === 'overview') loadOverviewCharts();
   if (name === 'traffic') loadTraffic();
   if (name === 'withdraw') loadWithdrawable();
   if (name === 'payouts') loadPayouts();
-  if (name === 'settings') loadPixelSettings();
+  if (name === 'settings') { loadPixelSettings(); loadBankAccount(); }
 
   // Sync bottom nav active state
   document.querySelectorAll('.bottom-nav-item').forEach(t => {
@@ -1064,6 +1149,7 @@ async function loadDashboard() {
 
     document.getElementById('ref-code-display').textContent = aff.ref_code;
     loadShareableLinks(aff.ref_code);
+    loadOverviewCharts();
   } catch (e) {
     console.error('Dashboard load error:', e);
   }
@@ -1452,6 +1538,156 @@ async function loadTraffic() {
     container.innerHTML = html;
   } catch(e) {
     container.innerHTML = '<div class="empty">Gagal memuat: ' + e.message + '</div>';
+  }
+}
+
+// ── Overview Charts ─────────────────────────────────────────────
+// Stacked bars rendered with Chart.js. The "Pending" bar in the income chart
+// is an *estimate* derived from form_fill click count (no commission row exists
+// yet for unpaid orders), multiplied by an average ticket commission so the
+// bar is on a comparable Rp scale to "Income".
+const PENDING_AVG_RP = 50000;
+
+let chartTraffic = null;
+let chartIncome  = null;
+
+function _fmtRpShort(v) {
+  if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
+  if (v >= 1000)    return 'Rp ' + Math.round(v / 1000) + 'rb';
+  return 'Rp ' + Math.round(v);
+}
+function _fmtRpFull(v) { return 'Rp ' + Math.round(v).toLocaleString('id-ID'); }
+
+async function loadOverviewCharts() {
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not loaded yet — skipping charts');
+    return;
+  }
+
+  const gridColor = 'rgba(255,255,255,0.06)';
+  const tickColor = '#888';
+
+  try {
+    const [trafficData, incomeData] = await Promise.all([
+      api('GET', '/affiliate/stats/traffic'),
+      api('GET', '/affiliate/stats/daily-income')
+    ]);
+
+    // ── TRAFFIC stacked bar ────────────────────────────────────
+    const trendDays = trafficData.trend || [];
+    const tLabels = trendDays.map(d => {
+      const dt = new Date(d.date);
+      return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+    });
+
+    if (chartTraffic) chartTraffic.destroy();
+    const ctx1 = document.getElementById('chart-traffic');
+    if (ctx1) {
+      chartTraffic = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: tLabels,
+          datasets: [
+            { label: 'Paid',       data: trendDays.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a',
+              borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
+            { label: 'Form diisi', data: trendDays.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 0 },
+            { label: 'Checkout',   data: trendDays.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
+            { label: 'Kunjungan',  data: trendDays.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 0 },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', callbacks: {
+              title: c => c[0].label,
+              label: c => '  ' + c.dataset.label + ': ' + c.parsed.y
+            }}
+          },
+          scales: {
+            x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 }, grid: { color: gridColor } },
+            y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // ── INCOME stacked bar ─────────────────────────────────────
+    const daily = incomeData.daily || [];
+    const iLabels = daily.map(d => {
+      const dt = new Date(d.date);
+      return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+    });
+
+    const totalPendingEl = document.getElementById('chart-total-pending');
+    const totalIncomeEl  = document.getElementById('chart-total-income');
+    if (totalPendingEl) totalPendingEl.textContent = _fmtRpFull(incomeData.total_pending || 0);
+    if (totalIncomeEl)  totalIncomeEl.textContent  = _fmtRpFull(incomeData.total_income  || 0);
+
+    if (chartIncome) chartIncome.destroy();
+    const ctx2 = document.getElementById('chart-income');
+    if (ctx2) {
+      chartIncome = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: iLabels,
+          datasets: [
+            { label: 'Income',  data: daily.map(d => d.income || 0),                              backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
+            { label: 'Pending', data: daily.map(d => (d.pending_count || 0) * PENDING_AVG_RP),    backgroundColor: '#EF9F27', stack: 'a',
+              borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', callbacks: {
+              title: c => c[0].label,
+              label: c => '  ' + c.dataset.label + ': ' + _fmtRpFull(c.parsed.y)
+            }}
+          },
+          scales: {
+            x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 10, maxRotation: 0 }, grid: { color: gridColor } },
+            y: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, callback: v => _fmtRpShort(v) }, grid: { color: gridColor }, beginAtZero: true }
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.error('loadOverviewCharts error:', e);
+  }
+}
+
+// ── Bank Account ────────────────────────────────────────────────
+async function loadBankAccount() {
+  try {
+    const data = await api('GET', '/affiliate/bank-account');
+    if (data.bank_account) {
+      const b = data.bank_account;
+      const nameEl   = document.getElementById('bank-name');
+      const numberEl = document.getElementById('bank-number');
+      const holderEl = document.getElementById('bank-holder');
+      if (nameEl)   nameEl.value   = b.bank_name      || '';
+      if (numberEl) numberEl.value = b.account_number || '';
+      if (holderEl) holderEl.value = b.account_holder || '';
+    }
+  } catch (e) { console.error('loadBankAccount error:', e); }
+}
+
+async function saveBankAccount() {
+  const bank_name      = document.getElementById('bank-name').value;
+  const account_number = document.getElementById('bank-number').value.trim();
+  const account_holder = document.getElementById('bank-holder').value.trim();
+
+  if (!bank_name || !account_number || !account_holder) {
+    return showAuthAlert('bank-alert', 'Semua field wajib diisi', 'error');
+  }
+
+  try {
+    await api('POST', '/affiliate/bank-account', { bank_name, account_number, account_holder });
+    showAuthAlert('bank-alert', 'Rekening berhasil disimpan', 'success');
+  } catch (e) {
+    showAuthAlert('bank-alert', 'Gagal menyimpan: ' + e.message, 'error');
   }
 }
 
