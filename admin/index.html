@@ -366,6 +366,64 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
       <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-rev" style="font-size:24px">—</div><div class="stat-sub">net</div></div>
     </div>
 
+    <!-- TRAFFIC CHART (overall) -->
+    <div class="section" style="margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#7F77DD;display:inline-block;"></span>Kunjungan</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Checkout</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Form diisi</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#D85A30;display:inline-block;"></span>Paid</div>
+          <span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;">TRAFFIC HARIAN — SEMUA AFFILIATOR</span>
+        </div>
+        <div style="display:flex;gap:4px;" id="admin-traffic-toggle">
+          <button onclick="setAdminTrafficPeriod(7,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">7D</button>
+          <button onclick="setAdminTrafficPeriod(30,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:#6B5FD4;color:#fff;cursor:pointer;">30D</button>
+          <button onclick="setAdminTrafficPeriod(90,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">90D</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="admin-chart-traffic" role="img" aria-label="Traffic harian semua affiliator">Traffic harian admin.</canvas>
+      </div>
+    </div>
+
+    <!-- INCOME CHART (overall) -->
+    <div class="section" style="margin-top:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Pending (Komisi)</div>
+          <div class="stat-value" id="admin-stat-pending" style="font-size:18px;">—</div>
+          <div class="stat-sub">belum dicairkan affiliator</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Income Affiliator</div>
+          <div class="stat-value" id="admin-stat-income" style="font-size:18px;">—</div>
+          <div class="stat-sub">komisi terkonfirmasi all time</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Income (komisi paid)</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
+            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Pending (form diisi, est.)</div>
+          <span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;">PENDING &amp; INCOME HARIAN</span>
+        </div>
+        <div style="display:flex;gap:4px;" id="admin-income-toggle">
+          <button onclick="setAdminIncomePeriod(7,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">7D</button>
+          <button onclick="setAdminIncomePeriod(30,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:#6B5FD4;color:#fff;cursor:pointer;">30D</button>
+          <button onclick="setAdminIncomePeriod(90,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">90D</button>
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:185px;">
+        <canvas id="admin-chart-income" role="img" aria-label="Pending dan income harian semua affiliator">Income harian admin.</canvas>
+      </div>
+    </div>
+
     <div class="section">
       <div class="section-header">
         <div class="section-title">Transaksi Terbaru</div>
@@ -879,6 +937,7 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 let SERVER = '';
 let SECRET = '';
@@ -973,6 +1032,129 @@ function loadAll() {
   loadTransactions();
 }
 
+// ── Admin Dashboard Charts (overall, all affiliators) ──────────────
+let adminChartTraffic   = null;
+let adminChartIncome    = null;
+let adminTrafficPeriod  = 30;
+let adminIncomePeriod   = 30;
+const ADMIN_PENDING_AVG_RP = 50000;
+
+function _adminResetToggle(containerId) {
+  document.querySelectorAll('#' + containerId + ' button').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--muted)';
+  });
+}
+function setAdminTrafficPeriod(days, btn) {
+  adminTrafficPeriod = days;
+  _adminResetToggle('admin-traffic-toggle');
+  btn.style.background = '#6B5FD4'; btn.style.color = '#fff';
+  loadAdminTrafficChart();
+}
+function setAdminIncomePeriod(days, btn) {
+  adminIncomePeriod = days;
+  _adminResetToggle('admin-income-toggle');
+  btn.style.background = '#6B5FD4'; btn.style.color = '#fff';
+  loadAdminIncomeChart();
+}
+
+function _adminFmtRpShort(v) {
+  if (v >= 1000000) return 'Rp ' + (v / 1000000).toFixed(1) + 'jt';
+  if (v >= 1000)    return 'Rp ' + Math.round(v / 1000) + 'rb';
+  return 'Rp ' + Math.round(v);
+}
+function _adminFmtRpFull(v) { return 'Rp ' + Math.round(v).toLocaleString('id-ID'); }
+
+async function loadAdminTrafficChart() {
+  if (typeof Chart === 'undefined') return;
+  const gridColor = 'rgba(255,255,255,0.06)';
+  const tickColor = '#888';
+  try {
+    const data = await api('GET', '/admin/stats/daily?days=' + adminTrafficPeriod);
+    const days = data.traffic || [];
+    const labels = days.map(d => {
+      const dt = new Date(d.date);
+      return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
+    });
+    if (adminChartTraffic) adminChartTraffic.destroy();
+    const ctx = document.getElementById('admin-chart-traffic');
+    if (!ctx) return;
+    adminChartTraffic = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Paid',       data: days.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
+          { label: 'Form diisi', data: days.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 0 },
+          { label: 'Checkout',   data: days.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
+          { label: 'Kunjungan',  data: days.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 0 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', callbacks: { title: c => c[0].label, label: c => '  ' + c.dataset.label + ': ' + c.parsed.y } }
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 }, grid: { color: gridColor } },
+          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
+        }
+      }
+    });
+  } catch (e) { console.error('loadAdminTrafficChart error:', e); }
+}
+
+async function loadAdminIncomeChart() {
+  if (typeof Chart === 'undefined') return;
+  const gridColor = 'rgba(255,255,255,0.06)';
+  const tickColor = '#888';
+  try {
+    const data = await api('GET', '/admin/stats/daily?days=' + adminIncomePeriod);
+    const days = data.income || [];
+    const labels = days.map(d => {
+      const dt = new Date(d.date);
+      return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
+    });
+
+    const pendingEl = document.getElementById('admin-stat-pending');
+    const incomeEl  = document.getElementById('admin-stat-income');
+    if (pendingEl) pendingEl.textContent = _adminFmtRpFull(data.total_pending || 0);
+    if (incomeEl)  incomeEl.textContent  = _adminFmtRpFull(data.total_income  || 0);
+
+    if (adminChartIncome) adminChartIncome.destroy();
+    const ctx = document.getElementById('admin-chart-income');
+    if (!ctx) return;
+    adminChartIncome = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Income',  data: days.map(d => d.income || 0),                                    backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
+          { label: 'Pending', data: days.map(d => (d.pending_count || 0) * ADMIN_PENDING_AVG_RP),    backgroundColor: '#EF9F27', stack: 'a',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', callbacks: { title: c => c[0].label, label: c => '  ' + c.dataset.label + ': ' + _adminFmtRpFull(c.parsed.y) } }
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 }, grid: { color: gridColor } },
+          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, callback: v => _adminFmtRpShort(v) }, grid: { color: gridColor }, beginAtZero: true }
+        }
+      }
+    });
+  } catch (e) { console.error('loadAdminIncomeChart error:', e); }
+}
+
+async function loadAdminCharts() {
+  await Promise.all([loadAdminTrafficChart(), loadAdminIncomeChart()]);
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────
 async function loadDashboard() {
   try {
@@ -1004,6 +1186,9 @@ async function loadDashboard() {
           <td class="hide-mobile" style="font-size:12px;color:var(--muted)">${fmtDate(t.created_at)}</td>
         </tr>`).join('')
       : '<tr><td colspan="6" class="empty">Belum ada transaksi</td></tr>';
+
+    // Overall traffic + income charts (independent of subs/txs payloads)
+    loadAdminCharts();
 
     // Failed
     const failed = txs.transactions.filter(t =>
