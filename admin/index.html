@@ -1083,11 +1083,14 @@ async function loadAdminTrafficChart() {
       data: {
         labels,
         datasets: [
-          { label: 'Paid',       data: days.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a',
-            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
-          { label: 'Form diisi', data: days.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 0 },
-          { label: 'Checkout',   data: days.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
-          { label: 'Kunjungan',  data: days.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 0 },
+          // Every dataset gets borderRadius:4 + borderSkipped:false so Chart.js
+          // rounds whichever segment is currently topmost on each bar — the
+          // stack order (Kunjungan → Checkout → Form diisi → Paid) means the
+          // visible top changes day-to-day depending on which series is zero.
+          { label: 'Paid',       data: days.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Form diisi', data: days.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Checkout',   data: days.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Kunjungan',  data: days.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 4, borderSkipped: false },
         ]
       },
       options: {
