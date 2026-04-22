@@ -408,9 +408,9 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
         <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
           <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Income (komisi paid)</div>
+            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Revenue (transaksi paid)</div>
           <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Pending (form diisi, est.)</div>
+            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Pending (belum terbayar)</div>
           <span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;">PENDING &amp; INCOME HARIAN</span>
         </div>
         <div style="display:flex;gap:4px;" id="admin-income-toggle">
@@ -1037,7 +1037,6 @@ let adminChartTraffic   = null;
 let adminChartIncome    = null;
 let adminTrafficPeriod  = 30;
 let adminIncomePeriod   = 30;
-const ADMIN_PENDING_AVG_RP = 50000;
 
 function _adminResetToggle(containerId) {
   document.querySelectorAll('#' + containerId + ' button').forEach(b => {
@@ -1137,8 +1136,8 @@ async function loadAdminIncomeChart() {
       data: {
         labels,
         datasets: [
-          { label: 'Income',  data: days.map(d => d.income || 0),                                    backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
-          { label: 'Pending', data: days.map(d => (d.pending_count || 0) * ADMIN_PENDING_AVG_RP),    backgroundColor: '#EF9F27', stack: 'a',
+          { label: 'Revenue', data: days.map(d => d.income          || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
+          { label: 'Pending', data: days.map(d => d.pending_amount  || 0), backgroundColor: '#EF9F27', stack: 'a',
             borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
         ]
       },
