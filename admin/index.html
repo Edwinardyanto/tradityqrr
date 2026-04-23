@@ -531,10 +531,11 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
             <th class="hide-mobile">Produk</th>
             <th>Amount</th>
             <th class="hide-mobile">Expires</th>
+            <th class="hide-mobile">Tanggal</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr></thead>
-          <tbody id="transactions-table"><tr><td colspan="7" class="empty">Loading...</td></tr></tbody>
+          <tbody id="transactions-table"><tr><td colspan="8" class="empty">Loading...</td></tr></tbody>
         </table>
       </div>
       <div id="transactions-pagination"></div>
@@ -1574,6 +1575,7 @@ function renderTransactions() {
         <td class="hide-mobile" style="font-size:12px;color:var(--muted);max-width:200px">${t.product_name || '—'}</td>
         <td class="mono">Rp ${parseInt(t.amount||0).toLocaleString('id-ID')}</td>
         <td class="mono hide-mobile" style="font-size:12px">${t.is_lifetime ? '<span style="color:var(--gold)">Lifetime</span>' : (t.expires_at ? fmtDate(t.expires_at) : '—')}</td>
+        <td class="mono hide-mobile" style="font-size:11px;color:var(--muted)">${t.created_at ? fmtDate(t.created_at) : '—'}</td>
         <td>${statusBadge(t.tv_access_status)}</td>
         <td>${['failed','failed_no_username','failed_unknown_product','processing'].includes(t.tv_access_status)
           ? `<div style="display:flex;gap:4px;">
@@ -1582,7 +1584,7 @@ function renderTransactions() {
              </div>`
           : ''}</td>
       </tr>`).join('')
-    : '<tr><td colspan="7" class="empty">Belum ada transaksi</td></tr>';
+    : '<tr><td colspan="8" class="empty">Belum ada transaksi</td></tr>';
 
   const paginationEl = document.getElementById('transactions-pagination');
   if (paginationEl) {
