@@ -480,9 +480,10 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
             <th class="hide-mobile">Variant ID</th>
             <th class="hide-mobile">Price</th>
             <th>Status</th>
+            <th>Telegram</th>
             <th>Aksi</th>
           </tr></thead>
-          <tbody id="products-table"><tr><td colspan="7" class="empty">Loading...</td></tr></tbody>
+          <tbody id="products-table"><tr><td colspan="8" class="empty">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1236,11 +1237,17 @@ async function loadProducts() {
             </label>
           </td>
           <td>
+            <label class="toggle" title="Telegram Access">
+              <input type="checkbox" ${p.telegram_access ? 'checked' : ''} onchange="toggleProductTelegram(${p.id}, this.checked)"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </td>
+          <td>
             <button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id}, \`${p.product_name.replace(/`/g,"'")}\`, ${p.months || 'null'}, \`${(p.checkout_url||'').replace(/`/g,"'")}\`, \`${(p.scalev_variant_id||'').replace(/`/g,"'")}\`, ${p.price || 0})">Edit</button>
             <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="deleteProduct(${p.id})">Hapus</button>
           </td>
         </tr>`).join('')
-      : '<tr><td colspan="7" class="empty">Belum ada produk terdaftar</td></tr>';
+      : '<tr><td colspan="8" class="empty">Belum ada produk terdaftar</td></tr>';
   } catch(e) { showAlert('products', e.message, 'error'); }
 }
 
@@ -1299,6 +1306,11 @@ async function saveProduct() {
 
 async function toggleProduct(id, active) {
   try { await api('PUT', `/admin/products/${id}`, { is_active: active }); }
+  catch(e) { showAlert('products', e.message, 'error'); loadProducts(); }
+}
+
+async function toggleProductTelegram(id, enabled) {
+  try { await api('PATCH', `/admin/products/${id}/telegram-access`, { telegram_access: enabled }); }
   catch(e) { showAlert('products', e.message, 'error'); loadProducts(); }
 }
 
