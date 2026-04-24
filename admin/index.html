@@ -639,10 +639,16 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 .cc-hero-mini-unit { font-size: 20px; color: #B4B8BF; margin-left: 2px; }
 .cc-hero-note { font-size: 13px; color: #B4B8BF; }
 .cc-hero-note-dim { color: #B4B8BF; margin-top: 4px; }
-.cc-hero-note-ok { color: #D1FAE5; margin-top: 4px; font-size: 12px; }
+.cc-hero-note-ok   { color: #D1FAE5; margin-top: 4px; font-size: 12px; }
+.cc-hero-note-warn { color: #FCD34D; margin-top: 4px; font-size: 12px; }
 .cc-pill-ok {
   display: inline-flex; align-items: center; padding: 3px 10px;
   border-radius: 999px; background: #059669; color: #fff;
+  font-size: 12px; font-weight: 600;
+}
+.cc-pill-bad {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 999px; background: #B91C1C; color: #fff;
   font-size: 12px; font-weight: 600;
 }
 
@@ -1965,9 +1971,10 @@ async function loadAdminCharts() {
 // ── Dashboard ─────────────────────────────────────────────────────
 async function loadDashboard() {
   try {
-    const [subs, txs] = await Promise.all([
+    const [subs, txs, hero] = await Promise.all([
       api('GET', '/admin/subscribers'),
-      api('GET', '/admin/transactions')
+      api('GET', '/admin/transactions'),
+      api('GET', '/admin/stats/hero'),
     ]);
 
     const now = new Date();
@@ -1989,7 +1996,7 @@ async function loadDashboard() {
       : '';
 
     // ── Populate Command Center dashboard ──
-    renderCCDashboard(subs.subscribers, txs.transactions, totalRev);
+    renderCCDashboard(subs.subscribers, txs.transactions, totalRev, hero);
 
     loadAdminCharts();
 
@@ -2014,7 +2021,8 @@ async function loadDashboard() {
 }
 
 // ── Command Center dashboard renderer ─────────────────────────────
-function renderCCDashboard(subscribers, transactions, totalRev) {
+function renderCCDashboard(subscribers, transactions, totalRev, hero) {
+  hero = hero || {};
   const fmtRp = (n) => {
     if (!n) return 'Rp 0';
     if (n >= 1e9) return 'Rp ' + (n/1e9).toFixed(1).replace(/\.0$/,'') + 'M';
@@ -2037,36 +2045,79 @@ function renderCCDashboard(subscribers, transactions, totalRev) {
   const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][now.getMonth()];
   document.getElementById('cc-sub').textContent = `${hari}, ${now.getDate()} ${bulan} ${now.getFullYear()} · sinkron baru saja`;
 
-  // HERO metrics
-  const paid = transactions.filter(t => t.tv_access_status === 'success' || t.tv_access_status === 'granted');
-  const paidRev = paid.reduce((a,t) => a + parseInt(t.amount||0), 0);
-  const aov = paid.length ? paidRev / paid.length : 0;
-  const convRate = transactions.length ? (paid.length / transactions.length * 100) : 0;
+  // ── HERO metrics — all from /admin/stats/hero (real, 30-day scoped) ──
+  const heroRevenue   = parseInt(hero.revenue       || 0);
+  const heroTxCount   = parseInt(hero.tx_count      || 0);
+  const heroPendingC  = parseInt(hero.pending_count || 0);
+  const heroPendingA  = parseInt(hero.pending_amt   || 0);
 
-  document.getElementById('cc-rev').textContent = fmtFull(paidRev || totalRev);
-  document.getElementById('cc-rev-delta').textContent = '↑ 18.4% vs bulan lalu';
-  document.getElementById('cc-rev-target').textContent = 'target bulan ini 87% tercapai';
-  document.getElementById('cc-tx').textContent = transactions.length;
-  document.getElementById('cc-tx-delta').textContent = '↑ ' + Math.max(1, Math.floor(transactions.length * 0.08)) + ' dari kemarin';
-  document.getElementById('cc-aov').textContent = fmtRp(aov);
-  document.getElementById('cc-conv').textContent = convRate.toFixed(2);
-  document.getElementById('cc-conv-delta').textContent = '↑ 0.8pp';
+  // Revenue
+  document.getElementById('cc-rev').textContent = fmtFull(heroRevenue);
 
-  // HERO spark line
-  const dailyRev = Array.from({length:30}, () => Math.random()*5e6 + 2e6);
-  const max = Math.max(...dailyRev);
-  const pts = dailyRev.map((v,i) => [(i/(dailyRev.length-1))*500, 220 - (v/max)*180]);
-  const line = pts.map((p,i) => (i?'L':'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
-  const area = line + ' L 500 220 L 0 220 Z';
-  document.getElementById('cc-hero-line').setAttribute('d', line);
-  document.getElementById('cc-hero-area').setAttribute('d', area);
+  // MoM delta badge
+  const momDeltaEl = document.getElementById('cc-rev-delta');
+  if (hero.mom_delta !== null && hero.mom_delta !== undefined) {
+    const mom = parseFloat(hero.mom_delta);
+    const sign = mom >= 0 ? '↑' : '↓';
+    momDeltaEl.className   = mom >= 0 ? 'cc-pill-ok' : 'cc-pill-bad';
+    momDeltaEl.textContent = `${sign} ${Math.abs(mom)}% vs bulan lalu`;
+  } else {
+    momDeltaEl.className   = 'cc-pill-ok';
+    momDeltaEl.textContent = '— tidak ada data bulan lalu';
+  }
 
-  // ACTION TILES
-  const failedCount = transactions.filter(t => ['failed','failed_no_username','failed_unknown_product','processing'].includes(t.tv_access_status)).length;
+  // Target line — no hardcoded percentage; cleared until a target is configured.
+  document.getElementById('cc-rev-target').textContent = '';
+
+  // Transaksi count
+  document.getElementById('cc-tx').textContent = heroTxCount.toLocaleString('id-ID');
+
+  // Today vs yesterday delta
+  const txDelta   = parseInt(hero.tx_delta || 0);
+  const txDeltaEl = document.getElementById('cc-tx-delta');
+  if (txDelta > 0) {
+    txDeltaEl.textContent = `↑ ${txDelta} dari kemarin`;
+    txDeltaEl.className   = 'cc-hero-note cc-hero-note-ok';
+  } else if (txDelta < 0) {
+    txDeltaEl.textContent = `↓ ${Math.abs(txDelta)} dari kemarin`;
+    txDeltaEl.className   = 'cc-hero-note cc-hero-note-warn';
+  } else {
+    txDeltaEl.textContent = 'sama seperti kemarin';
+    txDeltaEl.className   = 'cc-hero-note cc-hero-note-dim';
+  }
+
+  // AOV (rounded server-side)
+  document.getElementById('cc-aov').textContent = fmtRp(parseInt(hero.aov || 0));
+
+  // Conv Rate = paid / (paid + pending) — both 30-day scoped
+  document.getElementById('cc-conv').textContent       = hero.conv_rate || '0.0';
+  document.getElementById('cc-conv-delta').textContent = `${heroPendingC} pending`;
+
+  // ── Sparkline — real daily revenue (30 entries, server pre-seeds zeros) ──
+  const spark = (hero.spark && hero.spark.length) ? hero.spark : new Array(30).fill(0);
+  const maxSpark = Math.max(1, ...spark);
+  const sparkPts = spark.map((v, i) => [
+    (i / (spark.length - 1)) * 500,
+    220 - (v / maxSpark) * 180,
+  ]);
+  const sparkLine = sparkPts.map((p, i) =>
+    (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)
+  ).join(' ');
+  const sparkArea = sparkLine + ' L 500 220 L 0 220 Z';
+  document.getElementById('cc-hero-line').setAttribute('d', sparkLine);
+  document.getElementById('cc-hero-area').setAttribute('d', sparkArea);
+
+  // ── Action tiles ──
+  const failedCount = transactions.filter(t =>
+    ['failed','failed_no_username','failed_unknown_product','processing']
+    .includes(t.tv_access_status)
+  ).length;
   document.getElementById('cc-failed-count').textContent = failedCount;
-  document.getElementById('cc-pending-aff-count').textContent = '4';
-  document.getElementById('cc-payout-amt').textContent = fmtRp(4260000);
-  document.getElementById('cc-payout-count').textContent = '3';
+  // TODO: derive cc-pending-aff-count + cc-payout-amt + cc-payout-count from
+  // /admin/affiliates pending + /admin/payouts queue when those tiles land.
+  document.getElementById('cc-pending-aff-count').textContent = '—';
+  document.getElementById('cc-payout-amt').textContent        = fmtRp(0);
+  document.getElementById('cc-payout-count').textContent      = '—';
 
   // PRODUCT MIX donut
   const mix = {};
@@ -2102,9 +2153,9 @@ function renderCCDashboard(subscribers, transactions, totalRev) {
       <span style="font-weight:600;width:42px;text-align:right;">${Math.round(count/total*100)}%</span>
     </div>`).join('');
 
-  // LEGEND
-  document.getElementById('cc-legend-paid').textContent = fmtRp(paidRev);
-  document.getElementById('cc-legend-pending').textContent = fmtRp(paidRev * 0.3);
+  // LEGEND — real Paid + Pending amounts from hero
+  document.getElementById('cc-legend-paid').textContent    = fmtRp(heroRevenue);
+  document.getElementById('cc-legend-pending').textContent = fmtRp(heroPendingA);
 
   // ORDER list (6 most recent)
   const ordersList = transactions.slice(0,6).map(t => {
@@ -2133,25 +2184,24 @@ function renderCCDashboard(subscribers, transactions, totalRev) {
   }).join('');
   document.getElementById('cc-orders-list').innerHTML = ordersList || '<div style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px;">Belum ada order</div>';
 
-  // TOP AFFILIATES — from subscribers' referrer if available, else mock
-  const affMock = [
-    { name: 'Bayu W.',   code: 'BAYU2024', sales: 42, commission: 4200000 },
-    { name: 'Rudi N.',   code: 'RUDIAFF',  sales: 38, commission: 3800000 },
-    { name: 'Lisa M.',   code: 'LISAMKT',  sales: 31, commission: 2800000 },
-    { name: 'Farhan P.', code: 'FARHAN9',  sales: 24, commission: 2200000 },
-    { name: 'Yulianto',  code: 'YULIOFC',  sales: 19, commission: 1700000 },
-  ];
-  const maxSales = affMock[0].sales;
-  document.getElementById('cc-affiliates-list').innerHTML = affMock.map((a, i) => `
-    <div class="cc-aff-row">
-      <div class="cc-aff-rank">#${i+1}</div>
-      <div style="flex:1;min-width:0;">
-        <div class="cc-aff-name">${a.name}</div>
-        <div class="cc-aff-meta">${a.code} · ${a.sales} sales</div>
-      </div>
-      <div class="cc-aff-bar-wrap"><div class="cc-aff-bar" style="width:${(a.sales/maxSales)*100}%;"></div></div>
-      <div class="cc-aff-comm">${fmtRp(a.commission)}</div>
-    </div>`).join('');
+  // TOP AFFILIATES — real data from /admin/stats/hero, last 30d
+  const topAffs = hero.top_affiliates || [];
+  const affEl = document.getElementById('cc-affiliates-list');
+  if (!topAffs.length) {
+    affEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px;">Belum ada data affiliate</div>';
+  } else {
+    const maxSales = Math.max(1, topAffs[0].sales);
+    affEl.innerHTML = topAffs.map((a, i) => `
+      <div class="cc-aff-row">
+        <div class="cc-aff-rank">#${i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="cc-aff-name">${a.name}</div>
+          <div class="cc-aff-meta">${a.ref_code} · ${a.sales} sales</div>
+        </div>
+        <div class="cc-aff-bar-wrap"><div class="cc-aff-bar" style="width:${(a.sales/maxSales)*100}%;"></div></div>
+        <div class="cc-aff-comm">${fmtRp(a.commission)}</div>
+      </div>`).join('');
+  }
 }
 
 
