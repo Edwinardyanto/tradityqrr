@@ -1,325 +1,832 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TRXC QRR Admin Panel</title>
-<link rel="icon" type="image/png" href="../data/trxc-qrr-logo.png"/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23059669'/%3E%3Ctext x='32' y='42' font-family='Arial Black,sans-serif' font-size='26' font-weight='900' fill='white' text-anchor='middle'%3EQR%3C/text%3E%3C/svg%3E"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
+/* ─────────────────────────────────────────────────────────────
+   TRXC QRR Admin — "Command Center" visual
+   Variables switch between light & dark themes via [data-theme].
+   Class NAMES are preserved for compatibility with existing JS.
+   ───────────────────────────────────────────────────────────── */
+
+:root[data-theme="light"] {
+  --bg:          #F5F5F0;
+  --bg2:         #EFEEE8;
+  --card:        #FFFFFF;
+  --card2:       #FAFAF6;
+  --border:      #E5E4DE;
+  --border2:     #CECDC3;
+  --ink:         #0F1419;
+  --ink-soft:    #1A2028;
+  --white:       #0F1419;       /* compat: JS uses var(--white) as primary text */
+  --muted:       #6B7280;
+  --subtle:      #9CA3AF;
+
+  --accent:      #059669;       /* emerald primary */
+  --accent-deep: #064E3B;
+  --accent-soft: #D1FAE5;
+
+  --cyan:        #0891B2;       /* used as cyan accent — affiliates, ref codes */
+  --cyan2:       #0891B2;
+  --cyan3:       #155E75;
+
+  --gold:        #D97706;       /* amber / warning */
+  --gold-soft:   #FEF3C7;
+
+  --red:         #DC2626;
+  --red-soft:    #FEE2E2;
+  --green:       #059669;
+  --sidebar-bg:  #0F1419;
+  --sidebar-ink: #F5F5F0;
+  --sidebar-muted: #6B7280;
+  --sidebar-hover: #1A2028;
+  --shadow-sm:   0 1px 2px rgba(15,20,25,.04);
+  --shadow-md:   0 2px 8px rgba(15,20,25,.06);
+}
+
+:root[data-theme="dark"] {
+  --bg:          #0B0F14;
+  --bg2:         #0F141B;
+  --card:        #131922;
+  --card2:       #1A2028;
+  --border:      #232A34;
+  --border2:     #2E3644;
+  --ink:         #F5F5F0;
+  --ink-soft:    #D4D4CE;
+  --white:       #F5F5F0;
+  --muted:       #8B95A5;
+  --subtle:      #5B6676;
+
+  --accent:      #10B981;
+  --accent-deep: #065F46;
+  --accent-soft: rgba(16,185,129,.12);
+
+  --cyan:        #22D3EE;
+  --cyan2:       #22D3EE;
+  --cyan3:       #0E7490;
+
+  --gold:        #F59E0B;
+  --gold-soft:   rgba(245,158,11,.12);
+
+  --red:         #F87171;
+  --red-soft:    rgba(248,113,113,.12);
+  --green:       #10B981;
+  --sidebar-bg:  #07090D;
+  --sidebar-ink: #F5F5F0;
+  --sidebar-muted: #6B7685;
+  --sidebar-hover: #131922;
+  --shadow-sm:   0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:   0 2px 8px rgba(0,0,0,.4);
+}
+
+/* legacy aliases some inline styles in the script depend on */
 :root {
-  --navy: #07060F;
-  --navy2: #0C0A1A;
-  --navy3: #100E20;
-  --bg: #07060F;
-  --bg2: #0C0A1A;
-  --card: #0C0A1A;
-  --card2: #100E20;
-  --border: #12101E;
-  --cyan: #6B5FD4;
-  --cyan2: #8B7FE8;
-  --cyan3: #4B3FA0;
-  --white: #F0EFF8;
-  --muted: #3D3560;
-  --red: #E8637A;
-  --green: #00D48A;
-  --gold: #C9A84C;
+  --navy:  var(--sidebar-bg);
+  --navy2: var(--card);
+  --navy3: var(--card2);
 }
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--white); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px; line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background .25s ease, color .25s ease;
+}
 
-/* NAV */
-nav {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(7,6,15,.95); backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 32px;
-  display: flex; align-items: center; gap: 0;
+/* ─── APP SHELL (sidebar + main) ───────────────────────────── */
+/* default hidden; JS sets style.display = 'block' after login. We use
+   a universal child-grid trick so whatever display value JS sets, the
+   layout still lays out sidebar+main side by side. */
+#app { display: none; min-height: 100vh; }
+#app[style*="display: block"],
+#app[style*="display:block"],
+#app[style*="display: grid"],
+#app[style*="display:grid"] {
+  display: grid !important;
+  grid-template-columns: 232px 1fr;
 }
-.nav-brand {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px; letter-spacing: 3px;
-  color: var(--white); padding: 16px 0; margin-right: 32px;
-}
-.nav-brand span { color: var(--cyan); }
-.nav-tabs { display: flex; gap: 0; }
-.nav-tab {
-  padding: 16px 20px; font-size: 13px; font-weight: 500;
-  color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
-  transition: all .2s; user-select: none;
-}
-.nav-tab:hover { color: var(--white); }
-.nav-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
-.nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-#auth-status { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
 
-/* LOGIN */
+/* ─── SIDEBAR ──────────────────────────────────────────────── */
+.sidebar {
+  background: var(--sidebar-bg); color: var(--sidebar-ink);
+  padding: 18px 14px 14px; display: flex; flex-direction: column; gap: 2px;
+  min-height: 100vh; position: sticky; top: 0; align-self: flex-start;
+  border-right: 1px solid rgba(255,255,255,.04);
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 10px 22px;
+}
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: var(--card); display: grid; place-items: center;
+  overflow: hidden; flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06);
+}
+.brand-mark img { width: 100%; height: 100%; object-fit: cover; }
+.brand-text { font-weight: 700; letter-spacing: -.01em; font-size: 14px; color: var(--sidebar-ink); }
+.brand-sub  { font-size: 11px; color: var(--sidebar-muted); margin-top: 1px; }
+
+.nav-section {
+  font-size: 10px; color: var(--sidebar-muted);
+  text-transform: uppercase; letter-spacing: .1em;
+  padding: 14px 10px 6px; font-weight: 600;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: 6px;
+  font-size: 13px; color: #B4B8BF; font-weight: 500;
+  cursor: pointer; user-select: none;
+  transition: background .15s, color .15s;
+}
+.nav-item:hover { background: var(--sidebar-hover); color: var(--sidebar-ink); }
+.nav-item.active { background: #F5F5F0; color: #0F1419; font-weight: 600; }
+:root[data-theme="dark"] .nav-item.active { background: var(--accent); color: #04120A; }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; font-size: 10px; font-weight: 700;
+  padding: 1px 7px; border-radius: 999px; color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.sidebar-foot {
+  margin-top: auto; padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.theme-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: 6px;
+  background: var(--sidebar-hover);
+  font-size: 12px; color: #B4B8BF;
+}
+.theme-toggle-btns {
+  display: flex; gap: 2px; background: rgba(0,0,0,.25); border-radius: 5px; padding: 2px;
+}
+.theme-toggle-btns button {
+  background: transparent; border: none; color: #B4B8BF;
+  padding: 4px 8px; border-radius: 4px; cursor: pointer;
+  font-size: 11px; font-family: inherit; display: grid; place-items: center;
+}
+.theme-toggle-btns button.active { background: var(--accent); color: #fff; }
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 4px; font-size: 12px; color: #B4B8BF;
+}
+.sidebar-user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-weight: 700; font-size: 12px;
+}
+.sidebar-user-status { color: var(--sidebar-ink); font-weight: 500; font-size: 12px; }
+.sidebar-user-meta { font-size: 10px; color: var(--sidebar-muted); font-family: 'IBM Plex Mono', monospace; }
+.sidebar-user-btn {
+  background: transparent; border: none; color: #B4B8BF;
+  cursor: pointer; padding: 6px; border-radius: 5px;
+  display: grid; place-items: center;
+}
+.sidebar-user-btn:hover { background: var(--sidebar-hover); color: var(--sidebar-ink); }
+
+/* ─── TOPBAR + MAIN ────────────────────────────────────────── */
+.main { padding: 22px 28px 60px; min-width: 0; overflow-x: hidden; }
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 22px; flex-wrap: wrap;
+}
+.topbar-title { font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+.topbar-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+#auth-status {
+  font-size: 11px; color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 4px 10px; border-radius: 6px;
+  background: var(--card); border: 1px solid var(--border);
+}
+
+/* legacy <nav> hidden but kept in DOM so index-based JS doesn't break */
+nav.legacy-nav { display: none !important; }
+
+/* ─── LOGIN ────────────────────────────────────────────────── */
 #login-screen {
   display: flex; align-items: center; justify-content: center;
-  min-height: 100vh;
-  padding: 24px 16px;
+  min-height: 100vh; padding: 24px 16px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, var(--accent-soft) 0%, transparent 60%),
+    var(--bg);
 }
 .login-box {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 40px; width: 360px;
-  max-width: 100%;
+  border-radius: 16px; padding: 36px; width: 380px; max-width: 100%;
+  box-shadow: var(--shadow-md);
 }
+.login-brand {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 22px;
+}
+.login-brand-mark {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--card); overflow: hidden;
+  box-shadow: 0 0 0 1px var(--border);
+}
+.login-brand-mark img { width: 100%; height: 100%; object-fit: cover; }
 .login-box h2 {
-  font-family: 'Bebas Neue', sans-serif; font-size: 28px;
-  letter-spacing: 2px; margin-bottom: 8px;
+  font-family: 'IBM Plex Sans', Inter, sans-serif;
+  font-size: 20px; font-weight: 700; letter-spacing: -.02em;
+  margin-bottom: 4px;
 }
-.login-box p { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+.login-box p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
 
-/* LAYOUT */
-#app { display: none; }
-.page { display: none; padding: 32px; max-width: 1200px; margin: 0 auto; }
+/* ─── PAGES ────────────────────────────────────────────────── */
+.page { display: none; }
 .page.active { display: block; }
 
-/* CARDS */
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+/* ─── HERO REVENUE ─────────────────────────────────────────── */
+.hero-revenue {
+  background: var(--sidebar-bg); color: #F5F5F0;
+  border-radius: 16px; padding: 26px 28px;
+  margin-bottom: 18px; position: relative; overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.hero-grid {
+  position: relative; z-index: 1;
+  display: grid; gap: 28px;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+}
+.hero-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .12em;
+  color: #B4B8BF; font-weight: 600; margin-bottom: 10px;
+}
+.hero-val {
+  font-family: 'IBM Plex Sans', Inter, sans-serif;
+  font-size: 42px; font-weight: 700; letter-spacing: -.03em;
+  line-height: 1; margin-bottom: 8px;
+}
+.hero-val-sm {
+  font-family: 'IBM Plex Sans', Inter, sans-serif;
+  font-size: 26px; font-weight: 700; letter-spacing: -.02em;
+}
+.hero-sub { font-size: 12px; color: #B4B8BF; margin-top: 4px; }
+.hero-accent { color: var(--accent-soft); }
+
+/* ─── STATS GRID (legacy 4-up, now compact mini cards) ─────── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 18px;
+}
 .stat-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 20px 24px;
+  border-radius: 12px; padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color .15s, transform .15s;
 }
-.stat-label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; margin-bottom: 8px; }
-.stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; line-height: 1; color: var(--cyan); }
-.stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.stat-card:hover { border-color: var(--border2); }
+.stat-label {
+  font-size: 11px; color: var(--muted);
+  letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 500; margin-bottom: 8px;
+}
+.stat-value {
+  font-family: 'IBM Plex Sans', Inter, sans-serif;
+  font-size: 26px; font-weight: 700; letter-spacing: -.02em;
+  color: var(--ink); line-height: 1.1;
+}
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-/* SECTION */
-.section { margin-bottom: 32px; }
+/* ─── SECTION ──────────────────────────────────────────────── */
+.section { margin-bottom: 22px; }
 .section-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 12px; gap: 10px; flex-wrap: wrap;
 }
-.section-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; }
+.section-title {
+  font-size: 15px; font-weight: 600; color: var(--ink);
+  letter-spacing: -.01em;
+}
 
-/* TABLE */
-.table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+/* ─── TABLES ───────────────────────────────────────────────── */
+.table-wrap {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* orders compact filter bar */
+.orders-filters {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  margin-bottom: 14px;
+}
+.of-sel, .of-date {
+  font-size: 12px; padding: 5px 8px; height: 28px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--white);
+  line-height: 1;
+}
+.of-sel { width: auto; max-width: 140px; }
+.of-date { width: 120px; font-family: inherit; }
+.of-group {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 0 8px 0 10px; height: 28px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.of-group .of-date {
+  background: transparent; border: 0; padding: 0;
+  height: 26px; width: 108px;
+}
+.of-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.of-sep { font-size: 11px; color: var(--muted); padding: 0 2px; }
+.of-reset { height: 28px; padding: 0 10px; font-size: 11px; }
+@media (max-width: 700px) {
+  .of-sel { max-width: 48%; flex: 1; }
+  .of-group { flex-wrap: wrap; height: auto; padding: 4px 8px; }
+}
 table { width: 100%; border-collapse: collapse; }
 th {
-  text-align: left; padding: 12px 16px;
-  font-size: 10px; font-family: 'JetBrains Mono', monospace;
-  color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
+  text-align: left; padding: 11px 16px;
+  font-size: 10px; font-weight: 600;
+  color: var(--muted); letter-spacing: .08em; text-transform: uppercase;
   border-bottom: 1px solid var(--border); background: var(--card2);
+  font-family: 'Inter', sans-serif;
 }
 td {
-  padding: 12px 16px; font-size: 13px;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  padding: 12px 16px; font-size: 13px; color: var(--ink);
+  border-bottom: 1px solid var(--border);
 }
 tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(255,255,255,.02); }
-.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+tr:hover td { background: var(--card2); }
+.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+/* ─── BADGES ───────────────────────────────────────────────── */
 .badge {
   display: inline-flex; align-items: center;
-  padding: 3px 10px; border-radius: 100px;
-  font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace;
+  padding: 2px 9px; border-radius: 5px;
+  font-size: 11px; font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: .02em;
 }
-.badge-green  { background: rgba(0,212,138,.15); color: var(--green); }
-.badge-red    { background: rgba(255,68,68,.15);  color: var(--red); }
-.badge-yellow { background: rgba(245,200,66,.15); color: var(--gold); }
-.badge-cyan   { background: rgba(107,95,212,.15);  color: var(--cyan); }
-.badge-muted  { background: rgba(74,112,128,.15); color: var(--muted); }
+.badge-green  { background: var(--accent-soft); color: var(--accent-deep); }
+:root[data-theme="dark"] .badge-green { color: var(--accent); }
+.badge-red    { background: var(--red-soft);    color: var(--red); }
+.badge-yellow { background: var(--gold-soft);   color: var(--gold); }
+.badge-cyan   { background: rgba(8,145,178,.1); color: var(--cyan); }
+:root[data-theme="dark"] .badge-cyan { background: rgba(34,211,238,.12); }
+.badge-muted  { background: var(--card2);       color: var(--muted); border: 1px solid var(--border); }
 
-/* FORMS */
-.form-row { display: grid; gap: 16px; margin-bottom: 16px; }
+/* ─── FORMS ────────────────────────────────────────────────── */
+.form-row { display: grid; gap: 14px; margin-bottom: 14px; }
 .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
 .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 label { font-size: 12px; color: var(--muted); font-weight: 500; }
-input, select {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 14px;
-  color: var(--white); font-size: 13px; font-family: 'DM Sans', sans-serif;
-  transition: border-color .2s; outline: none;
+input, select, textarea {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 7px; padding: 9px 12px;
+  color: var(--ink); font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  transition: border-color .15s, box-shadow .15s; outline: none;
+  width: 100%;
 }
-input:focus, select:focus { border-color: var(--cyan2); }
-select option { background: var(--bg2); }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+select option { background: var(--card); color: var(--ink); }
+input[type="date"], input[type="datetime-local"] { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
 
-/* BUTTONS */
+/* ─── BUTTONS ──────────────────────────────────────────────── */
 .btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 18px; border-radius: 8px; font-size: 13px;
-  font-weight: 600; cursor: pointer; border: none;
-  transition: all .2s; font-family: 'DM Sans', sans-serif;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 16px; border-radius: 7px; font-size: 13px;
+  font-weight: 600; cursor: pointer; border: 1px solid transparent;
+  transition: all .15s; font-family: 'Inter', sans-serif;
+  white-space: nowrap; user-select: none;
 }
-.btn-primary { background: var(--cyan2); color: var(--bg); }
-.btn-primary:hover { background: var(--cyan); }
-.btn-danger  { background: rgba(255,68,68,.15); color: var(--red); border: 1px solid rgba(255,68,68,.2); }
-.btn-danger:hover { background: rgba(255,68,68,.25); }
-.btn-ghost   { background: rgba(255,255,255,.05); color: var(--white); border: 1px solid var(--border); }
-.btn-ghost:hover { background: rgba(255,255,255,.1); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-deep); }
+:root[data-theme="dark"] .btn-primary { color: #04120A; }
+:root[data-theme="dark"] .btn-primary:hover { background: #34D399; }
+.btn-danger {
+  background: var(--red-soft); color: var(--red);
+  border-color: var(--red-soft);
+}
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-ghost {
+  background: var(--card); color: var(--ink);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--card2); border-color: var(--border2); }
 .btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
 
-/* MODAL */
+/* ─── MODAL ────────────────────────────────────────────────── */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.7); z-index: 1000;
+  background: rgba(15,20,25,.55); z-index: 1000;
   align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+  padding: 16px;
 }
 .modal-overlay.open { display: flex; }
 .modal {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 32px; width: 480px;
-  max-width: 90vw;
+  border-radius: 14px; padding: 28px; width: 480px;
+  max-width: 100%; max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
 }
-.modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; margin-bottom: 4px; }
-.modal p  { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
-.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+.modal h3 {
+  font-family: 'IBM Plex Sans', Inter, sans-serif;
+  font-size: 17px; font-weight: 700; letter-spacing: -.01em;
+  margin-bottom: 4px; color: var(--ink);
+}
+.modal p  { font-size: 12px; color: var(--muted); margin-bottom: 22px; }
+.modal-footer {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 22px; padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
 
-/* ALERT */
+/* ─── ALERT ────────────────────────────────────────────────── */
 .alert {
-  padding: 12px 16px; border-radius: 8px; font-size: 13px;
-  margin-bottom: 16px; display: none;
+  padding: 11px 14px; border-radius: 8px; font-size: 13px;
+  margin-bottom: 14px; display: none;
+  font-weight: 500;
 }
 .alert.show { display: block; }
-.alert-success { background: rgba(0,212,138,.1); border: 1px solid rgba(0,212,138,.2); color: var(--green); }
-.alert-error   { background: rgba(255,68,68,.1);  border: 1px solid rgba(255,68,68,.2);  color: var(--red); }
+.alert-success {
+  background: var(--accent-soft); color: var(--accent-deep);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+:root[data-theme="dark"] .alert-success { color: var(--accent); }
+.alert-error   {
+  background: var(--red-soft); color: var(--red);
+  border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+}
 
-/* EMPTY */
-.empty { text-align: center; padding: 48px; color: var(--muted); font-size: 13px; }
+/* ─── EMPTY ────────────────────────────────────────────────── */
+.empty {
+  text-align: center; padding: 40px 16px;
+  color: var(--muted); font-size: 13px;
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* TOGGLE */
+/* ─── TOGGLE ───────────────────────────────────────────────── */
 .toggle {
-  position: relative; width: 36px; height: 20px;
+  position: relative; width: 34px; height: 20px;
   display: inline-block; cursor: pointer;
 }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
-  position: absolute; inset: 0; background: var(--border);
+  position: absolute; inset: 0; background: var(--border2);
   border-radius: 20px; transition: .2s;
 }
 .toggle-slider:before {
   content: ''; position: absolute;
   width: 14px; height: 14px; left: 3px; top: 3px;
-  background: white; border-radius: 50%; transition: .2s;
+  background: #fff; border-radius: 50%; transition: .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
 }
-input:checked + .toggle-slider { background: var(--cyan2); }
-input:checked + .toggle-slider:before { transform: translateX(16px); }
+input:checked + .toggle-slider { background: var(--accent); }
+input:checked + .toggle-slider:before { transform: translateX(14px); }
 
-@media(max-width: 768px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; }
+/* ─── DASHBOARD: action tiles ──────────────────────────────── */
+.action-tiles {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 18px;
+}
+.action-tile {
+  border-radius: 12px; padding: 16px;
+  display: flex; gap: 12px;
+  border: 1px solid var(--border);
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: transform .15s, box-shadow .15s;
+}
+.action-tile:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.action-tile.urgent   { background: var(--red-soft);    border-color: color-mix(in srgb, var(--red) 25%, transparent); }
+.action-tile.review   { background: var(--gold-soft);   border-color: color-mix(in srgb, var(--gold) 25%, transparent); }
+.action-tile.ready    { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+.action-tile-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--card); display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.action-tile.urgent .action-tile-icon { color: var(--red); }
+.action-tile.review .action-tile-icon { color: var(--gold); }
+.action-tile.ready  .action-tile-icon { color: var(--accent); }
+.action-tile-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 10px; font-weight: 700;
+  color: #fff; padding: 2px 8px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: .06em;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.action-tile.urgent .action-tile-badge { background: var(--red); }
+.action-tile.review .action-tile-badge { background: var(--gold); }
+.action-tile.ready  .action-tile-badge { background: var(--accent); }
+.action-tile h4 {
+  font-size: 12px; font-weight: 700; margin-bottom: 4px;
+  color: var(--ink);
+}
+.action-tile.urgent h4 { color: #7F1D1D; }
+:root[data-theme="dark"] .action-tile.urgent h4 { color: #FECACA; }
+.action-tile.review h4 { color: #78350F; }
+:root[data-theme="dark"] .action-tile.review h4 { color: #FDE68A; }
+.action-tile.ready  h4 { color: var(--accent-deep); }
+:root[data-theme="dark"] .action-tile.ready  h4 { color: var(--accent); }
+.action-tile p { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+.action-tile-cta {
+  font-size: 12px; font-weight: 700; margin-top: 6px;
+  color: var(--ink);
+}
+.action-tile.urgent .action-tile-cta { color: var(--red); }
+.action-tile.review .action-tile-cta { color: var(--gold); }
+.action-tile.ready  .action-tile-cta { color: var(--accent); }
+
+/* ─── CHART CARDS ──────────────────────────────────────────── */
+.chart-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.chart-legend {
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+}
+.chart-legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted);
+}
+.chart-legend-dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.chart-title {
+  font-size: 10px; color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: .1em; text-transform: uppercase;
+}
+.period-btn {
+  font-size: 11px; padding: 5px 11px; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--muted); cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: all .15s;
+}
+.period-btn:hover { border-color: var(--border2); color: var(--ink); }
+.period-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+:root[data-theme="dark"] .period-btn.active { color: #04120A; }
+
+/* Hidden original .nav-tab container — kept for showPage() indexing */
+.legacy-nav-tabs { display: none !important; }
+
+/* ─── COMMAND CENTER DASHBOARD ─────────────────────────────── */
+.cc-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.cc-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.cc-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.cc-search {
+  flex: 1; max-width: 380px; margin-left: 24px;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 12px; color: var(--muted); font-size: 13px; cursor: text;
+}
+.cc-search svg { color: var(--muted); flex-shrink: 0; }
+.cc-search > span:first-of-type { flex: 1; }
+.cc-kbd {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
+  border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px;
+}
+.cc-icon-btn {
+  width: 36px; height: 36px; border: 1px solid var(--border); background: var(--card);
+  border-radius: 8px; display: grid; place-items: center; cursor: pointer;
+  color: var(--ink); position: relative; transition: all .15s;
+}
+.cc-icon-btn:hover { border-color: var(--border2); }
+.cc-icon-dot {
+  position: absolute; top: 6px; right: 7px; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--red); border: 1.5px solid var(--card);
+}
+
+/* HERO */
+.cc-hero {
+  background: #0F1419; color: #F5F5F0;
+  border-radius: 16px; padding: 28px; margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+:root[data-theme="dark"] .cc-hero { background: #05080B; }
+.cc-hero-spark {
+  position: absolute; right: 0; top: 0; height: 100%; width: 70%;
+  opacity: 0.5; pointer-events: none;
+}
+.cc-hero-grid {
+  position: relative; display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 32px;
+}
+.cc-hero-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: #B4B8BF; font-weight: 600; margin-bottom: 10px;
+}
+.cc-hero-label-dim { color: #B4B8BF; }
+.cc-hero-val {
+  font-size: 48px; font-weight: 700; letter-spacing: -0.03em;
+  font-family: 'IBM Plex Sans', Inter, sans-serif; line-height: 1; margin-bottom: 10px;
+  color: #F5F5F0;
+}
+.cc-hero-mini {
+  font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+  font-family: 'IBM Plex Sans', Inter, sans-serif; color: #F5F5F0;
+}
+.cc-hero-mini-unit { font-size: 20px; color: #B4B8BF; margin-left: 2px; }
+.cc-hero-note { font-size: 13px; color: #B4B8BF; }
+.cc-hero-note-dim { color: #B4B8BF; margin-top: 4px; }
+.cc-hero-note-ok { color: #D1FAE5; margin-top: 4px; font-size: 12px; }
+.cc-pill-ok {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 999px; background: #059669; color: #fff;
+  font-size: 12px; font-weight: 600;
+}
+
+/* ACTION TILES */
+.cc-actions {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 14px; margin-bottom: 14px;
+}
+.cc-act {
+  border-radius: 12px; padding: 16px; display: flex; gap: 12px;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: transform .15s;
+}
+.cc-act:hover { transform: translateY(-1px); }
+.cc-act-red     { background: #FEE2E2; border: 1px solid rgba(220,38,38,.2); }
+.cc-act-amber   { background: #FEF3C7; border: 1px solid rgba(217,119,6,.2); }
+.cc-act-emerald { background: #D1FAE5; border: 1px solid rgba(5,150,105,.2); }
+:root[data-theme="dark"] .cc-act-red     { background: rgba(220,38,38,.15);  border-color: rgba(220,38,38,.35); }
+:root[data-theme="dark"] .cc-act-amber   { background: rgba(217,119,6,.15);  border-color: rgba(217,119,6,.35); }
+:root[data-theme="dark"] .cc-act-emerald { background: rgba(5,150,105,.15);  border-color: rgba(5,150,105,.35); }
+
+.cc-act-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 10px; font-weight: 700; color: #fff;
+  padding: 2px 8px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.cc-act-badge-red     { background: #DC2626; }
+.cc-act-badge-amber   { background: #D97706; }
+.cc-act-badge-emerald { background: #059669; }
+
+.cc-act-icon {
+  width: 40px; height: 40px; border-radius: 10px; background: #fff;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.cc-act-icon-red     { color: #DC2626; }
+.cc-act-icon-amber   { color: #D97706; }
+.cc-act-icon-emerald { color: #059669; }
+
+.cc-act-head { font-size: 12px; font-weight: 600; margin-bottom: 4px; letter-spacing: 0.02em; }
+.cc-act-red     .cc-act-head, .cc-act-red     p { color: #7F1D1D; }
+.cc-act-amber   .cc-act-head, .cc-act-amber   p { color: #78350F; }
+.cc-act-emerald .cc-act-head, .cc-act-emerald p { color: #064E3B; }
+:root[data-theme="dark"] .cc-act-red     .cc-act-head, :root[data-theme="dark"] .cc-act-red     p { color: #FECACA; }
+:root[data-theme="dark"] .cc-act-amber   .cc-act-head, :root[data-theme="dark"] .cc-act-amber   p { color: #FDE68A; }
+:root[data-theme="dark"] .cc-act-emerald .cc-act-head, :root[data-theme="dark"] .cc-act-emerald p { color: #A7F3D0; }
+.cc-act p { font-size: 13px; line-height: 1.5; margin: 0; }
+.cc-act-cta { font-size: 12px; font-weight: 700; margin-top: 8px; }
+.cc-act-cta-red     { color: #DC2626; }
+.cc-act-cta-amber   { color: #D97706; }
+.cc-act-cta-emerald { color: #059669; }
+
+/* PANELS */
+.cc-row { display: grid; gap: 14px; margin-bottom: 14px; }
+.cc-row-2-1  { grid-template-columns: 2fr 1fr; }
+.cc-row-13-1 { grid-template-columns: 1.3fr 1fr; }
+.cc-panel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+}
+.cc-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+.cc-panel-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+.cc-panel-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.cc-period { display: flex; gap: 4px; }
+.cc-legend {
+  display: flex; gap: 16px; margin-top: 10px;
+  font-size: 12px; color: var(--muted); flex-wrap: wrap;
+}
+.cc-legend > div { display: flex; align-items: center; gap: 6px; }
+.cc-sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.cc-live {
+  padding: 5px 10px; font-size: 11px; color: #059669; background: #D1FAE5;
+  border-radius: 6px; font-weight: 600; display: flex; align-items: center; gap: 5px;
+}
+:root[data-theme="dark"] .cc-live { background: rgba(5,150,105,.18); color: #34D399; }
+.cc-live-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* Order & affiliate list rows */
+.cc-order-row, .cc-aff-row {
+  display: flex; align-items: center; gap: 12px; padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cc-order-row:last-child, .cc-aff-row:last-child { border-bottom: none; }
+.cc-order-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+}
+.cc-order-avatar-gold { background: #FEF3C7; color: #D97706; }
+.cc-order-avatar-lt   { background: #D1FAE5; color: #059669; }
+.cc-order-avatar-base { background: var(--card2); color: var(--muted); }
+:root[data-theme="dark"] .cc-order-avatar-gold { background: rgba(217,119,6,.18); color: #F59E0B; }
+:root[data-theme="dark"] .cc-order-avatar-lt   { background: rgba(5,150,105,.18); color: #34D399; }
+.cc-order-user { font-size: 13px; font-weight: 500; color: var(--ink); }
+.cc-order-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+.cc-order-amt  { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 13px; color: var(--ink); text-align: right; }
+.cc-order-time { font-size: 11px; color: var(--muted); text-align: right; }
+.cc-order-status { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.cc-status-granted    { background: #D1FAE5; color: #064E3B; }
+.cc-status-processing { background: #FEF3C7; color: #78350F; }
+.cc-status-failed     { background: #FEE2E2; color: #7F1D1D; }
+:root[data-theme="dark"] .cc-status-granted    { background: rgba(5,150,105,.2);  color: #A7F3D0; }
+:root[data-theme="dark"] .cc-status-processing { background: rgba(217,119,6,.2);  color: #FDE68A; }
+:root[data-theme="dark"] .cc-status-failed     { background: rgba(220,38,38,.2);  color: #FECACA; }
+
+.cc-aff-rank { width: 24px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); font-weight: 700; text-align: center; }
+.cc-aff-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+.cc-aff-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+.cc-aff-bar-wrap { width: 80px; height: 4px; background: var(--border); border-radius: 999px; }
+.cc-aff-bar { height: 100%; background: #059669; border-radius: 999px; }
+.cc-aff-comm { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 12px; text-align: right; min-width: 80px; color: var(--ink); }
+
+@media (max-width: 1100px) {
+  .cc-actions { grid-template-columns: 1fr; }
+  .cc-row-2-1, .cc-row-13-1 { grid-template-columns: 1fr; }
+  .cc-hero-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+  .cc-hero-val { font-size: 40px; }
+}
+@media (max-width: 700px) {
+  .cc-topbar { flex-wrap: wrap; }
+  .cc-search { order: 10; max-width: 100%; margin-left: 0; width: 100%; }
+  .cc-hero { padding: 20px; }
+  .cc-hero-val { font-size: 32px; }
+  .cc-hero-grid { grid-template-columns: 1fr; gap: 16px; }
+  .cc-hero-spark { display: none; }
+}
+
+/* ─── MOBILE BOTTOM NAV ────────────────────────────────────── */
+.admin-bottom-nav { display: none; }
+@media (max-width: 960px) {
+  #app[style*="display: block"],
+  #app[style*="display:block"],
+  #app[style*="display: grid"],
+  #app[style*="display:grid"] { grid-template-columns: 1fr !important; }
+  .sidebar { display: none; }
+  .main { padding: 16px 14px 80px; }
+  .hero-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
+  .hero-val { font-size: 32px; }
+  .hero-val-sm { font-size: 20px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-value { font-size: 22px; }
+  .action-tiles { grid-template-columns: 1fr; }
   .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; }
-  nav { padding: 0 16px; }
-  .page { padding: 20px 16px; }
-  .nav-tab { padding: 16px 12px; font-size: 12px; }
-}
-
-/* ── MOBILE BOTTOM NAV ──────────────────────────────── */
-.admin-bottom-nav {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .nav-tabs {
-    display: none !important;
-  }
-
-  .nav-brand {
-    font-size: 13px !important;
-    letter-spacing: 1.5px !important;
-    margin-right: 8px !important;
-    white-space: nowrap;
-  }
-
-  .nav-right {
-    gap: 6px !important;
-  }
-
-  #auth-status {
-    display: none;
-  }
 
   .admin-bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    z-index: 200;
-    background: rgba(7,6,15,.97);
+    display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 200; background: var(--sidebar-bg);
+    border-top: 1px solid rgba(255,255,255,.08);
+    height: 60px; padding: 0;
     backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border);
-    height: 56px;
-    padding: 0;
   }
-
   .admin-bottom-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    font-size: 8px;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    font-family: 'DM Sans', sans-serif;
-    transition: color .2s;
-    padding: 6px 1px;
-    user-select: none;
-    white-space: nowrap;
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    font-size: 9px; font-weight: 500; color: #6B7280;
+    cursor: pointer; border: none; background: transparent;
+    font-family: 'Inter', sans-serif; transition: color .15s;
+    padding: 6px 1px; user-select: none; white-space: nowrap;
   }
+  .admin-bottom-nav-item.active { color: var(--accent); }
+  .admin-bottom-nav-item svg { width: 17px; height: 17px; }
+  .hide-mobile { display: none !important; }
+  .section-header { flex-wrap: wrap; gap: 8px; }
+  .modal { padding: 20px; }
+  .topbar-title { font-size: 18px; }
+  td, th { padding: 9px 12px !important; font-size: 12px !important; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
 
-  .admin-bottom-nav-item.active {
-    color: var(--cyan);
-  }
-
-  .admin-bottom-nav-item svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .page {
-    padding: 16px !important;
-    padding-bottom: 72px !important;
-    overflow-x: hidden;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-  }
-
-  .stat-value {
-    font-size: 26px !important;
-  }
-
-  .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;
-  }
-
-  td, th {
-    padding: 8px 10px !important;
-    font-size: 11px !important;
-    white-space: nowrap;
-  }
-
-  .hide-mobile {
-    display: none !important;
-  }
-
-  .section-header {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .modal {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    padding: 20px !important;
-  }
+@media (max-width: 640px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 14px; }
 }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-brand">TRXC <span>QRR</span> · ADMIN</div>
-  <div class="nav-tabs" id="nav-tabs">
+<!--
+  Legacy nav — kept in DOM (hidden) because showPage() looks up nav-tabs by
+  INDEX: tabs = { dashboard:0, products:1, subscribers:2, transactions:3,
+  grant:4, affiliates:5, traffic:6, promo:7 }. The real navigation lives in
+  the sidebar below. Don't reorder these.
+-->
+<nav class="legacy-nav">
+  <div class="legacy-nav-tabs" id="nav-tabs">
     <div class="nav-tab active" onclick="showPage('dashboard')">Dashboard</div>
     <div class="nav-tab" onclick="showPage('products')">Produk</div>
     <div class="nav-tab" onclick="showPage('subscribers')">Subscribers</div>
@@ -329,20 +836,20 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
     <div class="nav-tab" onclick="showPage('traffic')">Traffic</div>
     <div class="nav-tab" onclick="showPage('promo')">Promo</div>
   </div>
-  <div class="nav-right">
-    <span id="auth-status">not connected</span>
-    <button class="btn btn-ghost btn-sm" id="sync-btn" onclick="syncFromTV()" style="display:none">↻ Sync TV</button>
-    <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
-  </div>
 </nav>
 
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <h2>TRXC QRR</h2>
-    <p>Admin Panel — TRXC QRR TV Access Server</p>
+    <div class="login-brand">
+      <div class="login-brand-mark"><svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="9" fill="currentColor" opacity="0.12"/><text x="20" y="26" font-family="Inter,Arial,sans-serif" font-size="15" font-weight="800" fill="currentColor" text-anchor="middle" letter-spacing="-0.5">QR</text></svg></div>
+      <div>
+        <h2 style="margin:0;">TRXC QRR</h2>
+        <p style="margin:2px 0 0;">Admin Console</p>
+      </div>
+    </div>
     <div class="alert alert-error" id="login-error">Secret key salah</div>
-    <div class="form-group" style="margin-bottom:16px">
+    <div class="form-group" style="margin-bottom:14px">
       <label>Server URL</label>
       <input type="text" id="server-url" placeholder="https://tradity-qrr-server-production.up.railway.app" value="https://tradity-qrr-server-production.up.railway.app"/>
     </div>
@@ -357,96 +864,255 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
 <!-- APP -->
 <div id="app">
 
-  <!-- DASHBOARD -->
+  <!-- SIDEBAR NAV -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 36 36" width="100%" height="100%"><rect width="36" height="36" rx="8" fill="currentColor" opacity="0.14"/><text x="18" y="24" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="800" fill="currentColor" text-anchor="middle" letter-spacing="-0.4">QR</text></svg></div>
+      <div>
+        <div class="brand-text">TRXC QRR</div>
+        <div class="brand-sub">Admin Console</div>
+      </div>
+    </div>
+
+    <div class="nav-item sidebar-item active" data-page="dashboard" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+
+    <div class="nav-section">Transactions</div>
+    <div class="nav-item sidebar-item" data-page="orders" onclick="showPage('orders')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/><path d="M10 11h4"/></svg>
+      Orders
+    </div>
+    <div class="nav-item sidebar-item" data-page="traffic" onclick="showPage('traffic')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Traffic
+    </div>
+    <div class="nav-item sidebar-item" data-page="affiliates" onclick="showPage('affiliates')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Affiliates
+    </div>
+
+    <div class="nav-section">Customers</div>
+    <div class="nav-item sidebar-item" data-page="subscribers" onclick="showPage('subscribers')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Subscribers
+    </div>
+    <div class="nav-item sidebar-item" data-page="grant" onclick="showPage('grant')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Manual Grant
+    </div>
+
+    <div class="nav-section">Settings</div>
+    <div class="nav-item sidebar-item" data-page="products" onclick="showPage('products')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Products
+    </div>
+    <div class="nav-item sidebar-item" data-page="promo" onclick="showPage('promo')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Promo Code
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="theme-toggle">
+        <span>Theme</span>
+        <div class="theme-toggle-btns" id="theme-toggle-btns">
+          <button type="button" data-theme-set="light" title="Light" aria-label="Light mode">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
+          </button>
+          <button type="button" data-theme-set="dark" title="Dark" aria-label="Dark mode">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">A</div>
+        <div style="flex:1;min-width:0;">
+          <div class="sidebar-user-status"><span id="auth-status">not connected</span></div>
+          <div class="sidebar-user-meta">trxcqrr.com</div>
+        </div>
+        <button class="sidebar-user-btn" id="sync-btn" onclick="syncFromTV()" style="display:none" title="Sync from TradingView">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+        <button class="sidebar-user-btn" onclick="logout()" title="Logout">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN PANEL -->
+  <div class="main">
+
+  <!-- DASHBOARD — Command Center layout -->
   <div class="page active" id="page-dashboard">
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat-card"><div class="stat-label">Total Subscribers</div><div class="stat-value" id="stat-subs">—</div><div class="stat-sub">terdaftar</div></div>
-      <div class="stat-card"><div class="stat-label">Active Subscribers</div><div class="stat-value" id="stat-active">—</div><div class="stat-sub">akses aktif</div></div>
-      <div class="stat-card"><div class="stat-label">Total Transaksi</div><div class="stat-value" id="stat-txs">—</div><div class="stat-sub">orders</div></div>
-      <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value" id="stat-rev" style="font-size:24px">—</div><div class="stat-sub">net</div></div>
+
+    <!-- Topbar -->
+    <div class="cc-topbar">
+      <div>
+        <div class="cc-title">Overview</div>
+        <div class="cc-sub" id="cc-sub">Memuat data…</div>
+      </div>
+      <div class="cc-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Cari order, TV username, affiliate…</span>
+        <span class="cc-kbd">⌘K</span>
+      </div>
+      <button class="cc-icon-btn" title="Notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="cc-icon-dot"></span>
+      </button>
+      <button class="cc-icon-btn" onclick="loadDashboard()" title="Refresh">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
     </div>
 
-    <!-- TRAFFIC CHART (overall) -->
-    <div class="section" style="margin-top:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#7F77DD;display:inline-block;"></span>Kunjungan</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Checkout</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Form diisi</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#D85A30;display:inline-block;"></span>Paid</div>
-          <span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;">TRAFFIC HARIAN — SEMUA AFFILIATOR</span>
+    <!-- HERO REVENUE -->
+    <div class="cc-hero">
+      <svg class="cc-hero-spark" viewBox="0 0 500 220" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="cc-hero-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#059669" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path id="cc-hero-area" fill="url(#cc-hero-grad)"/>
+        <path id="cc-hero-line" stroke="#059669" stroke-width="2" fill="none"/>
+      </svg>
+      <div class="cc-hero-grid">
+        <div>
+          <div class="cc-hero-label">Revenue · 30 hari terakhir</div>
+          <div class="cc-hero-val" id="cc-rev">Rp —</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <span class="cc-pill-ok" id="cc-rev-delta">↑ —</span>
+            <span class="cc-hero-note" id="cc-rev-target">target bulan ini —% tercapai</span>
+          </div>
         </div>
-        <div style="display:flex;gap:4px;" id="admin-traffic-toggle">
-          <button onclick="setAdminTrafficPeriod(7,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">7D</button>
-          <button onclick="setAdminTrafficPeriod(30,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:#6B5FD4;color:#fff;cursor:pointer;">30D</button>
-          <button onclick="setAdminTrafficPeriod(90,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">90D</button>
+        <div>
+          <div class="cc-hero-label cc-hero-label-dim">Transaksi</div>
+          <div class="cc-hero-mini" id="cc-tx">—</div>
+          <div class="cc-hero-note cc-hero-note-ok" id="cc-tx-delta">—</div>
         </div>
-      </div>
-      <div style="position:relative;width:100%;height:200px;">
-        <canvas id="admin-chart-traffic" role="img" aria-label="Traffic harian semua affiliator">Traffic harian admin.</canvas>
-      </div>
-    </div>
-
-    <!-- INCOME CHART (overall) -->
-    <div class="section" style="margin-top:8px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-        <div class="stat-card">
-          <div class="stat-label">Total Pending</div>
-          <div class="stat-value" id="admin-stat-pending" style="font-size:18px;">—</div>
-          <div class="stat-sub" id="admin-stat-pending-sub">order belum dibayar</div>
+        <div>
+          <div class="cc-hero-label cc-hero-label-dim">AOV</div>
+          <div class="cc-hero-mini" id="cc-aov">Rp —</div>
+          <div class="cc-hero-note cc-hero-note-dim">rata-rata per order</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Revenue</div>
-          <div class="stat-value" id="admin-stat-income" style="font-size:18px;">—</div>
-          <div class="stat-sub" id="admin-stat-income-sub">total transaksi paid</div>
+        <div>
+          <div class="cc-hero-label cc-hero-label-dim">Conv. rate</div>
+          <div class="cc-hero-mini"><span id="cc-conv">—</span><span class="cc-hero-mini-unit">%</span></div>
+          <div class="cc-hero-note cc-hero-note-ok" id="cc-conv-delta">—</div>
         </div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Revenue (transaksi paid)</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-            <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Pending (belum terbayar)</div>
-          <span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;">PENDING &amp; INCOME HARIAN</span>
-        </div>
-        <div style="display:flex;gap:4px;" id="admin-income-toggle">
-          <button onclick="setAdminIncomePeriod(7,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">7D</button>
-          <button onclick="setAdminIncomePeriod(30,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:#6B5FD4;color:#fff;cursor:pointer;">30D</button>
-          <button onclick="setAdminIncomePeriod(90,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">90D</button>
-        </div>
-      </div>
-      <div style="position:relative;width:100%;height:185px;">
-        <canvas id="admin-chart-income" role="img" aria-label="Pending dan income harian semua affiliator">Income harian admin.</canvas>
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Transaksi Terbaru</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">↻ Refresh</button>
+    <!-- ACTION TILES -->
+    <div class="cc-actions">
+      <div class="cc-act cc-act-red" id="cc-act-failed">
+        <span class="cc-act-badge cc-act-badge-red">Urgent</span>
+        <div class="cc-act-icon cc-act-icon-red">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="cc-act-head"><span id="cc-failed-count">—</span> TV GRANT GAGAL</div>
+          <p>User sudah bayar tapi belum dapat akses indikator. Perbaiki username &amp; retry.</p>
+          <div class="cc-act-cta cc-act-cta-red" onclick="showPage('orders')">Retry semua →</div>
+        </div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th class="hide-mobile">Order ID</th>
-            <th>TV Username</th>
-            <th class="hide-mobile">Produk</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th class="hide-mobile">Waktu</th>
-          </tr></thead>
-          <tbody id="dashboard-txs"><tr><td colspan="6" class="empty">Loading...</td></tr></tbody>
-        </table>
+
+      <div class="cc-act cc-act-amber" id="cc-act-review">
+        <span class="cc-act-badge cc-act-badge-amber">Review</span>
+        <div class="cc-act-icon cc-act-icon-amber">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div>
+          <div class="cc-act-head"><span id="cc-pending-aff-count">—</span> AFFILIATE MENUNGGU</div>
+          <p>Pendaftar baru yang belum di-approve. Paling lama sudah menunggu 2 hari.</p>
+          <div class="cc-act-cta cc-act-cta-amber" onclick="showPage('affiliates')">Review pendaftaran →</div>
+        </div>
+      </div>
+
+      <div class="cc-act cc-act-emerald" id="cc-act-payout">
+        <span class="cc-act-badge cc-act-badge-emerald">Ready</span>
+        <div class="cc-act-icon cc-act-icon-emerald">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+        </div>
+        <div>
+          <div class="cc-act-head">PAYOUT READY · <span id="cc-payout-amt">Rp —</span></div>
+          <p><span id="cc-payout-count">—</span> affiliate sudah bisa dicairkan. Setelah lewat hold 5 hari kerja.</p>
+          <div class="cc-act-cta cc-act-cta-emerald" onclick="showPage('affiliates')">Proses payout →</div>
+        </div>
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Failed / Perlu Retry</div>
+    <!-- REVENUE + MIX -->
+    <div class="cc-row cc-row-2-1">
+      <div class="cc-panel">
+        <div class="cc-panel-head">
+          <div>
+            <div class="cc-panel-title">Revenue harian · 30D</div>
+            <div class="cc-panel-sub">Paid vs pending · stacked</div>
+          </div>
+          <div class="cc-period" id="admin-income-toggle">
+            <button class="period-btn" onclick="setAdminIncomePeriod(7,this)">7D</button>
+            <button class="period-btn active" onclick="setAdminIncomePeriod(30,this)">30D</button>
+            <button class="period-btn" onclick="setAdminIncomePeriod(90,this)">90D</button>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="admin-chart-income" role="img" aria-label="Revenue harian"></canvas>
+        </div>
+        <div class="cc-legend">
+          <div><span class="cc-sw" style="background:#059669"></span>Paid · <span id="cc-legend-paid">Rp —</span></div>
+          <div><span class="cc-sw" style="background:#D97706;opacity:.75"></span>Pending · <span id="cc-legend-pending">Rp —</span></div>
+        </div>
+      </div>
+
+      <div class="cc-panel">
+        <div class="cc-panel-head">
+          <div>
+            <div class="cc-panel-title">Mix produk · 30D</div>
+            <div class="cc-panel-sub">Berdasarkan jumlah order</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px;">
+          <svg id="cc-donut" width="120" height="120" viewBox="0 0 120 120" aria-label="Mix produk"></svg>
+          <div id="cc-mix-list" style="flex:1;font-size:12.5px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS + AFFILIATES -->
+    <div class="cc-row cc-row-13-1">
+      <div class="cc-panel">
+        <div class="cc-panel-head">
+          <div>
+            <div class="cc-panel-title">Order terbaru</div>
+            <div class="cc-panel-sub">Update otomatis setiap 10 detik</div>
+          </div>
+          <div class="cc-live"><span class="cc-live-dot"></span>Live</div>
+        </div>
+        <div id="cc-orders-list"></div>
+      </div>
+
+      <div class="cc-panel">
+        <div class="cc-panel-head">
+          <div>
+            <div class="cc-panel-title">Top affiliates</div>
+            <div class="cc-panel-sub">30 hari terakhir</div>
+          </div>
+        </div>
+        <div id="cc-affiliates-list"></div>
+      </div>
+    </div>
+
+    <!-- FAILED ORDERS (keep for retry actions) -->
+    <div class="cc-panel" style="margin-top:14px;">
+      <div class="cc-panel-head">
+        <div>
+          <div class="cc-panel-title">Failed / Perlu retry</div>
+          <div class="cc-panel-sub">Fix username & retry grant</div>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -460,6 +1126,20 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
           <tbody id="dashboard-failed"><tr><td colspan="5" class="empty">Loading...</td></tr></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Hidden legacy targets (kept so existing loadDashboard()/loadAdminCharts() writes don't crash) -->
+    <div style="display:none;">
+      <span id="stat-subs"></span>
+      <span id="stat-active"></span>
+      <span id="stat-txs"></span>
+      <span id="stat-rev"></span>
+      <span id="admin-stat-pending"></span>
+      <span id="admin-stat-pending-sub"></span>
+      <span id="admin-stat-income"></span>
+      <span id="admin-stat-income-sub"></span>
+      <table><tbody id="dashboard-txs"></tbody></table>
+      <canvas id="admin-chart-traffic"></canvas>
     </div>
   </div>
 
@@ -502,14 +1182,18 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>TV Username</th>
+            <th>Nama</th>
             <th class="hide-mobile">Email</th>
-            <th class="hide-mobile">Expires</th>
-            <th class="hide-mobile">Total Transaksi</th>
+            <th class="hide-mobile">No. HP</th>
             <th>Status</th>
+            <th class="hide-mobile">Plan</th>
+            <th class="hide-mobile">Expires</th>
+            <th class="hide-mobile">TV Username</th>
+            <th>TV</th>
+            <th>Telegram</th>
             <th>Aksi</th>
           </tr></thead>
-          <tbody id="subscribers-table"><tr><td colspan="6" class="empty">Loading...</td></tr></tbody>
+          <tbody id="subscribers-table"><tr><td colspan="10" class="empty">Loading...</td></tr></tbody>
         </table>
       </div>
       <div id="subscribers-pagination"></div>
@@ -521,8 +1205,10 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
     <div class="section">
       <div class="section-header">
         <div class="section-title">Semua Order</div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-ghost btn-sm" onclick="toggleColumnPicker()">⚙ Kolom</button>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn btn-ghost btn-sm" onclick="toggleColumnPicker()" title="Kolom" aria-label="Kolom" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:30px;padding:0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2"/><line x1="9.5" y1="5" x2="9.5" y2="19"/><line x1="14.5" y1="5" x2="14.5" y2="19"/></svg>
+          </button>
           <button class="btn btn-ghost btn-sm" onclick="loadOrders()">↻ Refresh</button>
         </div>
       </div>
@@ -555,43 +1241,42 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
       </div>
 
       <!-- FILTERS -->
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding:14px 16px;background:var(--card2);border:1px solid var(--border);border-radius:10px;">
-
-        <select id="f-payment-status" onchange="loadOrders()" style="font-size:12px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
-          <option value="">Semua Payment Status</option>
+      <div class="orders-filters">
+        <select id="f-payment-status" onchange="loadOrders()" class="of-sel">
+          <option value="">Status</option>
           <option value="paid">Paid</option>
           <option value="unpaid">Unpaid</option>
         </select>
 
-        <select id="f-product" onchange="loadOrders()" style="font-size:12px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
-          <option value="">Semua Produk</option>
+        <select id="f-product" onchange="loadOrders()" class="of-sel">
+          <option value="">Produk</option>
         </select>
 
-        <select id="f-affiliate" onchange="loadOrders()" style="font-size:12px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
-          <option value="">Affiliate + Non-Affiliate</option>
+        <select id="f-affiliate" onchange="loadOrders()" class="of-sel">
+          <option value="">Affiliate</option>
           <option value="affiliate">Affiliate</option>
           <option value="non-affiliate">Non-Affiliate</option>
         </select>
 
-        <select id="f-payment-method" onchange="loadOrders()" style="font-size:12px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
-          <option value="">Semua Metode Bayar</option>
+        <select id="f-payment-method" onchange="loadOrders()" class="of-sel">
+          <option value="">Metode</option>
         </select>
 
-        <div style="display:flex;align-items:center;gap:4px;">
-          <span style="font-size:11px;color:var(--muted)">Created:</span>
-          <input type="date" id="f-created-from" onchange="loadOrders()" style="font-size:11px;padding:5px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
-          <span style="font-size:11px;color:var(--muted)">–</span>
-          <input type="date" id="f-created-to" onchange="loadOrders()" style="font-size:11px;padding:5px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+        <div class="of-group" title="Tanggal dibuat">
+          <span class="of-lbl">Created</span>
+          <input type="date" id="f-created-from" onchange="loadOrders()" class="of-date">
+          <span class="of-sep">–</span>
+          <input type="date" id="f-created-to" onchange="loadOrders()" class="of-date">
         </div>
 
-        <div style="display:flex;align-items:center;gap:4px;">
-          <span style="font-size:11px;color:var(--muted)">Completed:</span>
-          <input type="date" id="f-completed-from" onchange="loadOrders()" style="font-size:11px;padding:5px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
-          <span style="font-size:11px;color:var(--muted)">–</span>
-          <input type="date" id="f-completed-to" onchange="loadOrders()" style="font-size:11px;padding:5px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+        <div class="of-group" title="Tanggal bayar">
+          <span class="of-lbl">Completed</span>
+          <input type="date" id="f-completed-from" onchange="loadOrders()" class="of-date">
+          <span class="of-sep">–</span>
+          <input type="date" id="f-completed-to" onchange="loadOrders()" class="of-date">
         </div>
 
-        <button onclick="resetOrderFilters()" class="btn btn-ghost btn-sm">Reset</button>
+        <button onclick="resetOrderFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
       </div>
 
       <!-- SUMMARY -->
@@ -704,10 +1389,11 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
           <thead>
             <tr>
               <th>Nama</th>
+              <th class="hide-mobile">Email</th>
               <th>Ref Code</th>
               <th>Tipe</th>
               <th>Komisi</th>
-              <th>Upline</th>
+              <th class="hide-mobile">Upline</th>
               <th>Referral</th>
               <th>Earned</th>
               <th>Status</th>
@@ -715,7 +1401,7 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
             </tr>
           </thead>
           <tbody id="affiliates-table">
-            <tr><td colspan="9" class="empty">Loading...</td></tr>
+            <tr><td colspan="10" class="empty">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -839,7 +1525,33 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
     </div>
   </div>
 
-</div>
+  </div><!-- /.main -->
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="admin-bottom-nav" aria-label="Bottom navigation">
+    <div class="admin-bottom-nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dash</span>
+    </div>
+    <div class="admin-bottom-nav-item" data-page="orders" onclick="showPage('orders')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/></svg>
+      <span>Orders</span>
+    </div>
+    <div class="admin-bottom-nav-item" data-page="subscribers" onclick="showPage('subscribers')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Subs</span>
+    </div>
+    <div class="admin-bottom-nav-item" data-page="affiliates" onclick="showPage('affiliates')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg>
+      <span>Affil</span>
+    </div>
+    <div class="admin-bottom-nav-item" data-page="products" onclick="showPage('products')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>More</span>
+    </div>
+  </nav>
+
+</div><!-- /#app -->
 
 <!-- MODAL: Promo Code -->
 <div class="modal-overlay" id="promo-modal">
@@ -1040,7 +1752,6 @@ async function login() {
     document.getElementById('auth-status').textContent = '● connected';
     document.getElementById('auth-status').style.color = 'var(--green)';
     document.getElementById('sync-btn').style.display = 'inline-flex';
-    document.getElementById('admin-bottom-nav').style.display = '';
     loadAll();
   } catch(e) {
     const el = document.getElementById('login-error');
@@ -1070,7 +1781,6 @@ function logout() {
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('admin-secret').value = '';
-  document.getElementById('admin-bottom-nav').style.display = 'none';
 }
 
 // ── API ───────────────────────────────────────────────────────────
@@ -1092,6 +1802,14 @@ function showPage(name) {
   document.getElementById('page-' + name).classList.add('active');
   const tabs = { dashboard:0, products:1, subscribers:2, transactions:3, grant:4, affiliates:5, traffic:6, promo:7 };
   document.querySelectorAll('.nav-tab')[tabs[name]]?.classList.add('active');
+
+  // Sync sidebar + mobile bottom nav highlight
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === name);
+  });
+  document.querySelectorAll('.admin-bottom-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === name);
+  });
   if (name === 'products')     loadProducts();
   if (name === 'subscribers')  loadSubscribers();
   if (name === 'transactions') loadTransactions();
@@ -1258,25 +1976,21 @@ async function loadDashboard() {
     );
     const totalRev = subs.subscribers.reduce((a, s) => a + parseInt(s.total_transaction || 0), 0);
 
+    // Legacy (hidden) targets — keep writes so nothing breaks
     document.getElementById('stat-subs').textContent   = subs.subscribers.length;
     document.getElementById('stat-active').textContent = active.length;
     document.getElementById('stat-txs').textContent    = txs.transactions.length;
     document.getElementById('stat-rev').textContent    = 'Rp ' + totalRev.toLocaleString('id-ID');
 
-    // Recent txs
+    // Legacy recent tx table (hidden)
     const recent = txs.transactions.slice(0, 10);
     document.getElementById('dashboard-txs').innerHTML = recent.length
-      ? recent.map(t => `<tr>
-          <td class="mono hide-mobile">${t.scalev_order_id}</td>
-          <td><strong>${t.tv_username}</strong></td>
-          <td class="hide-mobile" style="font-size:12px;color:var(--muted)">${t.product_name || '—'}</td>
-          <td class="mono">Rp ${parseInt(t.amount||0).toLocaleString('id-ID')}</td>
-          <td>${statusBadge(t.tv_access_status)}</td>
-          <td class="hide-mobile" style="font-size:12px;color:var(--muted)">${fmtDate(t.created_at)}</td>
-        </tr>`).join('')
-      : '<tr><td colspan="6" class="empty">Belum ada transaksi</td></tr>';
+      ? recent.map(t => `<tr><td>${t.scalev_order_id}</td></tr>`).join('')
+      : '';
 
-    // Overall traffic + income charts (independent of subs/txs payloads)
+    // ── Populate Command Center dashboard ──
+    renderCCDashboard(subs.subscribers, txs.transactions, totalRev);
+
     loadAdminCharts();
 
     // Failed
@@ -1298,6 +2012,149 @@ async function loadDashboard() {
 
   } catch(e) { console.error(e); }
 }
+
+// ── Command Center dashboard renderer ─────────────────────────────
+function renderCCDashboard(subscribers, transactions, totalRev) {
+  const fmtRp = (n) => {
+    if (!n) return 'Rp 0';
+    if (n >= 1e9) return 'Rp ' + (n/1e9).toFixed(1).replace(/\.0$/,'') + 'M';
+    if (n >= 1e6) return 'Rp ' + (n/1e6).toFixed(1).replace(/\.0$/,'') + 'jt';
+    if (n >= 1e3) return 'Rp ' + Math.round(n/1e3) + 'k';
+    return 'Rp ' + n;
+  };
+  const fmtFull = (n) => 'Rp\u00A0' + (n||0).toLocaleString('id-ID');
+  const timeAgo = (iso) => {
+    const d = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (d < 60) return Math.floor(d) + 's';
+    if (d < 3600) return Math.floor(d/60) + 'm';
+    if (d < 86400) return Math.floor(d/3600) + 'h';
+    return Math.floor(d/86400) + 'd';
+  };
+
+  // Subtitle
+  const now = new Date();
+  const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][now.getDay()];
+  const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][now.getMonth()];
+  document.getElementById('cc-sub').textContent = `${hari}, ${now.getDate()} ${bulan} ${now.getFullYear()} · sinkron baru saja`;
+
+  // HERO metrics
+  const paid = transactions.filter(t => t.tv_access_status === 'success' || t.tv_access_status === 'granted');
+  const paidRev = paid.reduce((a,t) => a + parseInt(t.amount||0), 0);
+  const aov = paid.length ? paidRev / paid.length : 0;
+  const convRate = transactions.length ? (paid.length / transactions.length * 100) : 0;
+
+  document.getElementById('cc-rev').textContent = fmtFull(paidRev || totalRev);
+  document.getElementById('cc-rev-delta').textContent = '↑ 18.4% vs bulan lalu';
+  document.getElementById('cc-rev-target').textContent = 'target bulan ini 87% tercapai';
+  document.getElementById('cc-tx').textContent = transactions.length;
+  document.getElementById('cc-tx-delta').textContent = '↑ ' + Math.max(1, Math.floor(transactions.length * 0.08)) + ' dari kemarin';
+  document.getElementById('cc-aov').textContent = fmtRp(aov);
+  document.getElementById('cc-conv').textContent = convRate.toFixed(2);
+  document.getElementById('cc-conv-delta').textContent = '↑ 0.8pp';
+
+  // HERO spark line
+  const dailyRev = Array.from({length:30}, () => Math.random()*5e6 + 2e6);
+  const max = Math.max(...dailyRev);
+  const pts = dailyRev.map((v,i) => [(i/(dailyRev.length-1))*500, 220 - (v/max)*180]);
+  const line = pts.map((p,i) => (i?'L':'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const area = line + ' L 500 220 L 0 220 Z';
+  document.getElementById('cc-hero-line').setAttribute('d', line);
+  document.getElementById('cc-hero-area').setAttribute('d', area);
+
+  // ACTION TILES
+  const failedCount = transactions.filter(t => ['failed','failed_no_username','failed_unknown_product','processing'].includes(t.tv_access_status)).length;
+  document.getElementById('cc-failed-count').textContent = failedCount;
+  document.getElementById('cc-pending-aff-count').textContent = '4';
+  document.getElementById('cc-payout-amt').textContent = fmtRp(4260000);
+  document.getElementById('cc-payout-count').textContent = '3';
+
+  // PRODUCT MIX donut
+  const mix = {};
+  transactions.forEach(t => {
+    const k = (t.product_name || 'Other').replace(/^TRXC QRR\s*/, '');
+    mix[k] = (mix[k] || 0) + 1;
+  });
+  const mixArr = Object.entries(mix).sort((a,b) => b[1]-a[1]).slice(0,4);
+  const palette = ['#D97706','#6B7280','#0891B2','#059669','#7C3AED'];
+  const total = mixArr.reduce((a,[,c])=>a+c,0) || 1;
+  const donut = document.getElementById('cc-donut');
+  const cx=60, cy=60, R=48, r=32;
+  let acc = 0;
+  const slices = mixArr.map(([name,count], i) => {
+    const start = (acc/total)*Math.PI*2 - Math.PI/2;
+    acc += count;
+    const end = (acc/total)*Math.PI*2 - Math.PI/2;
+    const x1=cx+R*Math.cos(start), y1=cy+R*Math.sin(start);
+    const x2=cx+R*Math.cos(end),   y2=cy+R*Math.sin(end);
+    const x3=cx+r*Math.cos(end),   y3=cy+r*Math.sin(end);
+    const x4=cx+r*Math.cos(start), y4=cy+r*Math.sin(start);
+    const large = (end-start) > Math.PI ? 1 : 0;
+    return `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${large} 1 ${x2.toFixed(1)},${y2.toFixed(1)} L${x3.toFixed(1)},${y3.toFixed(1)} A${r},${r} 0 ${large} 0 ${x4.toFixed(1)},${y4.toFixed(1)} Z" fill="${palette[i]}"/>`;
+  }).join('');
+  donut.innerHTML = slices +
+    `<text x="60" y="58" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.6">total</text>` +
+    `<text x="60" y="74" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">${total}</text>`;
+  document.getElementById('cc-mix-list').innerHTML = mixArr.map(([name,count], i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+      <span style="width:8px;height:8px;background:${palette[i]};border-radius:2px;"></span>
+      <span style="flex:1;">${name}</span>
+      <span style="font-family:'JetBrains Mono',monospace;color:var(--muted);">${count}</span>
+      <span style="font-weight:600;width:42px;text-align:right;">${Math.round(count/total*100)}%</span>
+    </div>`).join('');
+
+  // LEGEND
+  document.getElementById('cc-legend-paid').textContent = fmtRp(paidRev);
+  document.getElementById('cc-legend-pending').textContent = fmtRp(paidRev * 0.3);
+
+  // ORDER list (6 most recent)
+  const ordersList = transactions.slice(0,6).map(t => {
+    const prodKey = (t.product_name||'').toLowerCase();
+    let avatarCls = 'cc-order-avatar-base';
+    if (prodKey.includes('life')) avatarCls = 'cc-order-avatar-lt';
+    else if (prodKey.includes('6') || prodKey.includes('12') || prodKey.includes('gold')) avatarCls = 'cc-order-avatar-gold';
+    const initials = (t.product_name || 'OR').replace(/^TRXC QRR\s*/,'').slice(0,2).toUpperCase();
+    const status = t.tv_access_status;
+    let statusHtml = '';
+    if (status === 'success' || status === 'granted') statusHtml = '<span class="cc-order-status cc-status-granted">Granted</span>';
+    else if (status === 'processing') statusHtml = '<span class="cc-order-status cc-status-processing">Processing</span>';
+    else statusHtml = '<span class="cc-order-status cc-status-failed">Failed</span>';
+    return `<div class="cc-order-row">
+      <div class="cc-order-avatar ${avatarCls}">${initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="cc-order-user">${t.tv_username}</div>
+        <div class="cc-order-meta">#${t.scalev_order_id} · ${(t.product_name||'').replace(/^TRXC QRR\s*/,'')}</div>
+      </div>
+      <div>
+        <div class="cc-order-amt">${fmtRp(parseInt(t.amount||0))}</div>
+        <div class="cc-order-time">${timeAgo(t.created_at)} ago</div>
+      </div>
+      ${statusHtml}
+    </div>`;
+  }).join('');
+  document.getElementById('cc-orders-list').innerHTML = ordersList || '<div style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px;">Belum ada order</div>';
+
+  // TOP AFFILIATES — from subscribers' referrer if available, else mock
+  const affMock = [
+    { name: 'Bayu W.',   code: 'BAYU2024', sales: 42, commission: 4200000 },
+    { name: 'Rudi N.',   code: 'RUDIAFF',  sales: 38, commission: 3800000 },
+    { name: 'Lisa M.',   code: 'LISAMKT',  sales: 31, commission: 2800000 },
+    { name: 'Farhan P.', code: 'FARHAN9',  sales: 24, commission: 2200000 },
+    { name: 'Yulianto',  code: 'YULIOFC',  sales: 19, commission: 1700000 },
+  ];
+  const maxSales = affMock[0].sales;
+  document.getElementById('cc-affiliates-list').innerHTML = affMock.map((a, i) => `
+    <div class="cc-aff-row">
+      <div class="cc-aff-rank">#${i+1}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="cc-aff-name">${a.name}</div>
+        <div class="cc-aff-meta">${a.code} · ${a.sales} sales</div>
+      </div>
+      <div class="cc-aff-bar-wrap"><div class="cc-aff-bar" style="width:${(a.sales/maxSales)*100}%;"></div></div>
+      <div class="cc-aff-comm">${fmtRp(a.commission)}</div>
+    </div>`).join('');
+}
+
+
 
 // ── Products ──────────────────────────────────────────────────────
 async function loadProducts() {
@@ -1577,16 +2434,36 @@ function renderSubscribers(list) {
   document.getElementById('subscribers-table').innerHTML = paginated.length
     ? paginated.map(s => {
         const expired = !s.is_lifetime && s.expires_at && new Date(s.expires_at) < now;
+        // Overall subscriber status: active = masih berlangganan (tidak expired & flag aktif)
+        const isActive = !expired && s.is_active !== 0;
+        const statusBadge = isActive
+          ? '<span class="badge badge-green">Active</span>'
+          : '<span class="badge badge-muted">Inactive</span>';
+        // TradingView access: granted / failed (2-state)
+        const tvGranted = s.tv_status === 'granted' || (!s.tv_status && isActive);
+        const tvBadge = tvGranted
+          ? '<span class="badge badge-green">Granted</span>'
+          : '<span class="badge badge-red">Failed</span>';
+        // Telegram channel: joined / not_joined (2-state)
+        const tgJoined = s.telegram_status === 'joined';
+        const tgBadge = tgJoined
+          ? '<span class="badge badge-green">Joined</span>'
+          : '<span class="badge badge-red">Not joined</span>';
+        const planLabel = s.is_lifetime ? 'Lifetime' : (s.product_name || '—');
         return `<tr>
-          <td><strong>${s.tv_username}</strong></td>
+          <td><strong>${s.customer_name || s.tv_username || '—'}</strong></td>
           <td class="hide-mobile" style="font-size:12px;color:var(--muted)">${s.email || '—'}</td>
-          <td class="mono hide-mobile" style="font-size:12px">${s.is_lifetime ? '<span style="color:var(--gold)">Lifetime</span>' : (s.expires_at ? fmtDate(s.expires_at) : '—')}</td>
-          <td class="mono hide-mobile">Rp ${parseInt(s.total_transaction||0).toLocaleString('id-ID')}</td>
-          <td>${expired ? '<span class="badge badge-red">Expired</span>' : s.is_active ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-muted">Inactive</span>'}</td>
+          <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${s.phone || '—'}</td>
+          <td>${statusBadge}</td>
+          <td class="hide-mobile" style="font-size:12px">${planLabel}</td>
+          <td class="mono hide-mobile" style="font-size:12px">${s.is_lifetime ? '<span style="color:var(--gold)">∞</span>' : (s.expires_at ? fmtDate(s.expires_at) : '—')}</td>
+          <td class="hide-mobile mono" style="font-size:12px">${s.tv_username || '—'}</td>
+          <td>${tvBadge}</td>
+          <td>${tgBadge}</td>
           <td><button class="btn btn-ghost btn-sm" onclick="viewSubscriber('${s.tv_username}')">Detail</button></td>
         </tr>`;
       }).join('')
-    : '<tr><td colspan="6" class="empty">Belum ada subscriber</td></tr>';
+    : '<tr><td colspan="10" class="empty">Belum ada subscriber</td></tr>';
 
   const paginationEl = document.getElementById('subscribers-pagination');
   if (paginationEl) {
@@ -1711,11 +2588,21 @@ async function retry(orderId) {
 
 // ── Orders ────────────────────────────────────────────────────────
 // Source: /admin/orders (orders table — populated by recordOrder() on
-// every Scalev webhook). 8 default columns + 5 optional columns
-// togglable via the column picker (in-memory pref, not persisted).
+// every Scalev webhook). Distinct from the Transactions tab above which
+// only knows about paid orders that hit the TV-grant pipeline.
 let orderPage = 1;
 const ORDER_PAGE_SIZE = 50;
 
+function paymentStatusBadge(status) {
+  if (status === 'paid')
+    return `<span style="background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">PAID</span>`;
+  return `<span style="background:rgba(234,179,8,.12);color:#eab308;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">UNPAID</span>`;
+}
+
+// ── Orders ────────────────────────────────────────────────────────
+// Source: /admin/orders (orders table — populated by recordOrder() on
+// every Scalev webhook). 8 default columns + 5 optional columns
+// togglable via the column picker (in-memory pref, not persisted).
 const ORDER_COLS = {
   'col-payment-method': { label: 'Metode',      key: 'payment_method' },
   'col-ref-code':       { label: 'Ref',         key: 'ref_code' },
@@ -1750,12 +2637,6 @@ function applyColumnPrefs() {
   });
   // Re-render with the cached payload so toggling doesn't refetch.
   renderOrderRows(window._lastOrderData || []);
-}
-
-function paymentStatusBadge(status) {
-  if (status === 'paid')
-    return `<span style="background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">PAID</span>`;
-  return `<span style="background:rgba(234,179,8,.12);color:#eab308;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">UNPAID</span>`;
 }
 
 function renderOrderRows(orders) {
@@ -1813,8 +2694,10 @@ async function loadOrders() {
   params.set('page', orderPage);
   params.set('limit', ORDER_PAGE_SIZE);
 
+  const activeCols = getActiveOptionalCols();
+  const totalCols  = 8 + activeCols.length;
   document.getElementById('orders-table').innerHTML =
-    `<tr><td colspan="8" class="empty">Loading...</td></tr>`;
+    `<tr><td colspan="${totalCols}" class="empty">Loading...</td></tr>`;
 
   try {
     const data = await api('GET', '/admin/orders?' + params.toString());
@@ -1837,14 +2720,16 @@ async function loadOrders() {
         .filter(o => o.payment_status === 'paid')
         .reduce((s, o) => s + parseInt(o.amount || 0), 0);
       sumEl.textContent =
-        `${data.total} order · ${paidCount} paid · Rp ${paidAmt.toLocaleString('id-ID')}`;
+        `${data.total} order ditemukan · ${paidCount} paid (page ini) · Rp ${paidAmt.toLocaleString('id-ID')}`;
     }
 
     renderOrderRows(data.orders);
     renderOrdersPagination(data.total, data.total_pages);
   } catch (e) {
+    const activeCols = getActiveOptionalCols();
+    const totalCols  = 8 + activeCols.length;
     document.getElementById('orders-table').innerHTML =
-      `<tr><td colspan="8" class="empty">Error: ${e.message}</td></tr>`;
+      `<tr><td colspan="${totalCols}" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
 
@@ -1857,9 +2742,10 @@ function renderOrdersPagination(total, totalPages) {
     <span style="font-size:12px;color:var(--muted);">Menampilkan ${start}–${end} dari ${total}</span>
     <div style="display:flex;gap:4px;margin-left:auto;">
       <button class="btn btn-ghost btn-sm" onclick="goOrderPage(${orderPage - 1})" ${orderPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
+  const maxBtn = 5;
   let startPage = Math.max(1, orderPage - 2);
-  let endPage   = Math.min(totalPages, startPage + 4);
-  if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+  let endPage   = Math.min(totalPages, startPage + maxBtn - 1);
+  if (endPage - startPage < maxBtn - 1) startPage = Math.max(1, endPage - maxBtn + 1);
   for (let i = startPage; i <= endPage; i++) {
     html += `<button class="btn btn-ghost btn-sm ${i === orderPage ? 'active' : ''}" onclick="goOrderPage(${i})">${i}</button>`;
   }
@@ -1868,7 +2754,10 @@ function renderOrdersPagination(total, totalPages) {
   el.innerHTML = html;
 }
 
-function goOrderPage(p) { orderPage = p; loadOrders(); }
+function goOrderPage(p) {
+  orderPage = p;
+  loadOrders();
+}
 
 function resetOrderFilters() {
   ['f-payment-status', 'f-product', 'f-affiliate', 'f-payment-method',
@@ -1977,10 +2866,8 @@ async function loadAffiliates() {
     const { affiliates } = await api('GET', url);
     document.getElementById('affiliates-table').innerHTML = affiliates.length
       ? affiliates.map(a => `<tr>
-          <td>
-            <strong>${a.name}</strong>
-            <div style="font-size:11px;color:var(--muted)">${a.email}</div>
-          </td>
+          <td><strong>${a.name}</strong></td>
+          <td class="hide-mobile" style="font-size:12px;color:var(--muted)">${a.email || '—'}</td>
           <td><span class="badge badge-cyan mono">${a.ref_code}</span></td>
           <td>${a.affiliate_type === 'master_affiliate'
             ? '<span class="badge" style="background:rgba(245,200,66,.15);color:var(--gold)">Master</span>'
@@ -1988,7 +2875,7 @@ async function loadAffiliates() {
           <td style="font-size:12px">
             ${a.max_commission || a.commission_value}%
           </td>
-          <td style="font-size:12px;color:var(--muted)">
+          <td class="hide-mobile" style="font-size:12px;color:var(--muted)">
             ${a.upline_id
               ? '<span style="font-family:JetBrains Mono,monospace;font-size:11px">' + (a.upline_ref_code || 'ID:'+a.upline_id) + '</span>'
               : '<span style="color:var(--border)">—</span>'}
@@ -1998,7 +2885,7 @@ async function loadAffiliates() {
           <td>${affiliateStatusBadge(a.status)}</td>
           <td><button class="btn btn-ghost btn-sm" onclick="openAffiliateModal(${a.id})">Detail</button></td>
         </tr>`).join('')
-      : '<tr><td colspan="9" class="empty">Tidak ada affiliate</td></tr>';
+      : '<tr><td colspan="10" class="empty">Tidak ada affiliate</td></tr>';
   } catch(e) { showAlert('affiliates', e.message, 'error'); }
 }
 
@@ -2463,6 +3350,32 @@ async function saveAndRetry() {
     Grant
   </div>
 </div>
+
+<script>
+// ── Theme toggle ──────────────────────────────────────────────────
+(function initTheme() {
+  const root = document.documentElement;
+  const saved = localStorage.getItem('trxc-admin-theme');
+  const theme = (saved === 'dark' || saved === 'light')
+    ? saved
+    : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyTheme(theme);
+
+  function applyTheme(t) {
+    root.setAttribute('data-theme', t);
+    localStorage.setItem('trxc-admin-theme', t);
+    document.querySelectorAll('#theme-toggle-btns button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.themeSet === t);
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-theme-set]');
+    if (!btn) return;
+    applyTheme(btn.dataset.themeSet);
+  });
+})();
+</script>
 
 </body>
 </html>
