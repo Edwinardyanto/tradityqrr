@@ -1759,6 +1759,7 @@ async function login() {
     document.getElementById('auth-status').style.color = 'var(--green)';
     document.getElementById('sync-btn').style.display = 'inline-flex';
     loadAll();
+    startSSE();
   } catch(e) {
     const el = document.getElementById('login-error');
     el.textContent = e.message || 'Gagal connect ke server';
@@ -1783,10 +1784,65 @@ async function syncFromTV() {
 }
 
 function logout() {
+  stopSSE();
   SERVER = ''; SECRET = '';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('admin-secret').value = '';
+}
+
+// ── SSE: real-time admin push ─────────────────────────────────────
+// EventSource auto-reconnects on transient drops, so we just fire-and-
+// forget the open and let the browser handle retries. Listeners are
+// idempotent — tab-switch refreshes will dedupe via the existing
+// loadOrders/loadDashboard query latches.
+let sseConnection = null;
+
+function startSSE() {
+  if (sseConnection || !SERVER || !SECRET) return;
+  // EventSource can't set headers — secret travels in the query string.
+  // Acceptable here because /admin/events lives behind admin-secret only
+  // and the server logs already redact request URLs from public access.
+  const url = SERVER + '/admin/events?secret=' + encodeURIComponent(SECRET);
+  try {
+    sseConnection = new EventSource(url);
+  } catch (e) {
+    console.warn('SSE init failed:', e.message);
+    return;
+  }
+
+  sseConnection.addEventListener('order_new', (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      console.log('📦 New order:', data.order_id);
+    } catch (_) {}
+    if (typeof loadOrders === 'function')    loadOrders();
+    if (typeof loadDashboard === 'function') loadDashboard();
+  });
+
+  sseConnection.addEventListener('order_paid', (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      console.log('💸 Order paid:', data.order_id);
+    } catch (_) {}
+    if (typeof loadOrders === 'function')    loadOrders();
+    if (typeof loadDashboard === 'function') loadDashboard();
+  });
+
+  sseConnection.onerror = () => {
+    // EventSource handles reconnection internally; just note the blip.
+    console.warn('SSE connection blip — auto-reconnecting');
+  };
+
+  console.log('📡 SSE connected');
+}
+
+function stopSSE() {
+  if (sseConnection) {
+    sseConnection.close();
+    sseConnection = null;
+    console.log('📡 SSE disconnected');
+  }
 }
 
 // ── API ───────────────────────────────────────────────────────────
@@ -2724,7 +2780,13 @@ function renderOrderRows(orders) {
           <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${o.customer_phone || '—'}</td>
           <td class="hide-mobile" style="font-size:11px;color:var(--muted)">${o.product_name || '—'}</td>
           <td class="mono" style="font-size:12px">Rp ${parseInt(o.amount||0).toLocaleString('id-ID')}</td>
-          <td>${paymentStatusBadge(o.payment_status)}</td>
+          <td>
+            ${paymentStatusBadge(o.payment_status)}
+            ${o.payment_status !== 'paid' ? `
+              <button class="btn btn-ghost btn-sm" style="color:var(--green);font-size:10px;padding:2px 8px;margin-left:4px;"
+                onclick="markOrderPaid('${o.scalev_order_id}')" title="Mark as Paid (rescue when Scalev webhook didn't land)">✓ Paid</button>
+            ` : ''}
+          </td>
           <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${o.created_at ? fmtDate(o.created_at) : '—'}</td>
           ${optionalCells}
         </tr>`;
@@ -2791,6 +2853,14 @@ async function loadOrders() {
     document.getElementById('orders-table').innerHTML =
       `<tr><td colspan="${totalCols}" class="empty">Error: ${e.message}</td></tr>`;
   }
+}
+
+async function markOrderPaid(orderId) {
+  if (!confirm(`Mark order ${orderId} sebagai PAID?\n\nGunakan ini hanya jika Scalev sudah confirm payment tapi webhook tidak masuk.`)) return;
+  try {
+    await api('POST', `/admin/orders/${orderId}/mark-paid`);
+    loadOrders();
+  } catch (e) { alert('❌ ' + e.message); }
 }
 
 function renderOrdersPagination(total, totalPages) {
