@@ -2780,13 +2780,18 @@ function renderOrderRows(orders) {
           <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${o.customer_phone || '—'}</td>
           <td class="hide-mobile" style="font-size:11px;color:var(--muted)">${o.product_name || '—'}</td>
           <td class="mono" style="font-size:12px">Rp ${parseInt(o.amount||0).toLocaleString('id-ID')}</td>
-          <td>
-            ${paymentStatusBadge(o.payment_status)}
-            ${o.payment_status !== 'paid' ? `
-              <button class="btn btn-ghost btn-sm" style="color:var(--green);font-size:10px;padding:2px 8px;margin-left:4px;"
-                onclick="markOrderPaid('${o.scalev_order_id}')" title="Mark as Paid (rescue when Scalev webhook didn't land)">✓ Paid</button>
-            ` : ''}
-          </td>
+          <td style="white-space:nowrap;">${
+            o.payment_status === 'paid'
+              ? paymentStatusBadge('paid')
+              : `${paymentStatusBadge('unpaid')}<button
+                   onclick="markOrderPaid('${o.scalev_order_id}')"
+                   title="Mark as Paid (rescue when Scalev webhook didn't land)"
+                   style="margin-left:6px;padding:2px 8px;font-size:10px;font-weight:600;
+                          color:#22c55e;background:rgba(34,197,94,.1);
+                          border:1px solid rgba(34,197,94,.3);border-radius:4px;
+                          cursor:pointer;vertical-align:middle;"
+                 >✓ Paid</button>`
+          }</td>
           <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${o.created_at ? fmtDate(o.created_at) : '—'}</td>
           ${optionalCells}
         </tr>`;
