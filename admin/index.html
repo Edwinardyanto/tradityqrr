@@ -2785,12 +2785,12 @@ function renderOrderRows(orders) {
               ? paymentStatusBadge('paid')
               : `${paymentStatusBadge('unpaid')}<button
                    onclick="markOrderPaid('${o.scalev_order_id}')"
-                   title="Mark as Paid (rescue when Scalev webhook didn't land)"
+                   title="Tandai order ini sebagai PAID (rescue saat webhook Scalev tidak masuk)"
                    style="margin-left:6px;padding:2px 8px;font-size:10px;font-weight:600;
                           color:#22c55e;background:rgba(34,197,94,.1);
                           border:1px solid rgba(34,197,94,.3);border-radius:4px;
                           cursor:pointer;vertical-align:middle;"
-                 >✓ Paid</button>`
+                 >Tandai Paid</button>`
           }</td>
           <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${o.created_at ? fmtDate(o.created_at) : '—'}</td>
           ${optionalCells}
