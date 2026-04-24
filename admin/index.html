@@ -1778,7 +1778,7 @@ function renderOrderRows(orders) {
 
         return `<tr>
           <td class="mono hide-mobile" style="font-size:10px">${o.scalev_order_id}</td>
-          <td style="font-size:13px"><strong>${o.customer_name || '—'}</strong></td>
+          <td style="font-size:13px"><strong>${o.customer_name || o.tv_username || '—'}</strong></td>
           <td style="font-size:11px;color:var(--muted)">${o.customer_email || '—'}</td>
           <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${o.customer_phone || '—'}</td>
           <td class="hide-mobile" style="font-size:11px;color:var(--muted)">${o.product_name || '—'}</td>
