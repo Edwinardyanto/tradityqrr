@@ -726,6 +726,16 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 :root[data-theme="dark"] .cc-live { background: rgba(5,150,105,.18); color: #34D399; }
 .cc-live-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
+/* SSE connection state — by default the Live chip is dimmed; once the
+   EventSource is open we add .connected and the dot pulses softly. */
+.cc-live { opacity: 0.45; transition: opacity .2s ease; }
+.cc-live.connected { opacity: 1; }
+.cc-live.connected .cc-live-dot { animation: cc-live-pulse 1.6s ease-in-out infinite; }
+@keyframes cc-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  50%      { box-shadow: 0 0 0 5px transparent; opacity: 0.55; }
+}
+
 /* Order & affiliate list rows */
 .cc-order-row, .cc-aff-row {
   display: flex; align-items: center; gap: 12px; padding: 11px 0;
@@ -1094,9 +1104,9 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
         <div class="cc-panel-head">
           <div>
             <div class="cc-panel-title">Order terbaru</div>
-            <div class="cc-panel-sub">Update otomatis setiap 10 detik</div>
+            <div class="cc-panel-sub">Update otomatis saat ada pembayaran</div>
           </div>
-          <div class="cc-live"><span class="cc-live-dot"></span>Live</div>
+          <div class="cc-live" id="cc-live-indicator"><span class="cc-live-dot"></span>Live</div>
         </div>
         <div id="cc-orders-list"></div>
       </div>
@@ -1798,6 +1808,48 @@ function logout() {
 // loadOrders/loadDashboard query latches.
 let sseConnection = null;
 
+// Generated cashier "cha-ching" via Web Audio API — no asset needed.
+// Two oscillators: a quick "cha" sweep then a brighter coin-like "ching".
+// Wrapped in try/catch because some browsers block audio until the user
+// has interacted with the page; the order_paid handler will keep firing
+// the visual refresh even if sound is suppressed.
+function playCashierSound() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const t   = ctx.currentTime;
+
+    // "Cha" — short high beep, descending
+    const osc1  = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.connect(gain1); gain1.connect(ctx.destination);
+    osc1.frequency.setValueAtTime(1200, t);
+    osc1.frequency.exponentialRampToValueAtTime(800, t + 0.1);
+    gain1.gain.setValueAtTime(0.4, t);
+    gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    osc1.start(t);
+    osc1.stop(t + 0.15);
+
+    // "Ching" — coin-like sine ping starting just after the cha
+    const osc2  = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2); gain2.connect(ctx.destination);
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(2000, t + 0.15);
+    osc2.frequency.exponentialRampToValueAtTime(1600, t + 0.5);
+    gain2.gain.setValueAtTime(0.3, t + 0.15);
+    gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+    osc2.start(t + 0.15);
+    osc2.stop(t + 0.6);
+  } catch (e) { console.warn('Audio not available:', e); }
+}
+
+function _setLiveConnected(on) {
+  const el = document.getElementById('cc-live-indicator');
+  if (el) el.classList.toggle('connected', !!on);
+}
+
 function startSSE() {
   if (sseConnection || !SERVER || !SECRET) return;
   // EventSource can't set headers — secret travels in the query string.
@@ -1811,6 +1863,11 @@ function startSSE() {
     return;
   }
 
+  sseConnection.onopen = () => {
+    _setLiveConnected(true);
+    console.log('📡 SSE connected');
+  };
+
   sseConnection.addEventListener('order_new', (e) => {
     try {
       const data = JSON.parse(e.data);
@@ -1820,27 +1877,33 @@ function startSSE() {
     if (typeof loadDashboard === 'function') loadDashboard();
   });
 
+  // Paid OR settled — no duplicates per spec. Plays sound + refreshes
+  // the dashboard hero (which also re-renders the recent-orders panel
+  // via renderCCDashboard) and the Orders tab.
   sseConnection.addEventListener('order_paid', (e) => {
     try {
       const data = JSON.parse(e.data);
-      console.log('💸 Order paid:', data.order_id);
+      console.log('💸 Order paid:', data.order_id, data.payment_status,
+                  data.customer_name, data.amount);
     } catch (_) {}
-    if (typeof loadOrders === 'function')    loadOrders();
+    playCashierSound();
     if (typeof loadDashboard === 'function') loadDashboard();
+    if (typeof loadOrders    === 'function') loadOrders();
   });
 
   sseConnection.onerror = () => {
-    // EventSource handles reconnection internally; just note the blip.
+    // EventSource handles reconnection internally; dim the chip so the
+    // operator can see at a glance that pushes are paused.
+    _setLiveConnected(false);
     console.warn('SSE connection blip — auto-reconnecting');
   };
-
-  console.log('📡 SSE connected');
 }
 
 function stopSSE() {
   if (sseConnection) {
     sseConnection.close();
     sseConnection = null;
+    _setLiveConnected(false);
     console.log('📡 SSE disconnected');
   }
 }
