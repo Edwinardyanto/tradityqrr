@@ -323,7 +323,7 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
     <div class="nav-tab active" onclick="showPage('dashboard')">Dashboard</div>
     <div class="nav-tab" onclick="showPage('products')">Produk</div>
     <div class="nav-tab" onclick="showPage('subscribers')">Subscribers</div>
-    <div class="nav-tab" onclick="showPage('transactions')">Transaksi</div>
+    <div class="nav-tab" onclick="showPage('orders')">Order</div>
     <div class="nav-tab" onclick="showPage('grant')">Manual Grant</div>
     <div class="nav-tab" onclick="showPage('affiliates')">Affiliates</div>
     <div class="nav-tab" onclick="showPage('traffic')">Traffic</div>
@@ -517,12 +517,57 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
   </div>
 
   <!-- TRANSACTIONS -->
-  <div class="page" id="page-transactions">
+  <div class="page" id="page-orders">
     <div class="section">
       <div class="section-header">
-        <div class="section-title">Semua Transaksi</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadTransactions()">↻ Refresh</button>
+        <div class="section-title">Semua Order</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadOrders()">↻ Refresh</button>
       </div>
+
+      <!-- FILTERS -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;padding:14px 16px;background:var(--card2);border:1px solid var(--border);border-radius:10px;">
+
+        <select id="f-payment-status" onchange="loadOrders()" style="font-size:12px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+          <option value="">Semua Payment Status</option>
+          <option value="paid">Paid</option>
+          <option value="unpaid">Unpaid</option>
+        </select>
+
+        <select id="f-product" onchange="loadOrders()" style="font-size:12px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+          <option value="">Semua Produk</option>
+        </select>
+
+        <select id="f-affiliate" onchange="loadOrders()" style="font-size:12px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+          <option value="">Affiliate + Non-Affiliate</option>
+          <option value="affiliate">Affiliate</option>
+          <option value="non-affiliate">Non-Affiliate</option>
+        </select>
+
+        <select id="f-payment-method" onchange="loadOrders()" style="font-size:12px;padding:6px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+          <option value="">Semua Metode Bayar</option>
+        </select>
+
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="font-size:11px;color:var(--muted)">Created:</span>
+          <input type="date" id="f-created-from" onchange="loadOrders()" style="font-size:11px;padding:5px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+          <span style="font-size:11px;color:var(--muted)">–</span>
+          <input type="date" id="f-created-to" onchange="loadOrders()" style="font-size:11px;padding:5px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+        </div>
+
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="font-size:11px;color:var(--muted)">Completed:</span>
+          <input type="date" id="f-completed-from" onchange="loadOrders()" style="font-size:11px;padding:5px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+          <span style="font-size:11px;color:var(--muted)">–</span>
+          <input type="date" id="f-completed-to" onchange="loadOrders()" style="font-size:11px;padding:5px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);">
+        </div>
+
+        <button onclick="resetOrderFilters()" class="btn btn-ghost btn-sm">Reset</button>
+      </div>
+
+      <!-- SUMMARY -->
+      <div id="orders-summary" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+
+      <!-- TABLE -->
       <div class="table-wrap">
         <table>
           <thead><tr>
@@ -530,15 +575,17 @@ input:checked + .toggle-slider:before { transform: translateX(16px); }
             <th>TV Username</th>
             <th class="hide-mobile">Produk</th>
             <th>Amount</th>
-            <th class="hide-mobile">Expires</th>
-            <th class="hide-mobile">Tanggal</th>
-            <th>Status</th>
-            <th>Aksi</th>
+            <th>Payment</th>
+            <th class="hide-mobile">Metode</th>
+            <th class="hide-mobile">Ref</th>
+            <th class="hide-mobile">TV Status</th>
+            <th class="hide-mobile">Created</th>
+            <th class="hide-mobile">Completed</th>
           </tr></thead>
-          <tbody id="transactions-table"><tr><td colspan="8" class="empty">Loading...</td></tr></tbody>
+          <tbody id="orders-table"><tr><td colspan="10" class="empty">Loading...</td></tr></tbody>
         </table>
       </div>
-      <div id="transactions-pagination"></div>
+      <div id="orders-pagination"></div>
     </div>
   </div>
 
@@ -1017,6 +1064,7 @@ function showPage(name) {
   if (name === 'products')     loadProducts();
   if (name === 'subscribers')  loadSubscribers();
   if (name === 'transactions') loadTransactions();
+  if (name === 'orders') { populateOrderProductFilter(); loadOrders(); }
   if (name === 'affiliates')   loadAffiliates();
   if (name === 'traffic')      loadAdminTraffic();
   if (name === 'promo')        loadPromos();
@@ -1552,7 +1600,12 @@ async function viewSubscriber(username) {
 }
 
 // ── Transactions ──────────────────────────────────────────────────
+// The Transaksi tab was replaced by the Orders tab; the page-transactions
+// DOM no longer exists. The function is kept (post-manual-grant calls,
+// any bookmark to /?#transactions) but no-ops when the target element is
+// absent so we don't crash with a null .innerHTML.
 async function loadTransactions() {
+  if (!document.getElementById('transactions-table')) return;
   try {
     const { transactions } = await api('GET', '/admin/transactions');
     allTransactions = transactions;
@@ -1623,6 +1676,135 @@ async function retry(orderId) {
     loadDashboard();
     loadTransactions();
   } catch(e) { alert('❌ ' + e.message); }
+}
+
+// ── Orders ────────────────────────────────────────────────────────
+// Source: /admin/orders (orders table — populated by recordOrder() on
+// every Scalev webhook). Distinct from the Transactions tab above which
+// only knows about paid orders that hit the TV-grant pipeline.
+let orderPage = 1;
+const ORDER_PAGE_SIZE = 50;
+
+function paymentStatusBadge(status) {
+  if (status === 'paid')
+    return `<span style="background:rgba(34,197,94,.15);color:#22c55e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">PAID</span>`;
+  return `<span style="background:rgba(234,179,8,.12);color:#eab308;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">UNPAID</span>`;
+}
+
+async function loadOrders() {
+  const params = new URLSearchParams();
+  const ps  = document.getElementById('f-payment-status')?.value;
+  const prd = document.getElementById('f-product')?.value;
+  const aff = document.getElementById('f-affiliate')?.value;
+  const pm  = document.getElementById('f-payment-method')?.value;
+  const cf  = document.getElementById('f-created-from')?.value;
+  const ct  = document.getElementById('f-created-to')?.value;
+  const cpf = document.getElementById('f-completed-from')?.value;
+  const cpt = document.getElementById('f-completed-to')?.value;
+
+  if (ps)  params.set('payment_status', ps);
+  if (prd) params.set('product_name', prd);
+  if (aff) params.set('affiliate', aff);
+  if (pm)  params.set('payment_method', pm);
+  if (cf)  params.set('created_from', cf);
+  if (ct)  params.set('created_to', ct);
+  if (cpf) params.set('completed_from', cpf);
+  if (cpt) params.set('completed_to', cpt);
+  params.set('page', orderPage);
+  params.set('limit', ORDER_PAGE_SIZE);
+
+  document.getElementById('orders-table').innerHTML =
+    `<tr><td colspan="10" class="empty">Loading...</td></tr>`;
+
+  try {
+    const data = await api('GET', '/admin/orders?' + params.toString());
+
+    // Refresh the payment-method dropdown from the server's distinct list
+    // (preserve the user's current selection).
+    const pmSel = document.getElementById('f-payment-method');
+    if (pmSel && data.payment_methods) {
+      const cur = pmSel.value;
+      pmSel.innerHTML = '<option value="">Semua Metode Bayar</option>' +
+        data.payment_methods.map(m =>
+          `<option value="${m}" ${m === cur ? 'selected' : ''}>${m}</option>`
+        ).join('');
+    }
+
+    const sumEl = document.getElementById('orders-summary');
+    if (sumEl) {
+      const paidCount = data.orders.filter(o => o.payment_status === 'paid').length;
+      const paidAmt   = data.orders
+        .filter(o => o.payment_status === 'paid')
+        .reduce((s, o) => s + parseInt(o.amount || 0), 0);
+      sumEl.textContent =
+        `${data.total} order ditemukan · ${paidCount} paid (page ini) · Rp ${paidAmt.toLocaleString('id-ID')}`;
+    }
+
+    document.getElementById('orders-table').innerHTML = data.orders.length
+      ? data.orders.map(o => `<tr>
+          <td class="mono hide-mobile" style="font-size:10px">${o.scalev_order_id}</td>
+          <td><strong>${o.tv_username || '—'}</strong><br><span style="font-size:10px;color:var(--muted)">${o.customer_email || ''}</span></td>
+          <td class="hide-mobile" style="font-size:11px;color:var(--muted)">${o.product_name || '—'}</td>
+          <td class="mono" style="font-size:12px">Rp ${parseInt(o.amount || 0).toLocaleString('id-ID')}</td>
+          <td>${paymentStatusBadge(o.payment_status)}</td>
+          <td class="hide-mobile" style="font-size:11px;color:var(--muted)">${o.payment_method || '—'}</td>
+          <td class="hide-mobile" style="font-size:11px;color:${o.ref_code ? 'var(--cyan)' : 'var(--muted)'}">${o.ref_code || '—'}</td>
+          <td class="hide-mobile">${o.tv_access_status ? statusBadge(o.tv_access_status) : '<span style="color:var(--muted);font-size:11px">—</span>'}</td>
+          <td class="mono hide-mobile" style="font-size:11px;color:var(--muted)">${o.created_at ? fmtDate(o.created_at) : '—'}</td>
+          <td class="mono hide-mobile" style="font-size:11px;color:var(--muted)">${o.completed_at ? fmtDate(o.completed_at) : '—'}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="10" class="empty">Tidak ada order ditemukan</td></tr>';
+
+    renderOrdersPagination(data.total, data.total_pages);
+  } catch (e) {
+    document.getElementById('orders-table').innerHTML =
+      `<tr><td colspan="10" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function renderOrdersPagination(total, totalPages) {
+  const el = document.getElementById('orders-pagination');
+  if (!el || totalPages <= 1) { if (el) el.innerHTML = ''; return; }
+  const start = (orderPage - 1) * ORDER_PAGE_SIZE + 1;
+  const end   = Math.min(orderPage * ORDER_PAGE_SIZE, total);
+  let html = `<div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--muted);">Menampilkan ${start}–${end} dari ${total}</span>
+    <div style="display:flex;gap:4px;margin-left:auto;">
+      <button class="btn btn-ghost btn-sm" onclick="goOrderPage(${orderPage - 1})" ${orderPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
+  const maxBtn = 5;
+  let startPage = Math.max(1, orderPage - 2);
+  let endPage   = Math.min(totalPages, startPage + maxBtn - 1);
+  if (endPage - startPage < maxBtn - 1) startPage = Math.max(1, endPage - maxBtn + 1);
+  for (let i = startPage; i <= endPage; i++) {
+    html += `<button class="btn btn-ghost btn-sm ${i === orderPage ? 'active' : ''}" onclick="goOrderPage(${i})">${i}</button>`;
+  }
+  html += `<button class="btn btn-ghost btn-sm" onclick="goOrderPage(${orderPage + 1})" ${orderPage === totalPages ? 'disabled' : ''}>Next ›</button>
+    </div></div>`;
+  el.innerHTML = html;
+}
+
+function goOrderPage(p) {
+  orderPage = p;
+  loadOrders();
+}
+
+function resetOrderFilters() {
+  ['f-payment-status', 'f-product', 'f-affiliate', 'f-payment-method',
+   'f-created-from', 'f-created-to', 'f-completed-from', 'f-completed-to']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  orderPage = 1;
+  loadOrders();
+}
+
+async function populateOrderProductFilter() {
+  try {
+    const { products } = await api('GET', '/admin/products');
+    const sel = document.getElementById('f-product');
+    if (sel && products) {
+      sel.innerHTML = '<option value="">Semua Produk</option>' +
+        products.map(p => `<option value="${p.product_name}">${p.product_name}</option>`).join('');
+    }
+  } catch (e) { /* non-fatal */ }
 }
 
 // ── Manual Grant ──────────────────────────────────────────────────
@@ -2155,12 +2337,12 @@ async function saveAndRetry() {
     </svg>
     Subs
   </div>
-  <div class="admin-bottom-nav-item" onclick="showPage('transactions')" data-page="transactions">
+  <div class="admin-bottom-nav-item" onclick="showPage('orders')" data-page="orders">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="17 11 21 7 17 3"/><line x1="21" y1="7" x2="9" y2="7"/>
       <polyline points="7 21 3 17 7 13"/><line x1="15" y1="17" x2="3" y2="17"/>
     </svg>
-    Transaksi
+    Order
   </div>
   <div class="admin-bottom-nav-item" onclick="showPage('products')" data-page="products">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
