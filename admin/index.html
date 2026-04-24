@@ -2107,17 +2107,27 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero) {
   document.getElementById('cc-hero-line').setAttribute('d', sparkLine);
   document.getElementById('cc-hero-area').setAttribute('d', sparkArea);
 
-  // ── Action tiles ──
-  const failedCount = transactions.filter(t =>
-    ['failed','failed_no_username','failed_unknown_product','processing']
-    .includes(t.tv_access_status)
-  ).length;
-  document.getElementById('cc-failed-count').textContent = failedCount;
-  // TODO: derive cc-pending-aff-count + cc-payout-amt + cc-payout-count from
-  // /admin/affiliates pending + /admin/payouts queue when those tiles land.
-  document.getElementById('cc-pending-aff-count').textContent = '—';
-  document.getElementById('cc-payout-amt').textContent        = fmtRp(0);
-  document.getElementById('cc-payout-count').textContent      = '—';
+  // ── Action tiles — all three counts ship in /admin/stats/hero now,
+  //    so they reflect the FULL outstanding queue (no LIMIT 100 truncation
+  //    like the old transactions-fed Failed count had).
+  const tvFailedCount = parseInt(hero.tv_failed_count   || 0);
+  const affPendingC   = parseInt(hero.aff_pending_count || 0);
+  const payoutAmt     = parseInt(hero.payout_amt        || 0);
+  const payoutAffC    = parseInt(hero.payout_aff_count  || 0);
+
+  document.getElementById('cc-failed-count').textContent      = tvFailedCount;
+  document.getElementById('cc-pending-aff-count').textContent = affPendingC;
+  document.getElementById('cc-payout-amt').textContent        = fmtRp(payoutAmt);
+  document.getElementById('cc-payout-count').textContent      = payoutAffC;
+
+  // Dim each tile when its work queue is empty so the eye skips past it.
+  const _dim = (id, empty) => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = empty ? '0.5' : '1';
+  };
+  _dim('cc-act-failed', tvFailedCount === 0);
+  _dim('cc-act-review', affPendingC   === 0);
+  _dim('cc-act-payout', payoutAmt     === 0);
 
   // PRODUCT MIX donut
   const mix = {};
