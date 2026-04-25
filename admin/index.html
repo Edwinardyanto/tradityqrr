@@ -1080,7 +1080,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
         </div>
         <div class="cc-legend">
           <div><span class="cc-sw" style="background:#059669"></span>Paid · <span id="cc-legend-paid">Rp —</span></div>
-          <div><span class="cc-sw" style="background:#D97706;opacity:.75"></span>Pending · <span id="cc-legend-pending">Rp —</span></div>
+          <div><span class="cc-sw" style="background:#C9A84C;border-radius:50%"></span>Transaksi · <span id="cc-legend-txcount">— order</span></div>
         </div>
       </div>
 
@@ -2055,6 +2055,14 @@ async function loadAdminIncomeChart() {
     if (incomeSubEl && data.total_income_count !== undefined)
       incomeSubEl.textContent = (data.total_income_count || 0) + ' transaksi paid';
 
+    // Legend totals — Revenue sum + transaction count for the visible window.
+    const totalRev = days.reduce((a, d) => a + (d.income   || 0), 0);
+    const totalTx  = days.reduce((a, d) => a + (d.tx_count || 0), 0);
+    const legendPaid = document.getElementById('cc-legend-paid');
+    const legendTx   = document.getElementById('cc-legend-txcount');
+    if (legendPaid) legendPaid.textContent = _adminFmtRpFull(totalRev);
+    if (legendTx)   legendTx.textContent   = totalTx.toLocaleString('id-ID') + ' order';
+
     if (adminChartIncome) adminChartIncome.destroy();
     const ctx = document.getElementById('admin-chart-income');
     if (!ctx) return;
@@ -2063,20 +2071,65 @@ async function loadAdminIncomeChart() {
       data: {
         labels,
         datasets: [
-          { label: 'Revenue', data: days.map(d => d.income          || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 0 },
-          { label: 'Pending', data: days.map(d => d.pending_amount  || 0), backgroundColor: '#EF9F27', stack: 'a',
-            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }, borderSkipped: false },
+          {
+            // Left axis — Revenue bar (Rp)
+            label: 'Revenue',
+            data: days.map(d => d.income || 0),
+            backgroundColor: '#1D9E75',
+            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
+            borderSkipped: false,
+            yAxisID: 'y',
+            order: 2,
+          },
+          {
+            // Right axis — Transaction count line
+            type: 'line',
+            label: 'Transaksi',
+            data: days.map(d => d.tx_count || 0),
+            borderColor: '#C9A84C',
+            backgroundColor: 'rgba(201,168,76,0.15)',
+            borderWidth: 2,
+            pointRadius: 3,
+            pointBackgroundColor: '#C9A84C',
+            tension: 0.3,
+            fill: false,
+            yAxisID: 'y1',
+            order: 1,
+          }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
-          tooltip: { mode: 'index', callbacks: { title: c => c[0].label, label: c => '  ' + c.dataset.label + ': ' + _adminFmtRpFull(c.parsed.y) } }
+          tooltip: {
+            mode: 'index',
+            callbacks: {
+              title: c => c[0].label,
+              label: c => c.dataset.yAxisID === 'y'
+                ? '  Revenue: '   + _adminFmtRpFull(c.parsed.y)
+                : '  Transaksi: ' + c.parsed.y + ' order',
+            }
+          }
         },
         scales: {
-          x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 }, grid: { color: gridColor } },
-          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, callback: v => _adminFmtRpShort(v) }, grid: { color: gridColor }, beginAtZero: true }
+          x: {
+            ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 },
+            grid:  { color: gridColor }
+          },
+          y: {
+            position: 'left',
+            ticks: { color: tickColor, font: { size: 10 }, callback: v => _adminFmtRpShort(v) },
+            grid:  { color: gridColor },
+            beginAtZero: true,
+          },
+          y1: {
+            position: 'right',
+            ticks: { color: '#C9A84C', font: { size: 10 }, stepSize: 1, callback: v => v + 'x' },
+            grid:  { drawOnChartArea: false },  // no overlapping right-axis grid lines
+            beginAtZero: true,
+          }
         }
       }
     });
@@ -2282,9 +2335,13 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero) {
       <span style="font-weight:600;width:42px;text-align:right;">${Math.round(count/total*100)}%</span>
     </div>`).join('');
 
-  // LEGEND — real Paid + Pending amounts from hero
-  document.getElementById('cc-legend-paid').textContent    = fmtRp(heroRevenue);
-  document.getElementById('cc-legend-pending').textContent = fmtRp(heroPendingA);
+  // LEGEND — Paid amount from hero. (Transaksi count slot is filled by
+  // loadAdminIncomeChart() once the chart fetch resolves; we don't have
+  // that count in the hero payload so we leave the placeholder until
+  // the chart write lands.) Null-guarded in case the redesign ever drops
+  // these legend chips.
+  const _legendPaid = document.getElementById('cc-legend-paid');
+  if (_legendPaid) _legendPaid.textContent = fmtRp(heroRevenue);
 
   // ORDER list (6 most recent)
   const ordersList = transactions.slice(0,6).map(t => {
