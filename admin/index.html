@@ -2193,7 +2193,11 @@ function renderSoldProductsDonut() {
 
   const mix = {};
   transactions.forEach(t => {
-    if (t.tv_access_status !== 'granted') return;
+    // Same predicate as Revenue chart's server-side filter:
+    //   orders.payment_status IN ('paid', 'settled')
+    // payment_status comes from the LEFT JOIN added on /admin/transactions;
+    // legacy rows with no matching order have NULL → excluded.
+    if (t.payment_status !== 'paid' && t.payment_status !== 'settled') return;
     const ts = t.created_at ? new Date(t.created_at).getTime() : NaN;
     if (!Number.isFinite(ts)) return;
     if (ts < fromMs || ts > toMs) return;

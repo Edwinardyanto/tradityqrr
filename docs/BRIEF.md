@@ -43,6 +43,7 @@
 | 2026-04-26 | docs/ folder initialized (BRIEF, ARCHITECTURE, DECISIONS, spec template) |
 | 2026-04-26 | **Staging environment fully operational** — Cloudflare Pages live at staging URL; backend staging seed available via `npm run seed:staging` in tradity-qrr-server |
 | 2026-04-27 | admin "Best Selling Product" donut → "Sold Products" with shared Today/Yesterday/7D/30D selector that also drives Revenue Harian (calendar-day boundary on both) |
+| 2026-04-27 | Sold Products donut filter aligned to Revenue chart: now `payment_status IN ('paid', 'settled')` instead of `tv_access_status='granted'` |
 
 ---
 
