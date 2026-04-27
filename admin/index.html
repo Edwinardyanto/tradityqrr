@@ -1156,7 +1156,6 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       <span id="admin-stat-income"></span>
       <span id="admin-stat-income-sub"></span>
       <table><tbody id="dashboard-txs"></tbody></table>
-      <canvas id="admin-chart-traffic"></canvas>
     </div>
   </div>
 
@@ -1444,39 +1443,31 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 
     <div id="alert-traffic" class="alert"></div>
 
-    <!-- SITE-WIDE TRAFFIC SUMMARY (site_clicks) -->
+    <!-- FUNNEL TRAFFIC chart — site_clicks (homepage, checkout) + orders (form_fill, paid) -->
     <div class="cc-panel" style="margin-bottom:20px;">
       <div class="cc-panel-head">
         <div>
-          <div class="cc-panel-title">Site Traffic</div>
-          <div class="cc-panel-sub" id="traffic-summary-sub">Last 30 days</div>
+          <div class="cc-panel-title">Funnel Traffic</div>
+          <div class="cc-panel-sub" id="traffic-chart-sub">Last 30 days · Kunjungan → Checkout → Form Diisi → Paid</div>
         </div>
         <div class="cc-period" id="traffic-period-toggle">
-          <button class="period-btn" onclick="setTrafficPeriod('today',this)">Today</button>
-          <button class="period-btn" onclick="setTrafficPeriod('last_7_days',this)">7D</button>
-          <button class="period-btn active" onclick="setTrafficPeriod('last_30_days',this)">30D</button>
+          <button class="period-btn" onclick="setTrafficPeriod(1,this)">Today</button>
+          <button class="period-btn" onclick="setTrafficPeriod(7,this)">7D</button>
+          <button class="period-btn active" onclick="setTrafficPeriod(30,this)">30D</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
-        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px;">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Visitors</div>
-          <div style="font-size:22px;font-weight:700;color:var(--ink);" id="traffic-visitors">—</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="traffic-visitors-sub">unique homepage sessions</div>
-        </div>
-        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px;">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Checkout rate</div>
-          <div style="font-size:22px;font-weight:700;color:var(--ink);" id="traffic-checkout-rate">—</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="traffic-checkout-sub">homepage → checkout</div>
-        </div>
-        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px;">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Paid rate</div>
-          <div style="font-size:22px;font-weight:700;color:var(--ink);" id="traffic-paid-rate">—</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="traffic-paid-sub">checkout → paid</div>
-        </div>
+      <div style="position:relative;width:100%;height:240px;">
+        <canvas id="admin-chart-traffic" role="img" aria-label="Funnel Traffic"></canvas>
+      </div>
+      <div class="cc-legend" style="flex-wrap:wrap;">
+        <div><span class="cc-sw" style="background:#7F77DD"></span>Kunjungan · <span id="cc-tr-home">—</span></div>
+        <div><span class="cc-sw" style="background:#1D9E75"></span>Checkout · <span id="cc-tr-co">—</span></div>
+        <div><span class="cc-sw" style="background:#EF9F27"></span>Form Diisi · <span id="cc-tr-ff">—</span></div>
+        <div><span class="cc-sw" style="background:#D85A30"></span>Paid · <span id="cc-tr-paid">—</span></div>
       </div>
     </div>
 
-    <!-- Summary table -->
+    <!-- Per-affiliate table (Form Fill / Terbayar now from orders, plus Non-Affiliate row) -->
     <div id="traffic-summary-view">
       <div class="table-wrap">
         <table>
@@ -1489,12 +1480,10 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
               <th style="text-align:right;">Checkout</th>
               <th style="text-align:right;">Form Fill</th>
               <th style="text-align:right;">Terbayar</th>
-              <th style="text-align:right;">CR%</th>
-              <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="traffic-table">
-            <tr><td colspan="9" class="empty">Loading...</td></tr>
+            <tr><td colspan="7" class="empty">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1990,9 +1979,7 @@ function loadAll() {
 }
 
 // ── Admin Dashboard Charts (overall, all affiliators) ──────────────
-let adminChartTraffic   = null;
 let adminChartIncome    = null;
-let adminTrafficPeriod  = 30;
 
 // Shared range state for Revenue Harian + Sold Products. days = window
 // size in calendar days, offset = days back from today (0 = ends today,
@@ -2008,12 +1995,6 @@ function _adminResetToggle(containerId) {
     b.style.background = 'transparent';
     b.style.color = 'var(--muted)';
   });
-}
-function setAdminTrafficPeriod(days, btn) {
-  adminTrafficPeriod = days;
-  _adminResetToggle('admin-traffic-toggle');
-  btn.style.background = '#6B5FD4'; btn.style.color = '#fff';
-  loadAdminTrafficChart();
 }
 function setAdminRange(days, offset, label, btn) {
   _adminRange = { days, offset, label };
@@ -2034,49 +2015,8 @@ function _adminFmtRpShort(v) {
 }
 function _adminFmtRpFull(v) { return 'Rp ' + Math.round(v).toLocaleString('id-ID'); }
 
-async function loadAdminTrafficChart() {
-  if (typeof Chart === 'undefined') return;
-  const gridColor = 'rgba(255,255,255,0.06)';
-  const tickColor = '#888';
-  try {
-    const data = await api('GET', '/admin/stats/daily?days=' + adminTrafficPeriod);
-    const days = data.traffic || [];
-    const labels = days.map(d => {
-      const dt = new Date(d.date);
-      return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
-    });
-    if (adminChartTraffic) adminChartTraffic.destroy();
-    const ctx = document.getElementById('admin-chart-traffic');
-    if (!ctx) return;
-    adminChartTraffic = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          // Every dataset gets borderRadius:4 + borderSkipped:false so Chart.js
-          // rounds whichever segment is currently topmost on each bar — the
-          // stack order (Kunjungan → Checkout → Form diisi → Paid) means the
-          // visible top changes day-to-day depending on which series is zero.
-          { label: 'Paid',       data: days.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a', borderRadius: 4, borderSkipped: false },
-          { label: 'Form diisi', data: days.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 4, borderSkipped: false },
-          { label: 'Checkout',   data: days.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 4, borderSkipped: false },
-          { label: 'Kunjungan',  data: days.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 4, borderSkipped: false },
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { mode: 'index', callbacks: { title: c => c[0].label, label: c => '  ' + c.dataset.label + ': ' + c.parsed.y } }
-        },
-        scales: {
-          x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 }, grid: { color: gridColor } },
-          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
-        }
-      }
-    });
-  } catch (e) { console.error('loadAdminTrafficChart error:', e); }
-}
+// Funnel Traffic chart implementation lives next to its Traffic-tab
+// loader — see loadTrafficFunnelChart() further down in this file.
 
 async function loadAdminIncomeChart() {
   if (typeof Chart === 'undefined') return;
@@ -2186,7 +2126,9 @@ async function loadAdminIncomeChart() {
 }
 
 async function loadAdminCharts() {
-  await Promise.all([loadAdminTrafficChart(), loadAdminIncomeChart()]);
+  // Funnel chart is on the Traffic tab now (loadTrafficCharts), not the
+  // dashboard. Dashboard only owns the Revenue Harian chart.
+  await loadAdminIncomeChart();
 }
 
 // ── Sold Products donut ──────────────────────────────────────────────
@@ -3435,92 +3377,132 @@ function closeAffiliateModal() {
 }
 
 // ── Admin Traffic ─────────────────────────────────────────────────
-// ── Site-wide traffic summary cards (above the affiliate table) ──
-let _trafficStatsData = null;
-let _trafficPeriod    = 'last_30_days';
-const _trafficLabels  = { today: 'Today', last_7_days: 'Last 7 days', last_30_days: 'Last 30 days' };
+// ── Traffic tab — Funnel chart + per-affiliate table share one range ──
+let _trafficDays = 30;
+let _trafficChart = null;
+const _trafficLabels = { 1: 'Today', 7: 'Last 7 days', 30: 'Last 30 days' };
 
-async function loadTrafficStats() {
-  try {
-    _trafficStatsData = await api('GET', '/admin/stats/traffic');
-    renderTrafficStats();
-  } catch (e) { console.error('loadTrafficStats error:', e); }
-}
-
-function setTrafficPeriod(period, btn) {
-  _trafficPeriod = period;
+function setTrafficPeriod(days, btn) {
+  _trafficDays = days;
   document.querySelectorAll('#traffic-period-toggle button').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  renderTrafficStats();
+  const subEl = document.getElementById('traffic-chart-sub');
+  if (subEl) subEl.textContent = (_trafficLabels[days] || '') + ' · Kunjungan → Checkout → Form Diisi → Paid';
+  loadTrafficCharts();
 }
 
-function renderTrafficStats() {
-  if (!_trafficStatsData) return;
-  const data = _trafficStatsData[_trafficPeriod];
-  if (!data) return;
-  document.getElementById('traffic-summary-sub').textContent = _trafficLabels[_trafficPeriod] || '';
-  const homepage = data.homepage || 0;
-  const checkout = data.checkout || 0;
-  const paid     = data.paid     || 0;
-  const checkoutRate = homepage > 0 ? ((checkout / homepage) * 100).toFixed(1) : '0.0';
-  const paidRate     = checkout > 0 ? ((paid     / checkout) * 100).toFixed(1) : '0.0';
-  document.getElementById('traffic-visitors').textContent       = homepage.toLocaleString('id-ID');
-  document.getElementById('traffic-checkout-rate').textContent  = checkoutRate + '%';
-  document.getElementById('traffic-paid-rate').textContent      = paidRate + '%';
-  document.getElementById('traffic-visitors-sub').textContent   = `${checkout.toLocaleString('id-ID')} checkout · ${paid.toLocaleString('id-ID')} paid`;
-  document.getElementById('traffic-checkout-sub').textContent   = `${checkout} of ${homepage} sessions`;
-  document.getElementById('traffic-paid-sub').textContent       = `${paid} of ${checkout} checkouts`;
+async function loadTrafficCharts() {
+  await Promise.all([loadTrafficFunnelChart(), loadTrafficAffiliateTable()]);
+}
+
+async function loadTrafficFunnelChart() {
+  if (typeof Chart === 'undefined') return;
+  const gridColor = 'rgba(255,255,255,0.06)';
+  const tickColor = '#888';
+  try {
+    const data = await api('GET', '/admin/stats/traffic?days=' + _trafficDays);
+    const days = data.daily || [];
+    const labels = days.map(d => {
+      const dt = new Date(d.date);
+      return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
+    });
+
+    // Legend totals
+    const t = data.totals || { homepage: 0, checkout: 0, form_fill: 0, paid: 0 };
+    const fmt = (n) => (n || 0).toLocaleString('id-ID');
+    const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setText('cc-tr-home', fmt(t.homepage));
+    setText('cc-tr-co',   fmt(t.checkout));
+    setText('cc-tr-ff',   fmt(t.form_fill));
+    setText('cc-tr-paid', fmt(t.paid));
+
+    if (_trafficChart) _trafficChart.destroy();
+    const ctx = document.getElementById('admin-chart-traffic');
+    if (!ctx) return;
+    _trafficChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          // Stack order Kunjungan (bottom) → Checkout → Form Diisi → Paid (top)
+          // matches funnel direction; borderRadius+borderSkipped lets whichever
+          // segment is topmost on a given day get rounded corners.
+          { label: 'Paid',       data: days.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Form Diisi', data: days.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Checkout',   data: days.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Kunjungan',  data: days.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 4, borderSkipped: false },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', callbacks: { title: c => c[0].label, label: c => '  ' + c.dataset.label + ': ' + c.parsed.y } },
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 }, grid: { color: gridColor } },
+          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true },
+        },
+      },
+    });
+  } catch (e) { console.error('loadTrafficFunnelChart error:', e); }
+}
+
+function _renderTrafficRow(row, isNonAffiliate) {
+  const visits    = parseInt(row.visits     || 0);
+  const checkouts = parseInt(row.checkouts  || 0);
+  const formFills = parseInt(row.form_fills || 0);
+  const paid      = parseInt(row.paid       || 0);
+  let pixelCell;
+  if (isNonAffiliate) {
+    pixelCell = '<span style="color:var(--muted);">—</span>';
+  } else {
+    let pixelBadge = '';
+    pixelBadge += row.meta_pixel_id
+      ? (row.has_pixel_token
+          ? '<span class="badge" style="background:rgba(74,222,128,.15);color:var(--green);font-size:10px;margin-right:4px;">Meta ✓</span>'
+          : '<span class="badge" style="background:rgba(245,200,66,.15);color:var(--gold);font-size:10px;margin-right:4px;">Meta ⚠</span>')
+      : '<span class="badge badge-muted" style="font-size:10px;margin-right:4px;">Meta —</span>';
+    pixelBadge += row.google_ads_id
+      ? '<span class="badge badge-cyan" style="font-size:10px;">GAds ✓</span>'
+      : '<span class="badge badge-muted" style="font-size:10px;">GAds —</span>';
+    pixelCell = pixelBadge;
+  }
+  const name = isNonAffiliate ? 'Non-Affiliate' : (row.name || '');
+  const ref  = isNonAffiliate ? '—' : (row.ref_code || '—');
+  const rowStyle = isNonAffiliate
+    ? 'background:rgba(255,255,255,0.02);font-style:italic;border-top:1px solid var(--border);'
+    : '';
+  return `<tr style="${rowStyle}">
+    <td><strong>${name}</strong></td>
+    <td class="mono" style="font-size:12px;">${ref}</td>
+    <td>${pixelCell}</td>
+    <td class="mono" style="text-align:right;color:var(--cyan);">${visits.toLocaleString('id-ID')}</td>
+    <td class="mono" style="text-align:right;color:var(--gold);">${checkouts.toLocaleString('id-ID')}</td>
+    <td class="mono" style="text-align:right;color:#C9A84C;">${formFills.toLocaleString('id-ID')}</td>
+    <td class="mono" style="text-align:right;color:var(--green);">${paid.toLocaleString('id-ID')}</td>
+  </tr>`;
+}
+
+async function loadTrafficAffiliateTable() {
+  const tbody = document.getElementById('traffic-table');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" class="empty">Loading...</td></tr>';
+  try {
+    const { affiliates, non_affiliate } = await api('GET', '/admin/traffic?days=' + _trafficDays);
+    const rows = (affiliates || []).map(a => _renderTrafficRow(a, false)).join('');
+    const naRow = non_affiliate ? _renderTrafficRow(non_affiliate, true) : '';
+    tbody.innerHTML = (rows + naRow) || '<tr><td colspan="7" class="empty">Belum ada data</td></tr>';
+  } catch (e) {
+    showAlert('traffic', e.message, 'error');
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Gagal memuat data</td></tr>';
+  }
 }
 
 async function loadAdminTraffic() {
   document.getElementById('traffic-summary-view').style.display = '';
   document.getElementById('traffic-detail-view').style.display = 'none';
-  // Site-wide summary loads in parallel with the affiliate-attributed table.
-  loadTrafficStats();
-  const tbody = document.getElementById('traffic-table');
-  tbody.innerHTML = '<tr><td colspan="9" class="empty">Loading...</td></tr>';
-  try {
-    const { affiliates } = await api('GET', '/admin/traffic');
-    if (!affiliates.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="empty">Belum ada data</td></tr>';
-      return;
-    }
-    tbody.innerHTML = affiliates.map(a => {
-      const visits = parseInt(a.visits || 0);
-      const checkouts = parseInt(a.checkouts || 0);
-      const formFills = parseInt(a.form_fills || 0);
-      const paid = parseInt(a.paid || 0);
-      const cr = visits > 0 ? ((paid / visits) * 100).toFixed(1) : '0.0';
-      let pixelBadge = '';
-      if (a.meta_pixel_id) {
-        pixelBadge += a.has_pixel_token
-          ? '<span class="badge" style="background:rgba(74,222,128,.15);color:var(--green);font-size:10px;margin-right:4px;">Meta ✓</span>'
-          : '<span class="badge" style="background:rgba(245,200,66,.15);color:var(--gold);font-size:10px;margin-right:4px;">Meta ⚠</span>';
-      } else {
-        pixelBadge += '<span class="badge badge-muted" style="font-size:10px;margin-right:4px;">Meta —</span>';
-      }
-      if (a.google_ads_id) {
-        pixelBadge += '<span class="badge badge-cyan" style="font-size:10px;">GAds ✓</span>';
-      } else {
-        pixelBadge += '<span class="badge badge-muted" style="font-size:10px;">GAds —</span>';
-      }
-      const safeName = (a.name || '').replace(/'/g, "\\'");
-      return `<tr>
-        <td><strong>${a.name}</strong></td>
-        <td class="mono" style="font-size:12px;">${a.ref_code}</td>
-        <td>${pixelBadge}</td>
-        <td class="mono" style="text-align:right;color:var(--cyan);">${visits.toLocaleString('id-ID')}</td>
-        <td class="mono" style="text-align:right;color:var(--gold);">${checkouts.toLocaleString('id-ID')}</td>
-        <td class="mono" style="text-align:right;color:#C9A84C;">${formFills.toLocaleString('id-ID')}</td>
-        <td class="mono" style="text-align:right;color:var(--green);">${paid.toLocaleString('id-ID')}</td>
-        <td class="mono" style="text-align:right;font-size:12px;">${cr}%</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="loadTrafficDetail(${a.id}, '${safeName}', '${a.ref_code}')">Detail</button></td>
-      </tr>`;
-    }).join('');
-  } catch (e) {
-    showAlert('traffic', e.message, 'error');
-    tbody.innerHTML = '<tr><td colspan="9" class="empty">Gagal memuat data</td></tr>';
-  }
+  loadTrafficCharts();
 }
 
 async function loadTrafficDetail(affiliateId, name, refCode) {
