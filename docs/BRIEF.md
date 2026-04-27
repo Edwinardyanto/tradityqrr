@@ -44,6 +44,8 @@
 | 2026-04-26 | **Staging environment fully operational** — Cloudflare Pages live at staging URL; backend staging seed available via `npm run seed:staging` in tradity-qrr-server |
 | 2026-04-27 | admin "Best Selling Product" donut → "Sold Products" with shared Today/Yesterday/7D/30D selector that also drives Revenue Harian (calendar-day boundary on both) |
 | 2026-04-27 | Sold Products donut filter aligned to Revenue chart: now `payment_status IN ('paid', 'settled')` instead of `tv_access_status='granted'` |
+| 2026-04-27 | Big-scope admin revisions: orders-based Conv Rate, sortable date columns on Orders tab, new Site Traffic summary cards on Traffic tab — see [spec](specs/2026-04-27-big-scope-admin-revisions.md) |
+| 2026-04-27 | Traffic tab revision: Site Traffic 3-card panel replaced by **Funnel Traffic** stacked-bar chart (Today/7D/30D selector, 4 layers from site_clicks + orders); affiliate table drops CR%/Aksi columns, sources Form Fill + Terbayar from `orders.ref_code` (per affiliate); new Non-Affiliate row at the bottom — see [spec](specs/2026-04-27-traffic-tab-revision.md) |
 
 ---
 

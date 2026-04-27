@@ -705,6 +705,12 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 .cc-row { display: grid; gap: 14px; margin-bottom: 14px; }
 .cc-row-2-1  { grid-template-columns: 2fr 1fr; }
 .cc-row-13-1 { grid-template-columns: 1.3fr 1fr; }
+.cc-row-1-1  { grid-template-columns: 1fr 1fr; }
+.cc-panel-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 240px; color: var(--muted); font-size: 12px; letter-spacing: 1px;
+  text-transform: uppercase;
+}
 .cc-panel {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 12px; padding: 18px;
@@ -773,7 +779,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 
 @media (max-width: 1100px) {
   .cc-actions { grid-template-columns: 1fr; }
-  .cc-row-2-1, .cc-row-13-1 { grid-template-columns: 1fr; }
+  .cc-row-2-1, .cc-row-13-1, .cc-row-1-1 { grid-template-columns: 1fr; }
   .cc-hero-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
   .cc-hero-val { font-size: 40px; }
 }
@@ -849,7 +855,6 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
     <div class="nav-tab" onclick="showPage('orders')">Order</div>
     <div class="nav-tab" onclick="showPage('grant')">Manual Grant</div>
     <div class="nav-tab" onclick="showPage('affiliates')">Affiliates</div>
-    <div class="nav-tab" onclick="showPage('traffic')">Traffic</div>
     <div class="nav-tab" onclick="showPage('promo')">Promo</div>
   </div>
 </nav>
@@ -899,10 +904,6 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
     <div class="nav-item sidebar-item" data-page="orders" onclick="showPage('orders')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/><path d="M10 11h4"/></svg>
       Orders
-    </div>
-    <div class="nav-item sidebar-item" data-page="traffic" onclick="showPage('traffic')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Traffic
     </div>
     <div class="nav-item sidebar-item" data-page="affiliates" onclick="showPage('affiliates')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -1099,6 +1100,31 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       </div>
     </div>
 
+    <!-- FUNNEL TRAFFIC + RESERVED PLACEHOLDER -->
+    <div class="cc-row cc-row-1-1">
+      <div class="cc-panel">
+        <div class="cc-panel-head">
+          <div>
+            <div class="cc-panel-title">Funnel Traffic</div>
+            <div class="cc-panel-sub" id="cc-funnel-sub">Last 30 days · Kunjungan → Checkout → Form Diisi → Paid</div>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:240px;">
+          <canvas id="admin-chart-funnel" role="img" aria-label="Funnel Traffic"></canvas>
+        </div>
+        <div class="cc-legend" style="flex-wrap:wrap;">
+          <div><span class="cc-sw" style="background:#7F77DD"></span>Kunjungan · <span id="cc-tr-home">—</span></div>
+          <div><span class="cc-sw" style="background:#1D9E75"></span>Checkout · <span id="cc-tr-co">—</span></div>
+          <div><span class="cc-sw" style="background:#EF9F27"></span>Form Diisi · <span id="cc-tr-ff">—</span></div>
+          <div><span class="cc-sw" style="background:#D85A30"></span>Paid · <span id="cc-tr-paid">—</span></div>
+        </div>
+      </div>
+
+      <div class="cc-panel cc-panel-empty" id="cc-reserved-panel">
+        Coming soon
+      </div>
+    </div>
+
     <!-- ORDERS + AFFILIATES -->
     <div class="cc-row cc-row-13-1">
       <div class="cc-panel">
@@ -1156,7 +1182,6 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       <span id="admin-stat-income"></span>
       <span id="admin-stat-income-sub"></span>
       <table><tbody id="dashboard-txs"></tbody></table>
-      <canvas id="admin-chart-traffic"></canvas>
     </div>
   </div>
 
@@ -1311,7 +1336,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
               <th class="hide-mobile">Produk</th>
               <th>Amount</th>
               <th>Payment</th>
-              <th class="hide-mobile">Created At</th>
+              <th class="hide-mobile" style="cursor:pointer;user-select:none" onclick="setOrderSort('created_at')">Created At<span id="sort-arrow-created_at" style="margin-left:4px;color:var(--cyan);"></span></th>
               <!-- optional columns rendered by JS -->
             </tr>
           </thead>
@@ -1430,22 +1455,15 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
         <div class="empty">Klik ↻ Refresh untuk memuat tree</div>
       </div>
     </div>
-  </div>
 
-  <!-- ───── PAGE: TRAFFIC ───── -->
-  <div class="page" id="page-traffic">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-      <div>
-        <h2 style="margin:0;font-size:18px;letter-spacing:1.5px;">AFFILIATE TRAFFIC</h2>
-        <p style="margin:4px 0 0;font-size:12px;color:var(--muted);">Kunjungan, checkout, dan konversi semua affiliate</p>
+    <!-- AFFILIATE TRAFFIC TABLE — moved from former Traffic tab -->
+    <div class="cc-panel" style="margin-top:24px;">
+      <div class="cc-panel-head">
+        <div>
+          <div class="cc-panel-title">Affiliate Traffic</div>
+          <div class="cc-panel-sub" id="aff-traffic-sub">Kunjungan, checkout, dan konversi per affiliate · Last 30 days</div>
+        </div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="loadAdminTraffic()">↻ Refresh</button>
-    </div>
-
-    <div id="alert-traffic" class="alert"></div>
-
-    <!-- Summary table -->
-    <div id="traffic-summary-view">
       <div class="table-wrap">
         <table>
           <thead>
@@ -1457,64 +1475,17 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
               <th style="text-align:right;">Checkout</th>
               <th style="text-align:right;">Form Fill</th>
               <th style="text-align:right;">Terbayar</th>
-              <th style="text-align:right;">CR%</th>
-              <th>Aksi</th>
             </tr>
           </thead>
-          <tbody id="traffic-table">
-            <tr><td colspan="9" class="empty">Loading...</td></tr>
+          <tbody id="aff-traffic-table">
+            <tr><td colspan="7" class="empty">Loading...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
-    <!-- Detail panel -->
-    <div id="traffic-detail-view" style="display:none;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <button class="btn btn-ghost btn-sm" onclick="closeTrafficDetail()">← Kembali</button>
-        <h3 id="traffic-detail-name" style="margin:0;font-size:16px;letter-spacing:1px;">—</h3>
-        <span id="traffic-detail-refcode" class="badge badge-cyan"></span>
-      </div>
-
-      <!-- Period cards -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
-        <div class="stat-card" style="padding:14px 16px;">
-          <div class="stat-label">HARI INI</div>
-          <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
-            <div><div style="font-size:10px;color:var(--muted);">Visit</div><div id="td-today-visit" style="font-size:16px;color:var(--cyan);font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Checkout</div><div id="td-today-checkout" style="font-size:16px;color:var(--gold);font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Form Fill</div><div id="td-today-formfill" style="font-size:16px;color:#C9A84C;font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Paid</div><div id="td-today-paid" style="font-size:16px;color:var(--green);font-weight:700;">—</div></div>
-          </div>
-        </div>
-        <div class="stat-card" style="padding:14px 16px;">
-          <div class="stat-label">7 HARI</div>
-          <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
-            <div><div style="font-size:10px;color:var(--muted);">Visit</div><div id="td-week-visit" style="font-size:16px;color:var(--cyan);font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Checkout</div><div id="td-week-checkout" style="font-size:16px;color:var(--gold);font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Form Fill</div><div id="td-week-formfill" style="font-size:16px;color:#C9A84C;font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Paid</div><div id="td-week-paid" style="font-size:16px;color:var(--green);font-weight:700;">—</div></div>
-          </div>
-        </div>
-        <div class="stat-card" style="padding:14px 16px;">
-          <div class="stat-label">ALL TIME</div>
-          <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
-            <div><div style="font-size:10px;color:var(--muted);">Visit</div><div id="td-all-visit" style="font-size:16px;color:var(--cyan);font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Checkout</div><div id="td-all-checkout" style="font-size:16px;color:var(--gold);font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Form Fill</div><div id="td-all-formfill" style="font-size:16px;color:#C9A84C;font-weight:700;">—</div></div>
-            <div><div style="font-size:10px;color:var(--muted);">Paid</div><div id="td-all-paid" style="font-size:16px;color:var(--green);font-weight:700;">—</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 30-day trend chart -->
-      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:14px;">TREN KUNJUNGAN 30 HARI</div>
-        <div id="td-trend-chart" style="display:flex;align-items:flex-end;gap:3px;height:120px;"></div>
-      </div>
-    </div>
   </div>
 
+  <!-- ───── (Traffic page removed — funnel chart moved to Dashboard, affiliate table moved to Affiliates) ───── -->
   <!-- PROMO CODES -->
   <div class="page" id="page-promo">
     <div class="section">
@@ -1926,7 +1897,7 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  const tabs = { dashboard:0, products:1, subscribers:2, transactions:3, grant:4, affiliates:5, traffic:6, promo:7 };
+  const tabs = { dashboard:0, products:1, subscribers:2, transactions:3, grant:4, affiliates:5, promo:6 };
   document.querySelectorAll('.nav-tab')[tabs[name]]?.classList.add('active');
 
   // Sync sidebar + mobile bottom nav highlight
@@ -1940,8 +1911,7 @@ function showPage(name) {
   if (name === 'subscribers')  loadSubscribers();
   if (name === 'transactions') loadTransactions();
   if (name === 'orders') { populateOrderProductFilter(); loadOrders(); }
-  if (name === 'affiliates')   loadAffiliates();
-  if (name === 'traffic')      loadAdminTraffic();
+  if (name === 'affiliates')   { loadAffiliates(); loadAffiliateTrafficTable(); }
   if (name === 'promo')        loadPromos();
 
   // Sync admin bottom nav
@@ -1958,13 +1928,13 @@ function loadAll() {
 }
 
 // ── Admin Dashboard Charts (overall, all affiliators) ──────────────
-let adminChartTraffic   = null;
 let adminChartIncome    = null;
-let adminTrafficPeriod  = 30;
+let adminChartFunnel    = null;
 
-// Shared range state for Revenue Harian + Sold Products. days = window
-// size in calendar days, offset = days back from today (0 = ends today,
-// 1 = ends yesterday). label is mirrored into the panel titles.
+// Shared range state for Revenue Harian + Sold Products + Funnel Traffic.
+// days = window size in calendar days, offset = days back from today
+// (0 = ends today, 1 = ends yesterday). label is mirrored into panel
+// titles + the Affiliate Traffic subtitle on the Affiliates tab.
 let _adminRange = { days: 30, offset: 0, label: 'Last 30 days' };
 
 // Cached transactions from the latest /admin/transactions fetch so the
@@ -1977,12 +1947,6 @@ function _adminResetToggle(containerId) {
     b.style.color = 'var(--muted)';
   });
 }
-function setAdminTrafficPeriod(days, btn) {
-  adminTrafficPeriod = days;
-  _adminResetToggle('admin-traffic-toggle');
-  btn.style.background = '#6B5FD4'; btn.style.color = '#fff';
-  loadAdminTrafficChart();
-}
 function setAdminRange(days, offset, label, btn) {
   _adminRange = { days, offset, label };
   _adminResetToggle('admin-range-toggle');
@@ -1991,8 +1955,15 @@ function setAdminRange(days, offset, label, btn) {
   if (titleEl) titleEl.textContent = 'Revenue harian · ' + label;
   const subEl = document.getElementById('cc-mix-sub');
   if (subEl) subEl.textContent = label;
+  const funnelSubEl = document.getElementById('cc-funnel-sub');
+  if (funnelSubEl) funnelSubEl.textContent = label + ' · Kunjungan → Checkout → Form Diisi → Paid';
   loadAdminIncomeChart();
   loadSoldProductsDonut();
+  loadAdminFunnelChart();
+  // Affiliates tab table also re-fetches if it's currently mounted, so
+  // changing the range from the Dashboard updates the per-affiliate table
+  // the moment the user navigates to Affiliates next.
+  if (document.getElementById('aff-traffic-table')) loadAffiliateTrafficTable();
 }
 
 function _adminFmtRpShort(v) {
@@ -2002,48 +1973,60 @@ function _adminFmtRpShort(v) {
 }
 function _adminFmtRpFull(v) { return 'Rp ' + Math.round(v).toLocaleString('id-ID'); }
 
-async function loadAdminTrafficChart() {
+// Funnel Traffic chart — stacked bar, 4 layers per day. Driven by the
+// shared `_adminRange` so it mirrors Revenue Harian + Sold Products.
+async function loadAdminFunnelChart() {
   if (typeof Chart === 'undefined') return;
   const gridColor = 'rgba(255,255,255,0.06)';
   const tickColor = '#888';
   try {
-    const data = await api('GET', '/admin/stats/daily?days=' + adminTrafficPeriod);
-    const days = data.traffic || [];
-    const labels = days.map(d => {
+    const data = await api(
+      'GET',
+      '/admin/stats/funnel?days=' + _adminRange.days + '&offset=' + _adminRange.offset
+    );
+    const series = data.days || [];
+    const labels = series.map(d => {
       const dt = new Date(d.date);
       return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
     });
-    if (adminChartTraffic) adminChartTraffic.destroy();
-    const ctx = document.getElementById('admin-chart-traffic');
+
+    const t = data.totals || { homepage: 0, checkout: 0, form_fill: 0, paid: 0 };
+    const fmt = (n) => (n || 0).toLocaleString('id-ID');
+    const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setText('cc-tr-home', fmt(t.homepage));
+    setText('cc-tr-co',   fmt(t.checkout));
+    setText('cc-tr-ff',   fmt(t.form_fill));
+    setText('cc-tr-paid', fmt(t.paid));
+
+    if (adminChartFunnel) adminChartFunnel.destroy();
+    const ctx = document.getElementById('admin-chart-funnel');
     if (!ctx) return;
-    adminChartTraffic = new Chart(ctx, {
+    adminChartFunnel = new Chart(ctx, {
       type: 'bar',
       data: {
         labels,
         datasets: [
-          // Every dataset gets borderRadius:4 + borderSkipped:false so Chart.js
-          // rounds whichever segment is currently topmost on each bar — the
-          // stack order (Kunjungan → Checkout → Form diisi → Paid) means the
-          // visible top changes day-to-day depending on which series is zero.
-          { label: 'Paid',       data: days.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a', borderRadius: 4, borderSkipped: false },
-          { label: 'Form diisi', data: days.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 4, borderSkipped: false },
-          { label: 'Checkout',   data: days.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 4, borderSkipped: false },
-          { label: 'Kunjungan',  data: days.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 4, borderSkipped: false },
-        ]
+          // Stack order: Kunjungan (bottom) → Checkout → Form Diisi →
+          // Paid (top). Funnel direction matches the legend left-to-right.
+          { label: 'Paid',       data: series.map(d => d.paid      || 0), backgroundColor: '#D85A30', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Form Diisi', data: series.map(d => d.form_fill || 0), backgroundColor: '#EF9F27', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Checkout',   data: series.map(d => d.checkout  || 0), backgroundColor: '#1D9E75', stack: 'a', borderRadius: 4, borderSkipped: false },
+          { label: 'Kunjungan',  data: series.map(d => d.homepage  || 0), backgroundColor: '#7F77DD', stack: 'a', borderRadius: 4, borderSkipped: false },
+        ],
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { mode: 'index', callbacks: { title: c => c[0].label, label: c => '  ' + c.dataset.label + ': ' + c.parsed.y } }
+          tooltip: { mode: 'index', callbacks: { title: c => c[0].label, label: c => '  ' + c.dataset.label + ': ' + c.parsed.y } },
         },
         scales: {
           x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 }, grid: { color: gridColor } },
-          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
-        }
-      }
+          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true },
+        },
+      },
     });
-  } catch (e) { console.error('loadAdminTrafficChart error:', e); }
+  } catch (e) { console.error('loadAdminFunnelChart error:', e); }
 }
 
 async function loadAdminIncomeChart() {
@@ -2154,7 +2137,7 @@ async function loadAdminIncomeChart() {
 }
 
 async function loadAdminCharts() {
-  await Promise.all([loadAdminTrafficChart(), loadAdminIncomeChart()]);
+  await Promise.all([loadAdminIncomeChart(), loadAdminFunnelChart()]);
 }
 
 // ── Sold Products donut ──────────────────────────────────────────────
@@ -2365,9 +2348,16 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero) {
   // AOV (rounded server-side)
   document.getElementById('cc-aov').textContent = fmtRp(parseInt(hero.aov || 0));
 
-  // Conv Rate = paid / (paid + pending) — both 30-day scoped
-  document.getElementById('cc-conv').textContent       = hero.conv_rate || '0.0';
-  document.getElementById('cc-conv-delta').textContent = `${heroPendingC} pending`;
+  // Conv Rate = paid orders / total orders (form-submit → payment),
+  // both windowed by orders.created_at over the last 30 days.
+  document.getElementById('cc-conv').textContent = hero.conv_rate || '0.0';
+  const convDeltaEl = document.getElementById('cc-conv-delta');
+  if (hero.conv_total_orders !== undefined) {
+    convDeltaEl.textContent = `${hero.conv_paid_orders || 0} / ${hero.conv_total_orders || 0} orders`;
+    convDeltaEl.title = 'Paid orders ÷ total orders (form-submit → payment), last 30 days';
+  } else {
+    convDeltaEl.textContent = `${heroPendingC} pending`;
+  }
 
   // ── Sparkline — real daily revenue (30 entries, server pre-seeds zeros) ──
   const spark = (hero.spark && hero.spark.length) ? hero.spark : new Array(30).fill(0);
@@ -2943,15 +2933,62 @@ function applyColumnPrefs() {
     const th = document.createElement('th');
     th.className = 'optional-col hide-mobile';
     th.style.fontSize = '10px';
-    th.textContent = col.label;
+    // Date columns get a sort affordance — completed_at toggles client-side
+    // sort just like the static created_at header.
+    if (col.key === 'completed_at') {
+      th.style.cursor     = 'pointer';
+      th.style.userSelect = 'none';
+      th.onclick = () => setOrderSort('completed_at');
+      th.innerHTML = `${col.label}<span id="sort-arrow-completed_at" style="margin-left:4px;color:var(--cyan);"></span>`;
+    } else {
+      th.textContent = col.label;
+    }
     thead.appendChild(th);
   });
   // Re-render with the cached payload so toggling doesn't refetch.
   renderOrderRows(window._lastOrderData || []);
 }
 
+// ── Orders client-side sort ───────────────────────────────────────
+// Toggles ASC/DESC on a date column. Persists across re-renders and
+// re-fetches; the same state is consulted by every renderOrderRows call.
+let _orderSort = { col: 'created_at', dir: 'desc' };
+
+function setOrderSort(col) {
+  if (_orderSort.col === col) {
+    _orderSort.dir = _orderSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    _orderSort.col = col;
+    _orderSort.dir = 'desc';
+  }
+  renderOrderRows(window._lastOrderData || []);
+}
+
+function _sortOrders(orders) {
+  const { col, dir } = _orderSort;
+  const arr = orders.slice();
+  arr.sort((a, b) => {
+    const av = a[col] ? new Date(a[col]).getTime() : 0;
+    const bv = b[col] ? new Date(b[col]).getTime() : 0;
+    return dir === 'asc' ? av - bv : bv - av;
+  });
+  return arr;
+}
+
+function _updateSortArrows() {
+  ['created_at', 'completed_at'].forEach(c => {
+    const el = document.getElementById('sort-arrow-' + c);
+    if (!el) return;
+    el.textContent = (_orderSort.col === c)
+      ? (_orderSort.dir === 'asc' ? '↑' : '↓')
+      : '';
+  });
+}
+
 function renderOrderRows(orders) {
   window._lastOrderData = orders;
+  orders = _sortOrders(orders);
+  _updateSortArrows();
   const activeCols = getActiveOptionalCols();
   const totalCols  = 8 + activeCols.length;
 
@@ -3348,106 +3385,61 @@ function closeAffiliateModal() {
   currentAffiliateData = null;
 }
 
-// ── Admin Traffic ─────────────────────────────────────────────────
-async function loadAdminTraffic() {
-  document.getElementById('traffic-summary-view').style.display = '';
-  document.getElementById('traffic-detail-view').style.display = 'none';
-  const tbody = document.getElementById('traffic-table');
-  tbody.innerHTML = '<tr><td colspan="9" class="empty">Loading...</td></tr>';
-  try {
-    const { affiliates } = await api('GET', '/admin/traffic');
-    if (!affiliates.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="empty">Belum ada data</td></tr>';
-      return;
-    }
-    tbody.innerHTML = affiliates.map(a => {
-      const visits = parseInt(a.visits || 0);
-      const checkouts = parseInt(a.checkouts || 0);
-      const formFills = parseInt(a.form_fills || 0);
-      const paid = parseInt(a.paid || 0);
-      const cr = visits > 0 ? ((paid / visits) * 100).toFixed(1) : '0.0';
-      let pixelBadge = '';
-      if (a.meta_pixel_id) {
-        pixelBadge += a.has_pixel_token
+// ── Affiliate Traffic table (bottom of Affiliates tab) ─────────────
+// Per-affiliate kunjungan / checkout / form-fill / paid breakdown.
+// Range follows the shared `_adminRange` so changing the dashboard
+// selector reshapes this table too on next mount.
+function _renderAffTrafficRow(row, isNonAffiliate) {
+  const visits    = parseInt(row.visits     || 0);
+  const checkouts = parseInt(row.checkouts  || 0);
+  const formFills = parseInt(row.form_fills || 0);
+  const paid      = parseInt(row.paid       || 0);
+  let pixelCell;
+  if (isNonAffiliate) {
+    pixelCell = '<span style="color:var(--muted);">—</span>';
+  } else {
+    let pixelBadge = '';
+    pixelBadge += row.meta_pixel_id
+      ? (row.has_pixel_token
           ? '<span class="badge" style="background:rgba(74,222,128,.15);color:var(--green);font-size:10px;margin-right:4px;">Meta ✓</span>'
-          : '<span class="badge" style="background:rgba(245,200,66,.15);color:var(--gold);font-size:10px;margin-right:4px;">Meta ⚠</span>';
-      } else {
-        pixelBadge += '<span class="badge badge-muted" style="font-size:10px;margin-right:4px;">Meta —</span>';
-      }
-      if (a.google_ads_id) {
-        pixelBadge += '<span class="badge badge-cyan" style="font-size:10px;">GAds ✓</span>';
-      } else {
-        pixelBadge += '<span class="badge badge-muted" style="font-size:10px;">GAds —</span>';
-      }
-      const safeName = (a.name || '').replace(/'/g, "\\'");
-      return `<tr>
-        <td><strong>${a.name}</strong></td>
-        <td class="mono" style="font-size:12px;">${a.ref_code}</td>
-        <td>${pixelBadge}</td>
-        <td class="mono" style="text-align:right;color:var(--cyan);">${visits.toLocaleString('id-ID')}</td>
-        <td class="mono" style="text-align:right;color:var(--gold);">${checkouts.toLocaleString('id-ID')}</td>
-        <td class="mono" style="text-align:right;color:#C9A84C;">${formFills.toLocaleString('id-ID')}</td>
-        <td class="mono" style="text-align:right;color:var(--green);">${paid.toLocaleString('id-ID')}</td>
-        <td class="mono" style="text-align:right;font-size:12px;">${cr}%</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="loadTrafficDetail(${a.id}, '${safeName}', '${a.ref_code}')">Detail</button></td>
-      </tr>`;
-    }).join('');
-  } catch (e) {
-    showAlert('traffic', e.message, 'error');
-    tbody.innerHTML = '<tr><td colspan="9" class="empty">Gagal memuat data</td></tr>';
+          : '<span class="badge" style="background:rgba(245,200,66,.15);color:var(--gold);font-size:10px;margin-right:4px;">Meta ⚠</span>')
+      : '<span class="badge badge-muted" style="font-size:10px;margin-right:4px;">Meta —</span>';
+    pixelBadge += row.google_ads_id
+      ? '<span class="badge badge-cyan" style="font-size:10px;">GAds ✓</span>'
+      : '<span class="badge badge-muted" style="font-size:10px;">GAds —</span>';
+    pixelCell = pixelBadge;
   }
+  const name = isNonAffiliate ? 'Non-Affiliate' : (row.name || '');
+  const ref  = isNonAffiliate ? '—' : (row.ref_code || '—');
+  const rowStyle = isNonAffiliate
+    ? 'background:rgba(255,255,255,0.02);font-style:italic;border-top:1px solid var(--border);'
+    : '';
+  return `<tr style="${rowStyle}">
+    <td><strong>${name}</strong></td>
+    <td class="mono" style="font-size:12px;">${ref}</td>
+    <td>${pixelCell}</td>
+    <td class="mono" style="text-align:right;color:var(--cyan);">${visits.toLocaleString('id-ID')}</td>
+    <td class="mono" style="text-align:right;color:var(--gold);">${checkouts.toLocaleString('id-ID')}</td>
+    <td class="mono" style="text-align:right;color:#C9A84C;">${formFills.toLocaleString('id-ID')}</td>
+    <td class="mono" style="text-align:right;color:var(--green);">${paid.toLocaleString('id-ID')}</td>
+  </tr>`;
 }
 
-async function loadTrafficDetail(affiliateId, name, refCode) {
-  document.getElementById('traffic-summary-view').style.display = 'none';
-  document.getElementById('traffic-detail-view').style.display = '';
-  document.getElementById('traffic-detail-name').textContent = (name || '').toUpperCase();
-  document.getElementById('traffic-detail-refcode').textContent = refCode || '';
+async function loadAffiliateTrafficTable() {
+  const tbody = document.getElementById('aff-traffic-table');
+  if (!tbody) return;
+  const subEl = document.getElementById('aff-traffic-sub');
+  if (subEl) subEl.textContent = 'Kunjungan, checkout, dan konversi per affiliate · ' + _adminRange.label;
+  tbody.innerHTML = '<tr><td colspan="7" class="empty">Loading...</td></tr>';
   try {
-    const d = await api('GET', `/admin/traffic/${affiliateId}`);
-    document.getElementById('td-today-visit').textContent     = d.today.homepage.total.toLocaleString('id-ID');
-    document.getElementById('td-today-checkout').textContent  = d.today.checkout.total.toLocaleString('id-ID');
-    document.getElementById('td-today-formfill').textContent  = (d.today.form_fill?.total || 0).toLocaleString('id-ID');
-    document.getElementById('td-today-paid').textContent      = d.today.paid.total.toLocaleString('id-ID');
-    document.getElementById('td-week-visit').textContent      = d.last_7_days.homepage.total.toLocaleString('id-ID');
-    document.getElementById('td-week-checkout').textContent   = d.last_7_days.checkout.total.toLocaleString('id-ID');
-    document.getElementById('td-week-formfill').textContent   = (d.last_7_days.form_fill?.total || 0).toLocaleString('id-ID');
-    document.getElementById('td-week-paid').textContent       = d.last_7_days.paid.total.toLocaleString('id-ID');
-    document.getElementById('td-all-visit').textContent       = d.all_time.homepage.total.toLocaleString('id-ID');
-    document.getElementById('td-all-checkout').textContent    = d.all_time.checkout.total.toLocaleString('id-ID');
-    document.getElementById('td-all-formfill').textContent    = (d.all_time.form_fill?.total || 0).toLocaleString('id-ID');
-    document.getElementById('td-all-paid').textContent        = d.all_time.paid.total.toLocaleString('id-ID');
-
-    // 30-day trend chart
-    const chart = document.getElementById('td-trend-chart');
-    const trendMap = {};
-    (d.trend || []).forEach(t => {
-      const dt = new Date(t.date);
-      const key = dt.toISOString().slice(0, 10);
-      trendMap[key] = parseInt(t.visits || 0);
-    });
-    const today = new Date();
-    const days = [];
-    for (let i = 29; i >= 0; i--) {
-      const dt = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
-      const key = dt.toISOString().slice(0, 10);
-      days.push({ key, label: dt.getDate() + '/' + (dt.getMonth() + 1), value: trendMap[key] || 0 });
-    }
-    const max = Math.max(1, ...days.map(d => d.value));
-    chart.innerHTML = days.map(day => {
-      const h = Math.max(2, Math.round((day.value / max) * 100));
-      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
-        <div title="${day.label}: ${day.value} visit" style="width:100%;height:${h}%;background:${day.value > 0 ? 'var(--cyan)' : 'var(--border)'};border-radius:2px 2px 0 0;"></div>
-      </div>`;
-    }).join('');
+    const { affiliates, non_affiliate } = await api('GET', '/admin/traffic?days=' + _adminRange.days);
+    const rows = (affiliates || []).map(a => _renderAffTrafficRow(a, false)).join('');
+    const naRow = non_affiliate ? _renderAffTrafficRow(non_affiliate, true) : '';
+    tbody.innerHTML = (rows + naRow) || '<tr><td colspan="7" class="empty">Belum ada data</td></tr>';
   } catch (e) {
-    showAlert('traffic', e.message, 'error');
+    showAlert('affiliates', e.message, 'error');
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Gagal memuat data</td></tr>';
   }
-}
-
-function closeTrafficDetail() {
-  document.getElementById('traffic-detail-view').style.display = 'none';
-  document.getElementById('traffic-summary-view').style.display = '';
 }
 
 async function saveMasterSetting() {
@@ -3644,14 +3636,6 @@ async function saveAndRetry() {
       <line x1="18" y1="11" x2="18" y2="17"/><line x1="15" y1="14" x2="21" y2="14"/>
     </svg>
     Affiliate
-  </div>
-  <div class="admin-bottom-nav-item" onclick="showPage('traffic')" data-page="traffic">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="18" y1="20" x2="18" y2="10"/>
-      <line x1="12" y1="20" x2="12" y2="4"/>
-      <line x1="6" y1="20" x2="6" y2="14"/>
-    </svg>
-    Traffic
   </div>
   <div class="admin-bottom-nav-item" onclick="showPage('grant')" data-page="grant">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
