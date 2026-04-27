@@ -114,3 +114,76 @@ Period selector reuses `cc-period` / `period-btn` styles for visual consistency 
 - [ ] Smoke-test on staging: enable Paid At optional column, click its header — same behaviour
 - [ ] Smoke-test on staging: open Traffic tab, click Today/7D/30D — cards update (numbers will all be 0 on staging until traffic exists)
 - [ ] Smoke-test on production after merge: Sold Products donut total + Revenue chart total still agree
+
+---
+
+## Follow-up (same branch) — Dashboard restructure + Traffic tab removal
+
+Funnel chart + per-affiliate table moved off the Traffic tab. Tab deleted. One shared range selector now drives Revenue Harian, Sold Products, and Funnel Traffic.
+
+### Layout (Dashboard)
+
+```
+[Hero stats]
+[Alert tiles]
+[Revenue Harian (2fr)  |  Sold Products (1fr)]   ← existing row
+[Funnel Traffic (1fr)  |  Reserved placeholder (1fr)]   ← NEW row
+[Recent orders + Top affiliates]
+[Failed orders]
+```
+
+The reserved-right cc-panel uses a new `.cc-panel-empty` style (centered "Coming soon", muted, min-height matched to the chart's 240px). New `.cc-row-1-1` grid utility added for 50/50 splits; collapses to single column at the same 1100px breakpoint as the other cc-row variants.
+
+### Funnel chart
+
+Stacked bar, 4 layers per day — Kunjungan (purple #7F77DD, bottom) → Checkout (green #1D9E75) → Form Diisi (amber #EF9F27) → Paid (orange #D85A30, top). Same Chart.js instance pattern as Revenue Harian (`responsive`, `maintainAspectRatio:false`, indexed tooltip showing all 4 layers). Legend below the canvas mirrors Revenue Harian's totals strip ("Kunjungan · 1,000 · …").
+
+Subtitle dynamically tracks the shared range label: "Last 30 days · Kunjungan → Checkout → Form Diisi → Paid".
+
+### Backend
+
+`GET /admin/stats/funnel?days=N&offset=N` ([src/index.js:2191-2293](../tradity-qrr-server/src/index.js#L2191-L2293)) — replaces the previous `/admin/stats/traffic` endpoint at the same location. Same SQL pattern (4 parallel daily aggregations, pre-seeded zero map for continuous x-axis), but two changes:
+
+1. **Adds `offset` param** (whitelist 0-365) so the dashboard's "Yesterday" button works (`days=1, offset=1`). Window math mirrors `/admin/stats/daily`: `to = today - offset`, `from = to - (days - 1)`, `toExcl = to + 1`.
+2. **Paid layer buckets by `DATE(completed_at + INTERVAL '7 hours')`** to match the Revenue Harian WIB shift, so funnel.paid totals reconcile with the revenue chart's transaction count for the same day.
+
+Response shape:
+```json
+{
+  "days":   [{ "date": "2026-04-01", "homepage": 45, "checkout": 30, "form_fill": 18, "paid": 9 }, …],
+  "totals": { "homepage": 1000, "checkout": 719, "form_fill": 344, "paid": 169 }
+}
+```
+
+`days` is the array (per user spec) — slightly awkward given `?days=N` is also a query param, but matches the requested contract.
+
+### Affiliate Traffic table
+
+Moved verbatim from the deleted page-traffic to the bottom of `#page-affiliates`, wrapped in a `cc-panel` with title "Affiliate Traffic" and dynamic subtitle ("Kunjungan, checkout, dan konversi per affiliate · Last 30 days"). Columns unchanged (Affiliate / Ref Code / Pixel / Kunjungan / Checkout / Form Fill / Terbayar). Non-Affiliate row preserved.
+
+`loadAffiliateTrafficTable()` replaces `loadTrafficAffiliateTable()` — fetches `/admin/traffic?days={_adminRange.days}` (no offset; `/admin/traffic` doesn't accept it, that's a known gap). Mounted on `showPage('affiliates')` and re-runs on dashboard range change if the table is currently in the DOM.
+
+### Shared range selector
+
+`setAdminRange()` now also calls `loadAdminFunnelChart()` and (if mounted) `loadAffiliateTrafficTable()`. Three charts re-fetch and re-render together when the user clicks Today / Yesterday / 7D / 30D.
+
+### Deletions
+
+- `<div class="page" id="page-traffic">` — entire section gone, including the dead detail panel (`traffic-detail-view`, `td-*-visit/checkout/formfill/paid`, `td-trend-chart`) which was never reachable from the table.
+- Sidebar nav Traffic link, mobile bottom-nav Traffic item, legacy `<div class="nav-tab" onclick="showPage('traffic')">Traffic</div>`.
+- `showPage()` tabs map: `traffic:6` removed, `promo:7` → `promo:6` (zero-indexed `.nav-tab` lookup).
+- `if (name === 'traffic') loadAdminTraffic();` branch.
+- JS funcs: `setTrafficPeriod`, `loadTrafficCharts`, `loadTrafficFunnelChart`, `loadAdminTraffic`, `loadTrafficDetail`, `closeTrafficDetail`, `_renderTrafficRow` (replaced by `_renderAffTrafficRow`), and the `_trafficDays` / `_trafficChart` / `_trafficLabels` state.
+
+### Decisions
+
+- **New endpoint path, not in-place rename.** `/admin/stats/traffic` → `/admin/stats/funnel`. Justification: response shape changed (`daily` → `days`, `days` integer dropped), and the only consumer is the new dashboard chart. Renaming surfaces the contract change; staging will 404 fast if a stale FE is deployed.
+- **Affiliate Traffic table inside Affiliates tab, not a separate Affiliates sub-section.** User asked for "bottom of Affiliates tab" — placed it after the existing list/tree views, inside `#page-affiliates` so it shares the tab's nav state and refresh button is implicitly the page nav.
+- **Reserved placeholder is a real cc-panel, not a hidden div.** Empty card with "Coming soon" preserves the 1:1 layout immediately and signals intent to the next contributor. Markup ready for future content drop-in.
+- **Funnel `paid` layer uses WIB bucket, others don't.** Site_clicks and orders.created_at stay on UTC DATE() — matches the existing `/admin/stats/daily` pattern. Only the paid bucket gets the `+ INTERVAL '7 hours'` so it lines up with Revenue Harian. Mixed but intentional.
+- **Affiliate traffic table re-fetches on Dashboard range change only if mounted.** Avoids spurious requests when the user is on Dashboard and never visits Affiliates. Re-runs on `showPage('affiliates')` regardless.
+
+### Files Changed (follow-up)
+
+- `admin/index.html` — `.cc-row-1-1` + `.cc-panel-empty` CSS; new Funnel chart + reserved placeholder row; `loadAdminFunnelChart()`; `setAdminRange()` extended; `loadAdminCharts()` parallelized; old Traffic tab + JS removed; affiliate traffic table relocated; nav entries removed.
+- `src/index.js` — `/admin/stats/traffic` → `/admin/stats/funnel`, adds `offset` param, response key renamed `daily` → `days`, paid bucket uses WIB shift.
