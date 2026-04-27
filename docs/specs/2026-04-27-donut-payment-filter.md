@@ -1,7 +1,8 @@
 # Sold Products Donut — filter by payment_status
 
 **Date:** 2026-04-27
-**Status:** Done (awaiting staging review)
+**Status:** Done
+**Deployed:** 2026-04-27
 **Branch:** feat/fix-donut-payment-filter
 
 ## Files Changed
