@@ -1066,13 +1066,14 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       <div class="cc-panel">
         <div class="cc-panel-head">
           <div>
-            <div class="cc-panel-title">Revenue harian · 30D</div>
+            <div class="cc-panel-title" id="cc-income-title">Revenue harian · Last 30 days</div>
             <div class="cc-panel-sub">Paid vs pending · stacked</div>
           </div>
-          <div class="cc-period" id="admin-income-toggle">
-            <button class="period-btn" onclick="setAdminIncomePeriod(7,this)">7D</button>
-            <button class="period-btn active" onclick="setAdminIncomePeriod(30,this)">30D</button>
-            <button class="period-btn" onclick="setAdminIncomePeriod(90,this)">90D</button>
+          <div class="cc-period" id="admin-range-toggle">
+            <button class="period-btn" onclick="setAdminRange(1,0,'Today',this)">Today</button>
+            <button class="period-btn" onclick="setAdminRange(1,1,'Yesterday',this)">Yesterday</button>
+            <button class="period-btn" onclick="setAdminRange(7,0,'Last 7 days',this)">7D</button>
+            <button class="period-btn active" onclick="setAdminRange(30,0,'Last 30 days',this)">30D</button>
           </div>
         </div>
         <div style="position:relative;width:100%;height:200px;">
@@ -1087,12 +1088,12 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       <div class="cc-panel">
         <div class="cc-panel-head">
           <div>
-            <div class="cc-panel-title">Best Selling Product</div>
-            <div class="cc-panel-sub">Last 30 days</div>
+            <div class="cc-panel-title">Sold Products</div>
+            <div class="cc-panel-sub" id="cc-mix-sub">Last 30 days</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:18px;">
-          <svg id="cc-donut" width="120" height="120" viewBox="0 0 120 120" aria-label="Best Selling Product"></svg>
+          <svg id="cc-donut" width="120" height="120" viewBox="0 0 120 120" aria-label="Sold Products"></svg>
           <div id="cc-mix-list" style="flex:1;font-size:12.5px;"></div>
         </div>
       </div>
@@ -1960,7 +1961,15 @@ function loadAll() {
 let adminChartTraffic   = null;
 let adminChartIncome    = null;
 let adminTrafficPeriod  = 30;
-let adminIncomePeriod   = 30;
+
+// Shared range state for Revenue Harian + Sold Products. days = window
+// size in calendar days, offset = days back from today (0 = ends today,
+// 1 = ends yesterday). label is mirrored into the panel titles.
+let _adminRange = { days: 30, offset: 0, label: 'Last 30 days' };
+
+// Cached transactions from the latest /admin/transactions fetch so the
+// Sold Products donut can re-render on range change without a re-fetch.
+let _lastTransactions = [];
 
 function _adminResetToggle(containerId) {
   document.querySelectorAll('#' + containerId + ' button').forEach(b => {
@@ -1974,11 +1983,16 @@ function setAdminTrafficPeriod(days, btn) {
   btn.style.background = '#6B5FD4'; btn.style.color = '#fff';
   loadAdminTrafficChart();
 }
-function setAdminIncomePeriod(days, btn) {
-  adminIncomePeriod = days;
-  _adminResetToggle('admin-income-toggle');
+function setAdminRange(days, offset, label, btn) {
+  _adminRange = { days, offset, label };
+  _adminResetToggle('admin-range-toggle');
   btn.style.background = '#6B5FD4'; btn.style.color = '#fff';
+  const titleEl = document.getElementById('cc-income-title');
+  if (titleEl) titleEl.textContent = 'Revenue harian · ' + label;
+  const subEl = document.getElementById('cc-mix-sub');
+  if (subEl) subEl.textContent = label;
   loadAdminIncomeChart();
+  loadSoldProductsDonut();
 }
 
 function _adminFmtRpShort(v) {
@@ -2037,7 +2051,10 @@ async function loadAdminIncomeChart() {
   const gridColor = 'rgba(255,255,255,0.06)';
   const tickColor = '#888';
   try {
-    const data = await api('GET', '/admin/stats/daily?days=' + adminIncomePeriod);
+    const data = await api(
+      'GET',
+      '/admin/stats/daily?days=' + _adminRange.days + '&offset=' + _adminRange.offset
+    );
     const days = data.income || [];
     const labels = days.map(d => {
       const dt = new Date(d.date);
@@ -2138,6 +2155,89 @@ async function loadAdminIncomeChart() {
 
 async function loadAdminCharts() {
   await Promise.all([loadAdminTrafficChart(), loadAdminIncomeChart()]);
+}
+
+// ── Sold Products donut ──────────────────────────────────────────────
+// Re-fetches /admin/transactions, caches the result, and re-renders the
+// donut. Used by the shared range selector so the donut always reflects
+// the latest data (even after SSE events) when the user changes range.
+async function loadSoldProductsDonut() {
+  try {
+    const txs = await api('GET', '/admin/transactions');
+    _lastTransactions = txs.transactions || [];
+    renderSoldProductsDonut();
+  } catch (e) { console.error('loadSoldProductsDonut error:', e); }
+}
+
+// Renders the donut from `_lastTransactions` filtered by `_adminRange`.
+// Calendar-day boundary (matches the Revenue Harian server-side filter):
+//   to   = end of (today − offset)        e.g. offset=1 → end of yesterday
+//   from = start of (to − (days − 1))
+function renderSoldProductsDonut() {
+  const transactions = _lastTransactions;
+  const { days, offset, label } = _adminRange;
+
+  const subEl = document.getElementById('cc-mix-sub');
+  if (subEl) subEl.textContent = label;
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const to = new Date(today);
+  to.setDate(to.getDate() - offset);
+  to.setHours(23, 59, 59, 999);
+  const from = new Date(to);
+  from.setHours(0, 0, 0, 0);
+  from.setDate(from.getDate() - (days - 1));
+  const fromMs = from.getTime();
+  const toMs   = to.getTime();
+
+  const mix = {};
+  transactions.forEach(t => {
+    if (t.tv_access_status !== 'granted') return;
+    const ts = t.created_at ? new Date(t.created_at).getTime() : NaN;
+    if (!Number.isFinite(ts)) return;
+    if (ts < fromMs || ts > toMs) return;
+    const k = t.product_name || 'Other';
+    mix[k] = (mix[k] || 0) + 1;
+  });
+  const mixArr  = Object.entries(mix).sort((a,b) => b[1]-a[1]).slice(0,4);
+  const palette = ['#D97706','#6B7280','#0891B2','#059669','#7C3AED'];
+  const total   = mixArr.reduce((a,[,c])=>a+c,0);
+  const donut   = document.getElementById('cc-donut');
+  const mixListEl = document.getElementById('cc-mix-list');
+  if (!donut || !mixListEl) return;
+
+  if (total === 0) {
+    donut.innerHTML =
+      `<circle cx="60" cy="60" r="48" fill="none" stroke="var(--border)" stroke-width="16"/>` +
+      `<text x="60" y="65" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.5">no data</text>`;
+    mixListEl.innerHTML = `<div style="color:var(--muted);font-size:12px;">No paid orders for ${label.toLowerCase()}.</div>`;
+    return;
+  }
+
+  const cx=60, cy=60, R=48, r=32;
+  let acc = 0;
+  const slices = mixArr.map(([name,count], i) => {
+    const start = (acc/total)*Math.PI*2 - Math.PI/2;
+    acc += count;
+    const end = (acc/total)*Math.PI*2 - Math.PI/2;
+    const x1=cx+R*Math.cos(start), y1=cy+R*Math.sin(start);
+    const x2=cx+R*Math.cos(end),   y2=cy+R*Math.sin(end);
+    const x3=cx+r*Math.cos(end),   y3=cy+r*Math.sin(end);
+    const x4=cx+r*Math.cos(start), y4=cy+r*Math.sin(start);
+    const large = (end-start) > Math.PI ? 1 : 0;
+    return `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${large} 1 ${x2.toFixed(1)},${y2.toFixed(1)} L${x3.toFixed(1)},${y3.toFixed(1)} A${r},${r} 0 ${large} 0 ${x4.toFixed(1)},${y4.toFixed(1)} Z" fill="${palette[i]}"/>`;
+  }).join('');
+  donut.innerHTML = slices +
+    `<text x="60" y="58" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.6">total</text>` +
+    `<text x="60" y="74" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">${total}</text>`;
+  mixListEl.innerHTML = mixArr.map(([name,count], i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+      <span style="width:8px;height:8px;background:${palette[i]};border-radius:2px;"></span>
+      <span style="flex:1;">${name}</span>
+      <span style="font-family:'JetBrains Mono',monospace;color:var(--muted);">${count}</span>
+      <span style="font-weight:600;width:42px;text-align:right;">${Math.round(count/total*100)}%</span>
+    </div>`).join('');
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────
@@ -2301,52 +2401,10 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero) {
   _dim('cc-act-review', affPendingC   === 0);
   _dim('cc-act-payout', payoutAmt     === 0);
 
-  // BEST SELLING PRODUCT donut — last 30 days, granted (successful) sales only
-  const cutoff30d = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  const mix = {};
-  transactions.forEach(t => {
-    if (t.tv_access_status !== 'granted') return;
-    const ts = t.created_at ? new Date(t.created_at).getTime() : NaN;
-    if (!Number.isFinite(ts) || ts < cutoff30d) return;
-    const k = t.product_name || 'Other';
-    mix[k] = (mix[k] || 0) + 1;
-  });
-  const mixArr = Object.entries(mix).sort((a,b) => b[1]-a[1]).slice(0,4);
-  const palette = ['#D97706','#6B7280','#0891B2','#059669','#7C3AED'];
-  const total = mixArr.reduce((a,[,c])=>a+c,0);
-  const donut = document.getElementById('cc-donut');
-  const mixListEl = document.getElementById('cc-mix-list');
-
-  if (total === 0) {
-    donut.innerHTML =
-      `<circle cx="60" cy="60" r="48" fill="none" stroke="var(--border)" stroke-width="16"/>` +
-      `<text x="60" y="65" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.5">no data</text>`;
-    mixListEl.innerHTML = `<div style="color:var(--muted);font-size:12px;">No paid orders in the last 30 days.</div>`;
-  } else {
-    const cx=60, cy=60, R=48, r=32;
-    let acc = 0;
-    const slices = mixArr.map(([name,count], i) => {
-      const start = (acc/total)*Math.PI*2 - Math.PI/2;
-      acc += count;
-      const end = (acc/total)*Math.PI*2 - Math.PI/2;
-      const x1=cx+R*Math.cos(start), y1=cy+R*Math.sin(start);
-      const x2=cx+R*Math.cos(end),   y2=cy+R*Math.sin(end);
-      const x3=cx+r*Math.cos(end),   y3=cy+r*Math.sin(end);
-      const x4=cx+r*Math.cos(start), y4=cy+r*Math.sin(start);
-      const large = (end-start) > Math.PI ? 1 : 0;
-      return `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${large} 1 ${x2.toFixed(1)},${y2.toFixed(1)} L${x3.toFixed(1)},${y3.toFixed(1)} A${r},${r} 0 ${large} 0 ${x4.toFixed(1)},${y4.toFixed(1)} Z" fill="${palette[i]}"/>`;
-    }).join('');
-    donut.innerHTML = slices +
-      `<text x="60" y="58" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.6">total</text>` +
-      `<text x="60" y="74" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">${total}</text>`;
-    mixListEl.innerHTML = mixArr.map(([name,count], i) => `
-      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
-        <span style="width:8px;height:8px;background:${palette[i]};border-radius:2px;"></span>
-        <span style="flex:1;">${name}</span>
-        <span style="font-family:'JetBrains Mono',monospace;color:var(--muted);">${count}</span>
-        <span style="font-weight:600;width:42px;text-align:right;">${Math.round(count/total*100)}%</span>
-      </div>`).join('');
-  }
+  // SOLD PRODUCTS donut — driven by the shared range selector. Caches
+  // transactions so a range change can re-render without re-fetching.
+  _lastTransactions = transactions;
+  renderSoldProductsDonut();
 
   // LEGEND — Paid amount from hero. (Transaksi count slot is filled by
   // loadAdminIncomeChart() once the chart fetch resolves; we don't have
