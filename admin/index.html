@@ -1311,7 +1311,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
               <th class="hide-mobile">Produk</th>
               <th>Amount</th>
               <th>Payment</th>
-              <th class="hide-mobile">Created At</th>
+              <th class="hide-mobile" style="cursor:pointer;user-select:none" onclick="setOrderSort('created_at')">Created At<span id="sort-arrow-created_at" style="margin-left:4px;color:var(--cyan);"></span></th>
               <!-- optional columns rendered by JS -->
             </tr>
           </thead>
@@ -1443,6 +1443,38 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
     </div>
 
     <div id="alert-traffic" class="alert"></div>
+
+    <!-- SITE-WIDE TRAFFIC SUMMARY (site_clicks) -->
+    <div class="cc-panel" style="margin-bottom:20px;">
+      <div class="cc-panel-head">
+        <div>
+          <div class="cc-panel-title">Site Traffic</div>
+          <div class="cc-panel-sub" id="traffic-summary-sub">Last 30 days</div>
+        </div>
+        <div class="cc-period" id="traffic-period-toggle">
+          <button class="period-btn" onclick="setTrafficPeriod('today',this)">Today</button>
+          <button class="period-btn" onclick="setTrafficPeriod('last_7_days',this)">7D</button>
+          <button class="period-btn active" onclick="setTrafficPeriod('last_30_days',this)">30D</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Visitors</div>
+          <div style="font-size:22px;font-weight:700;color:var(--ink);" id="traffic-visitors">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="traffic-visitors-sub">unique homepage sessions</div>
+        </div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Checkout rate</div>
+          <div style="font-size:22px;font-weight:700;color:var(--ink);" id="traffic-checkout-rate">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="traffic-checkout-sub">homepage → checkout</div>
+        </div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Paid rate</div>
+          <div style="font-size:22px;font-weight:700;color:var(--ink);" id="traffic-paid-rate">—</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="traffic-paid-sub">checkout → paid</div>
+        </div>
+      </div>
+    </div>
 
     <!-- Summary table -->
     <div id="traffic-summary-view">
@@ -2365,9 +2397,16 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero) {
   // AOV (rounded server-side)
   document.getElementById('cc-aov').textContent = fmtRp(parseInt(hero.aov || 0));
 
-  // Conv Rate = paid / (paid + pending) — both 30-day scoped
-  document.getElementById('cc-conv').textContent       = hero.conv_rate || '0.0';
-  document.getElementById('cc-conv-delta').textContent = `${heroPendingC} pending`;
+  // Conv Rate = paid orders / total orders (form-submit → payment),
+  // both windowed by orders.created_at over the last 30 days.
+  document.getElementById('cc-conv').textContent = hero.conv_rate || '0.0';
+  const convDeltaEl = document.getElementById('cc-conv-delta');
+  if (hero.conv_total_orders !== undefined) {
+    convDeltaEl.textContent = `${hero.conv_paid_orders || 0} / ${hero.conv_total_orders || 0} orders`;
+    convDeltaEl.title = 'Paid orders ÷ total orders (form-submit → payment), last 30 days';
+  } else {
+    convDeltaEl.textContent = `${heroPendingC} pending`;
+  }
 
   // ── Sparkline — real daily revenue (30 entries, server pre-seeds zeros) ──
   const spark = (hero.spark && hero.spark.length) ? hero.spark : new Array(30).fill(0);
@@ -2943,15 +2982,62 @@ function applyColumnPrefs() {
     const th = document.createElement('th');
     th.className = 'optional-col hide-mobile';
     th.style.fontSize = '10px';
-    th.textContent = col.label;
+    // Date columns get a sort affordance — completed_at toggles client-side
+    // sort just like the static created_at header.
+    if (col.key === 'completed_at') {
+      th.style.cursor     = 'pointer';
+      th.style.userSelect = 'none';
+      th.onclick = () => setOrderSort('completed_at');
+      th.innerHTML = `${col.label}<span id="sort-arrow-completed_at" style="margin-left:4px;color:var(--cyan);"></span>`;
+    } else {
+      th.textContent = col.label;
+    }
     thead.appendChild(th);
   });
   // Re-render with the cached payload so toggling doesn't refetch.
   renderOrderRows(window._lastOrderData || []);
 }
 
+// ── Orders client-side sort ───────────────────────────────────────
+// Toggles ASC/DESC on a date column. Persists across re-renders and
+// re-fetches; the same state is consulted by every renderOrderRows call.
+let _orderSort = { col: 'created_at', dir: 'desc' };
+
+function setOrderSort(col) {
+  if (_orderSort.col === col) {
+    _orderSort.dir = _orderSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    _orderSort.col = col;
+    _orderSort.dir = 'desc';
+  }
+  renderOrderRows(window._lastOrderData || []);
+}
+
+function _sortOrders(orders) {
+  const { col, dir } = _orderSort;
+  const arr = orders.slice();
+  arr.sort((a, b) => {
+    const av = a[col] ? new Date(a[col]).getTime() : 0;
+    const bv = b[col] ? new Date(b[col]).getTime() : 0;
+    return dir === 'asc' ? av - bv : bv - av;
+  });
+  return arr;
+}
+
+function _updateSortArrows() {
+  ['created_at', 'completed_at'].forEach(c => {
+    const el = document.getElementById('sort-arrow-' + c);
+    if (!el) return;
+    el.textContent = (_orderSort.col === c)
+      ? (_orderSort.dir === 'asc' ? '↑' : '↓')
+      : '';
+  });
+}
+
 function renderOrderRows(orders) {
   window._lastOrderData = orders;
+  orders = _sortOrders(orders);
+  _updateSortArrows();
   const activeCols = getActiveOptionalCols();
   const totalCols  = 8 + activeCols.length;
 
@@ -3349,9 +3435,48 @@ function closeAffiliateModal() {
 }
 
 // ── Admin Traffic ─────────────────────────────────────────────────
+// ── Site-wide traffic summary cards (above the affiliate table) ──
+let _trafficStatsData = null;
+let _trafficPeriod    = 'last_30_days';
+const _trafficLabels  = { today: 'Today', last_7_days: 'Last 7 days', last_30_days: 'Last 30 days' };
+
+async function loadTrafficStats() {
+  try {
+    _trafficStatsData = await api('GET', '/admin/stats/traffic');
+    renderTrafficStats();
+  } catch (e) { console.error('loadTrafficStats error:', e); }
+}
+
+function setTrafficPeriod(period, btn) {
+  _trafficPeriod = period;
+  document.querySelectorAll('#traffic-period-toggle button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTrafficStats();
+}
+
+function renderTrafficStats() {
+  if (!_trafficStatsData) return;
+  const data = _trafficStatsData[_trafficPeriod];
+  if (!data) return;
+  document.getElementById('traffic-summary-sub').textContent = _trafficLabels[_trafficPeriod] || '';
+  const homepage = data.homepage || 0;
+  const checkout = data.checkout || 0;
+  const paid     = data.paid     || 0;
+  const checkoutRate = homepage > 0 ? ((checkout / homepage) * 100).toFixed(1) : '0.0';
+  const paidRate     = checkout > 0 ? ((paid     / checkout) * 100).toFixed(1) : '0.0';
+  document.getElementById('traffic-visitors').textContent       = homepage.toLocaleString('id-ID');
+  document.getElementById('traffic-checkout-rate').textContent  = checkoutRate + '%';
+  document.getElementById('traffic-paid-rate').textContent      = paidRate + '%';
+  document.getElementById('traffic-visitors-sub').textContent   = `${checkout.toLocaleString('id-ID')} checkout · ${paid.toLocaleString('id-ID')} paid`;
+  document.getElementById('traffic-checkout-sub').textContent   = `${checkout} of ${homepage} sessions`;
+  document.getElementById('traffic-paid-sub').textContent       = `${paid} of ${checkout} checkouts`;
+}
+
 async function loadAdminTraffic() {
   document.getElementById('traffic-summary-view').style.display = '';
   document.getElementById('traffic-detail-view').style.display = 'none';
+  // Site-wide summary loads in parallel with the affiliate-attributed table.
+  loadTrafficStats();
   const tbody = document.getElementById('traffic-table');
   tbody.innerHTML = '<tr><td colspan="9" class="empty">Loading...</td></tr>';
   try {
