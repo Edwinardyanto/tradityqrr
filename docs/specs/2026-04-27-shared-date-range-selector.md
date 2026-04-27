@@ -1,7 +1,8 @@
 # Shared Date Range Selector — Revenue Harian + Sold Products
 
 **Date:** 2026-04-27
-**Status:** Done (awaiting staging review)
+**Status:** Done
+**Deployed:** 2026-04-27
 **Branch:** feat/shared-date-range-selector (frontend + backend)
 
 ## Files Changed

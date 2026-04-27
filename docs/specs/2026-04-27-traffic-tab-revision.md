@@ -2,6 +2,7 @@
 
 **Date:** 2026-04-27
 **Status:** Done
+**Deployed:** 2026-04-27
 **Branch:** feat/big-scope-admin-revisions
 
 ## Files Changed
