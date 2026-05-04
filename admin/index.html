@@ -1254,13 +1254,14 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
             <th class="hide-mobile">No. HP</th>
             <th>Status</th>
             <th class="hide-mobile">Plan</th>
+            <th class="hide-mobile">Joined</th>
             <th class="hide-mobile">Expires</th>
             <th class="hide-mobile">TV Username</th>
             <th>TV</th>
             <th>Telegram</th>
             <th>Aksi</th>
           </tr></thead>
-          <tbody id="subscribers-table"><tr><td colspan="10" class="empty">Loading...</td></tr></tbody>
+          <tbody id="subscribers-table"><tr><td colspan="11" class="empty">Loading...</td></tr></tbody>
         </table>
       </div>
       <div id="subscribers-pagination"></div>
@@ -2837,6 +2838,7 @@ function renderSubscribers(list) {
           <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${s.phone || '—'}</td>
           <td>${statusBadge}</td>
           <td class="hide-mobile" style="font-size:12px">${planLabel}</td>
+          <td class="mono hide-mobile" style="font-size:11px;color:var(--muted)">${s.created_at ? fmtDateTime(s.created_at) : '—'}</td>
           <td class="mono hide-mobile" style="font-size:12px">${s.is_lifetime ? '<span style="color:var(--gold)">∞</span>' : (s.expires_at ? fmtDate(s.expires_at) : '—')}</td>
           <td class="hide-mobile mono" style="font-size:12px">${s.tv_username || '—'}</td>
           <td>${tvBadge}</td>
@@ -2844,7 +2846,7 @@ function renderSubscribers(list) {
           <td><button class="btn btn-ghost btn-sm" onclick="viewSubscriber('${s.tv_username}')">Detail</button></td>
         </tr>`;
       }).join('')
-    : '<tr><td colspan="10" class="empty">Belum ada subscriber</td></tr>';
+    : '<tr><td colspan="11" class="empty">Belum ada subscriber</td></tr>';
 
   const paginationEl = document.getElementById('subscribers-pagination');
   if (paginationEl) {
@@ -3232,6 +3234,15 @@ function statusBadge(status) {
 function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+// Date + time (HH:mm) for fields where the moment matters, not just the
+// day — e.g. Subscribers "Joined At" so admin can spot signups by hour.
+function fmtDateTime(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' })
+       + ' ' + dt.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', hour12:false });
 }
 
 function showAlert(page, msg, type) {
