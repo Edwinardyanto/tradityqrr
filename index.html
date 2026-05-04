@@ -644,7 +644,7 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
     <div class="f-outer reveal">
       <div class="f-left">
         <!-- BASIC -->
-        <div class="f-small basic">
+        <div class="f-small basic" data-checkout="checkout-basic">
           <div class="f-s-top">
             <div><div class="f-s-tier">Basic</div><div class="f-s-dur">1</div><div class="f-s-dur-u">Bulan</div></div>
             <div style="text-align:right"><div class="f-s-price"><span class="rp">Rp</span>499K</div><div class="f-s-perday">≈ Rp 16.633/hari</div></div>
@@ -661,7 +661,7 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
           </div>
         </div>
         <!-- SILVER -->
-        <div class="f-small silver">
+        <div class="f-small silver" data-checkout="checkout-silver">
           <div class="f-s-top">
             <div><div class="f-s-tier">Silver</div><div class="f-s-dur">3</div><div class="f-s-dur-u">Bulan · Populer</div></div>
             <div style="text-align:right"><div class="f-s-price"><span class="rp">Rp</span>1.199K</div><div class="f-s-perday">≈ Rp 13.322/hari</div></div>
@@ -679,7 +679,7 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
           </div>
         </div>
         <!-- LIFETIME -->
-        <div class="f-lifetime">
+        <div class="f-lifetime" data-checkout="checkout-lifetime">
           <div class="f-lt-topline"></div>
           <div class="f-lt-glow"></div>
           <div class="f-lt-scanlines"></div>
@@ -704,7 +704,7 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
         </div>
       </div>
       <!-- ANNUAL -->
-      <div class="f-big">
+      <div class="f-big" data-checkout="checkout-gold">
         <div class="f-big-glow"></div><div class="f-big-glow2"></div><div class="f-big-scanlines"></div><div class="f-big-ghost">1</div>
         <div class="f-big-inner">
           <div>
@@ -884,6 +884,24 @@ function getCheckoutUrl(base) {
   var ref = sessionStorage.getItem('rqq_ref');
   return ref ? base + '?ref=' + encodeURIComponent(ref) : base;
 }
+
+// ── SYNC PRICING WITH ACTIVE PRODUCTS ──
+// Hide pricing cards whose checkout slug isn't returned by /products
+// (which already filters by is_active = TRUE). On API failure, leave
+// every card visible — checkout pages still validate server-side.
+(function(){
+  fetch('https://tradity-qrr-server-production.up.railway.app/products')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var urls = (data.products || []).map(function(p){ return p.checkout_url || ''; });
+      document.querySelectorAll('[data-checkout]').forEach(function(card){
+        var slug = card.getAttribute('data-checkout');
+        var active = urls.some(function(u){ return u && u.indexOf(slug) !== -1; });
+        if (!active) card.style.display = 'none';
+      });
+    })
+    .catch(function(){});
+})();
 
 // ── CURSOR ──
 var cur=document.getElementById('cur'),curR=document.getElementById('curR'),mx=0,my=0,rx=0,ry=0;
