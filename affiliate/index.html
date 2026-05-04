@@ -5,404 +5,518 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>TRXC QRR Affiliate Portal</title>
 <link rel="icon" type="image/png" href="../data/trxc-qrr-logo.png"/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --navy: #07060F;
-  --navy2: #0C0A1A;
-  --navy3: #100E20;
-  --bg: #07060F;
-  --bg2: #0C0A1A;
-  --card: #0C0A1A;
-  --card2: #100E20;
-  --border: #12101E;
-  --cyan: #6B5FD4;
-  --cyan2: #8B7FE8;
-  --cyan3: #4B3FA0;
-  --white: #F0EFF8;
-  --muted: #3D3560;
-  --red: #E8637A;
-  --green: #00D48A;
-  --gold: #C9A84C;
+/* ============================================================
+   OPERATOR TWIN — shared design system (inlined)
+   ============================================================ */
+:root{
+  --bg:#07060F;
+  --bg2:#0C0A1A;
+  --card:#0C0A1A;
+  --card2:#100E20;
+  --card3:#161329;
+  --border:#1F1B33;
+  --border2:#2A2545;
+  --cyan:#6B5FD4;
+  --cyan2:#8B7FE8;
+  --cyan3:#4B3FA0;
+  --emerald:#10b981;
+  --amber:#f59e0b;
+  --gold:#C9A84C;
+  --green:#00D48A;
+  --red:#E8637A;
+  --white:#F0EFF8;
+  --muted:#7A7299;
+  --muted2:#B5B0CC;
 }
-*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--white); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  font-size:14px;
+  line-height:1.5;
+}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
 
-/* NAV */
-nav {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(7,6,15,.95); backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 32px;
-  display: flex; align-items: center; gap: 0;
-}
-.nav-brand {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px; letter-spacing: 3px;
-  color: var(--white); padding: 16px 0; margin-right: 32px;
-  white-space: nowrap;
-}
-.nav-brand span { color: var(--cyan); }
-.nav-tabs { display: flex; gap: 0; overflow-x: auto; }
-.nav-tab {
-  padding: 16px 20px; font-size: 13px; font-weight: 500;
-  color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
-  transition: all .2s; user-select: none; white-space: nowrap;
-}
-.nav-tab:hover { color: var(--white); }
-.nav-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
-.nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-.nav-user { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-.nav-ref {
-  font-size: 11px; font-family: 'JetBrains Mono', monospace;
-  background: rgba(107,95,212,.12); color: var(--cyan); padding: 3px 10px;
-  border-radius: 100px;
-}
+/* ===== STAGE / SHELL ===== */
+.stage{display:flex;min-height:100vh}
 
-/* AUTH SCREENS */
-.auth-screen {
-  display: none; align-items: center; justify-content: center;
-  min-height: calc(100vh - 57px);
+/* ===== SIDEBAR ===== */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:240px;
+  background:#0a0814;border-right:1px solid var(--border);
+  padding:20px 14px;display:flex;flex-direction:column;gap:2px;
+  font-size:13px;z-index:10;
 }
-.auth-screen.active { display: flex; }
-.auth-box {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 40px; width: 400px; max-width: 90vw;
+.brand{display:flex;gap:10px;align-items:center;padding:8px 8px 16px}
+.brand-mark{
+  width:28px;height:28px;border-radius:7px;
+  background:rgba(107,95,212,.14);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--cyan2);
+  letter-spacing:.5px;
 }
-.auth-box h2 {
-  font-family: 'Bebas Neue', sans-serif; font-size: 28px;
-  letter-spacing: 2px; margin-bottom: 8px;
+.brand-text{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;line-height:1}
+.brand-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-top:2px}
+.nav-section{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;padding:14px 10px 6px;text-transform:uppercase}
+.nav-item{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:7px;color:var(--muted2);cursor:pointer;text-decoration:none}
+.nav-item svg{width:15px;height:15px;opacity:.8;flex-shrink:0}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--white)}
+.nav-item.active{background:rgba(107,95,212,.12);color:var(--cyan2)}
+.sf{margin-top:auto;padding-top:14px;border-top:1px solid var(--border)}
+.sf-user{display:flex;gap:10px;align-items:center;padding:8px}
+.av{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan3));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:600;font-size:12px;color:#fff;flex-shrink:0;
 }
-.auth-box .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
-.auth-link { font-size: 13px; color: var(--cyan); cursor: pointer; margin-top: 16px; display: inline-block; }
-.auth-link:hover { text-decoration: underline; }
+.sf-user .nm{font-size:12px}
+.sf-user .rf{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.sf-logout{
+  margin-top:6px;padding:6px 10px;font-size:10px;
+  color:var(--muted);cursor:pointer;
+  font-family:'JetBrains Mono',monospace;letter-spacing:1px;
+}
+.sf-logout:hover{color:var(--red)}
 
-/* LAYOUT */
-#app { display: none; }
-.page { display: none; padding: 32px; max-width: 1200px; margin: 0 auto; }
-.page.active { display: block; }
+/* ===== MAIN ===== */
+.main{margin-left:240px;flex:1;padding:24px 32px 64px;max-width:1280px}
 
-/* CARDS */
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
-.stat-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 20px 24px;
-}
-.stat-card.highlight { border-color: rgba(0,212,138,.3); }
-.stat-label {
-  font-size: 11px; color: var(--muted); letter-spacing: 1.5px;
-  text-transform: uppercase; font-family: 'JetBrains Mono', monospace; margin-bottom: 8px;
-}
-.stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 32px; line-height: 1; color: var(--cyan); }
-.stat-value.green { color: var(--green); }
-.stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.topbar h1{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1.5px;font-weight:400}
+.topbar .sub{color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;margin-top:4px}
+.topbar .actions{display:flex;gap:8px;align-items:center}
 
-/* REF CARD */
-.ref-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 28px; margin-bottom: 32px;
+.icon-btn{
+  width:34px;height:34px;border-radius:8px;
+  border:1px solid var(--border);background:var(--card);color:var(--muted2);
+  display:inline-flex;align-items:center;justify-content:center;
 }
-.ref-card-title {
-  font-size: 11px; color: var(--muted); letter-spacing: 1.5px;
-  text-transform: uppercase; font-family: 'JetBrains Mono', monospace; margin-bottom: 12px;
-}
-.ref-code-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.ref-code-display {
-  font-family: 'Bebas Neue', sans-serif; font-size: 36px;
-  color: var(--cyan); letter-spacing: 4px;
-}
-.ref-copy-btn {
-  padding: 6px 14px; border-radius: 8px; font-size: 13px;
-  cursor: pointer; border: 1px solid var(--border);
-  background: rgba(255,255,255,.05); color: var(--white);
-  font-family: 'DM Sans', sans-serif; transition: all .2s;
-}
-.ref-copy-btn:hover { background: rgba(255,255,255,.1); }
-.ref-instructions { font-size: 13px; color: var(--muted); line-height: 1.7; }
-.ref-instructions code {
-  font-family: 'JetBrains Mono', monospace; font-size: 12px;
-  background: var(--bg2); padding: 2px 8px; border-radius: 4px; color: var(--cyan);
-}
+.icon-btn:hover{color:var(--white);border-color:rgba(255,255,255,.15)}
 
-/* SECTION */
-.section { margin-bottom: 32px; }
-.section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
-}
-.section-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; }
+/* ===== PANELS ===== */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.panel-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;font-weight:400}
+.panel-sub{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px}
 
-/* FILTER TABS */
-.filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.filter-tab {
-  padding: 6px 16px; border-radius: 100px; font-size: 12px;
-  font-family: 'JetBrains Mono', monospace; cursor: pointer;
-  border: 1px solid var(--border); background: transparent; color: var(--muted);
-  transition: all .2s;
-}
-.filter-tab:hover { color: var(--white); border-color: rgba(255,255,255,.15); }
-.filter-tab.active { background: rgba(107,95,212,.12); color: var(--cyan); border-color: rgba(107,95,212,.3); }
+.row-2-1{display:grid;grid-template-columns:2.2fr 1fr;gap:14px;margin-bottom:14px}
+.row-1-1{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.section-gap{margin-bottom:14px}
 
-/* TABLE */
-.table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-th {
-  text-align: left; padding: 12px 16px;
-  font-size: 10px; font-family: 'JetBrains Mono', monospace;
-  color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
-  border-bottom: 1px solid var(--border); background: var(--card2);
+/* ===== BUTTONS ===== */
+.btn{
+  padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;
+  border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+  font-family:'DM Sans',sans-serif;line-height:1;
+  transition:opacity .15s;
 }
-td {
-  padding: 12px 16px; font-size: 13px;
-  border-bottom: 1px solid rgba(255,255,255,.04);
-}
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(255,255,255,.02); }
-.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-.badge {
-  display: inline-flex; align-items: center;
-  padding: 3px 10px; border-radius: 100px;
-  font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace;
-}
-.badge-green  { background: rgba(0,212,138,.15); color: var(--green); }
-.badge-red    { background: rgba(255,68,68,.15);  color: var(--red); }
-.badge-yellow { background: rgba(245,200,66,.15); color: var(--gold); }
-.badge-cyan   { background: rgba(107,95,212,.15);  color: var(--cyan); }
-.badge-muted  { background: rgba(74,112,128,.15); color: var(--muted); }
+.btn:hover{opacity:.88}
+.btn-primary{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+.btn-green{background:var(--green);color:#06241a;border-color:var(--green)}
+.btn-ghost{background:transparent;color:var(--muted2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--white);border-color:rgba(255,255,255,.15);opacity:1}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(232,99,122,.3)}
+.btn-sm{padding:6px 11px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
 
-/* WITHDRAW */
-.withdraw-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-.withdraw-item {
-  display: flex; align-items: center; gap: 14px;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 10px; padding: 14px 18px; cursor: pointer;
-  transition: all .2s;
+/* ===== PERIOD TABS ===== */
+.period{display:flex;gap:2px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:2px}
+.period button{
+  padding:4px 10px;border-radius:6px;background:transparent;color:var(--muted);
+  border:none;font-family:'JetBrains Mono',monospace;font-size:11px;
 }
-.withdraw-item:hover { border-color: rgba(255,255,255,.1); }
-.withdraw-item.selected { border-color: rgba(107,95,212,.4); background: rgba(107,95,212,.05); }
-.withdraw-item input[type="checkbox"] { accent-color: var(--cyan); width: 16px; height: 16px; cursor: pointer; }
-.withdraw-item-info { flex: 1; }
-.withdraw-item-user { font-size: 13px; font-weight: 500; }
-.withdraw-item-meta { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
-.withdraw-item-amount { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--cyan); }
+.period button.active{background:rgba(107,95,212,.18);color:var(--cyan2)}
 
-.withdraw-footer {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 20px 24px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap;
+.filter-tabs{display:flex;gap:2px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:14px;flex-wrap:wrap}
+.filter-tab{
+  padding:6px 12px;border-radius:6px;color:var(--muted);
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;cursor:pointer;
+  text-transform:uppercase;
 }
-.withdraw-total-label { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
-.withdraw-total-value { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--green); }
+.filter-tab:hover{color:var(--white)}
+.filter-tab.active{background:rgba(107,95,212,.18);color:var(--cyan2)}
 
-/* FORMS */
-.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-label { font-size: 12px; color: var(--muted); font-weight: 500; }
-input, select {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 14px;
-  color: var(--white); font-size: 13px; font-family: 'DM Sans', sans-serif;
-  transition: border-color .2s; outline: none; width: 100%;
+/* ===== BADGES ===== */
+.badge{
+  display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;
+  font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;
 }
-input:focus, select:focus { border-color: var(--cyan2); }
-.hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.b-cyan,.badge-cyan{background:rgba(107,95,212,.15);color:var(--cyan2)}
+.b-green,.badge-green{background:rgba(0,212,138,.15);color:var(--green)}
+.b-amber,.badge-yellow{background:rgba(245,158,11,.15);color:var(--amber)}
+.b-gold{background:rgba(201,168,76,.15);color:var(--gold)}
+.b-red,.badge-red{background:rgba(232,99,122,.15);color:var(--red)}
+.b-muted,.badge-muted{background:rgba(122,114,153,.18);color:var(--muted2)}
+.b-emerald{background:rgba(16,185,129,.15);color:var(--emerald)}
 
-/* BUTTONS */
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 9px 18px; border-radius: 8px; font-size: 13px;
-  font-weight: 600; cursor: pointer; border: none;
-  transition: all .2s; font-family: 'DM Sans', sans-serif;
+.pill-ok{
+  display:inline-flex;gap:4px;align-items:center;
+  background:rgba(0,212,138,.12);color:var(--green);
+  border:1px solid rgba(0,212,138,.22);
+  padding:3px 10px;border-radius:100px;font-size:11px;
+  font-family:'JetBrains Mono',monospace;
 }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-.btn-primary { background: var(--cyan2); color: var(--bg); }
-.btn-primary:hover:not(:disabled) { background: var(--cyan); }
-.btn-green { background: var(--green); color: var(--bg); }
-.btn-green:hover:not(:disabled) { background: #00e89a; }
-.btn-ghost { background: rgba(255,255,255,.05); color: var(--white); border: 1px solid var(--border); }
-.btn-ghost:hover { background: rgba(255,255,255,.1); }
-.btn-sm { padding: 5px 12px; font-size: 12px; }
-
-/* ALERT */
-.alert {
-  padding: 12px 16px; border-radius: 8px; font-size: 13px;
-  margin-bottom: 16px; display: none;
-}
-.alert.show { display: block; }
-.alert-success { background: rgba(0,212,138,.1); border: 1px solid rgba(0,212,138,.2); color: var(--green); }
-.alert-error { background: rgba(255,68,68,.1); border: 1px solid rgba(255,68,68,.2); color: var(--red); }
-.alert-info { background: rgba(107,95,212,.1); border: 1px solid rgba(107,95,212,.2); color: var(--cyan); }
-
-/* EMPTY */
-.empty { text-align: center; padding: 48px; color: var(--muted); font-size: 13px; }
-
-/* MODAL */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.7); z-index: 1000;
-  align-items: center; justify-content: center;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 32px; width: 480px; max-width: 90vw;
-}
-.modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; margin-bottom: 4px; }
-.modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
-.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
-
-/* LOADING */
-.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--cyan); border-radius: 50%; animation: spin .6s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-@media(max-width: 768px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  nav { padding: 0 16px; }
-  .nav-brand { font-size: 14px; margin-right: 16px; letter-spacing: 2px; }
-  .page { padding: 20px 16px; }
-  .nav-tab { padding: 16px 12px; font-size: 12px; }
-  .nav-user { display: none; }
-  .ref-code-display { font-size: 28px; }
-  .withdraw-footer { flex-direction: column; align-items: stretch; text-align: center; }
-  .auth-box { padding: 28px; }
+.pill-warn{
+  display:inline-flex;gap:4px;align-items:center;
+  background:rgba(245,158,11,.12);color:var(--amber);
+  border:1px solid rgba(245,158,11,.22);
+  padding:3px 10px;border-radius:100px;font-size:11px;
+  font-family:'JetBrains Mono',monospace;
 }
 
-/* ── MOBILE BOTTOM NAV ────────────────────────────── */
-.bottom-nav {
-  display: none;
+/* ===== TABLES ===== */
+.table-wrap{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;
+}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:var(--card2)}
+th{
+  text-align:left;padding:11px 16px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--muted);font-weight:500;letter-spacing:1.2px;text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+}
+td{padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ===== HERO ===== */
+.hero{
+  position:relative;overflow:hidden;
+  border:1px solid var(--border);border-radius:14px;
+  background:linear-gradient(180deg,#0d0a1f 0%,#0a0814 100%);
+  padding:24px 28px;margin-bottom:16px;
+}
+.hero-spark{position:absolute;inset:0;width:100%;height:100%;opacity:.6}
+.hero-grid{
+  position:relative;display:grid;
+  grid-template-columns:2.2fr 1fr 1fr 1fr;gap:32px;align-items:end;
+}
+@media (max-width:1180px){
+  .hero-grid{grid-template-columns:1fr 1fr 1fr;gap:22px}
+  .hero-grid > div:first-child{grid-column:1 / -1;margin-bottom:6px}
+}
+.hl{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:8px;
+}
+.hv{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:1px;line-height:1;color:var(--white)}
+.hm{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;line-height:1;color:var(--white)}
+.hn{font-size:11px;color:var(--muted);margin-top:6px;font-family:'JetBrains Mono',monospace}
+.hn.ok{color:var(--green)}
+.hn.warn{color:var(--gold)}
+
+/* ===== FORMS ===== */
+.form-group{margin-bottom:14px}
+.form-group label,
+label.form-label{
+  font-size:11px;color:var(--muted);
+  display:block;margin-bottom:6px;
+  font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;
+}
+.form-group input,
+.form-group select,
+.form-group textarea,
+.input{
+  width:100%;background:var(--card2);
+  border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;color:var(--white);font-size:13px;outline:none;
+  font-family:'DM Sans',sans-serif;
+  transition:border-color .15s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.input:focus{border-color:var(--cyan)}
+.input.mono{font-family:'JetBrains Mono',monospace}
+.hint{font-size:11px;color:var(--muted);margin-top:5px;font-family:'JetBrains Mono',monospace}
+.required{color:var(--red)}
+
+/* ===== ALERTS ===== */
+.alert{
+  border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;
+  border:1px solid;line-height:1.5;
+  display:none;
+}
+.alert.show{display:block}
+.alert-error{background:rgba(232,99,122,.06);border-color:rgba(232,99,122,.25);color:#f5b1bd}
+.alert-info{background:rgba(107,95,212,.06);border-color:rgba(107,95,212,.25);color:var(--cyan2)}
+.alert-success{background:rgba(0,212,138,.06);border-color:rgba(0,212,138,.25);color:var(--green)}
+.alert-warn{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.25);color:var(--amber)}
+
+/* ===== HIDE MOBILE ===== */
+@media (max-width:760px){
+  .sidebar{position:static;width:100%;height:auto;flex-direction:row;flex-wrap:wrap;padding:12px}
+  .main{margin-left:0;padding:18px}
+  .hero-grid{grid-template-columns:1fr 1fr;gap:18px}
+  .hide-mobile{display:none}
+  .row-2-1,.row-1-1,.row-3{grid-template-columns:1fr}
+  .actions-row{grid-template-columns:1fr !important}
+  .nav-item{padding:6px 8px;font-size:12px}
+  .nav-section,.brand-sub,.sf{display:none}
 }
 
-@media (max-width: 768px) {
-  .nav-tabs {
-    display: none !important;
-  }
-
-  .bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    z-index: 200;
-    background: rgba(7,6,15,.97);
-    backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border);
-    padding: 0;
-    height: 56px;
-  }
-
-  .bottom-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    font-size: 8px;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    font-family: 'DM Sans', sans-serif;
-    transition: color .2s;
-    padding: 6px 1px;
-    user-select: none;
-  }
-
-  .bottom-nav-item.active {
-    color: var(--cyan);
-  }
-
-  .bottom-nav-item svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .page {
-    padding-bottom: 72px !important;
-  }
-
-  .nav-brand {
-    font-size: 13px !important;
-    letter-spacing: 1.5px !important;
-    margin-right: 8px !important;
-  }
-
-  .nav-right {
-    gap: 6px !important;
-  }
-
-  .nav-ref {
-    font-size: 10px !important;
-    padding: 2px 7px !important;
-  }
-
-  .recruit-form-grid {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-  }
-
-  .recruit-form-grid > div:last-child {
-    padding-top: 0 !important;
-  }
-
-  .recruit-form-grid button {
-    width: 100% !important;
-  }
+/* ===== AUTH ===== */
+.auth-shell{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  background:
+    radial-gradient(ellipse 800px 500px at 50% -10%, rgba(107,95,212,.18), transparent 60%),
+    radial-gradient(ellipse 600px 400px at 100% 100%, rgba(0,212,138,.06), transparent 60%),
+    var(--bg);
 }
-
-@media (max-width: 600px) {
-  .hide-mobile {
-    display: none !important;
-  }
-
-  .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  td, th {
-    padding: 8px 10px !important;
-    font-size: 11px !important;
-  }
-
-  .filter-tabs {
-    gap: 5px !important;
-  }
-
-  .filter-tab {
-    padding: 5px 10px !important;
-    font-size: 11px !important;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-  }
-
-  .stats-row-3col {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-  }
-
-  .stats-row-2col {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-  }
-
-  .settings-pixel-grid {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-  }
-
-  .stat-value {
-    font-size: 24px !important;
-  }
+.auth-box{
+  width:100%;max-width:420px;
+  background:var(--card);border:1px solid var(--border);border-radius:18px;
+  padding:32px 32px 28px;
 }
+.auth-brand{display:flex;gap:10px;align-items:center;margin-bottom:24px}
+.auth-box h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1.5px;font-weight:400;margin-bottom:4px}
+.auth-box .subtitle{color:var(--muted2);font-size:13px;margin-bottom:20px}
+.auth-link{text-align:center;margin-top:16px;font-size:13px;color:var(--muted2);cursor:pointer}
+.auth-link a{color:var(--cyan2)}
+.auth-link:hover{color:var(--white)}
+.auth-foot{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-align:center}
+
+/* ===== SPA TOGGLE HELPERS ===== */
+.auth-screen{display:none}
+.auth-screen.active{display:block}
+#app{display:none}
+.page{display:none}
+.page.active{display:block}
+
+/* hide legacy nav (kept around so existing JS can populate #nav-tabs / #nav-user / #nav-ref) */
+nav.legacy-nav{display:none !important}
+.bottom-nav{display:none !important}
+
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  display:none;align-items:center;justify-content:center;z-index:1000;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:28px 32px;max-width:480px;width:90%;
+}
+.modal h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;margin-bottom:8px;font-weight:400}
+.modal p{color:var(--muted2);font-size:13px;line-height:1.6;margin-bottom:14px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* ===== LOADING ===== */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty{text-align:center;padding:48px;color:var(--muted);font-size:13px}
+
+/* ===== OVERVIEW PAGE ===== */
+.actions-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.act{position:relative;border:1px solid;border-radius:14px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start}
+.act-emerald{background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));border-color:rgba(16,185,129,.25)}
+.act-amber{background:linear-gradient(160deg,rgba(245,158,11,.08),rgba(245,158,11,.02));border-color:rgba(245,158,11,.25)}
+.act-violet{background:linear-gradient(160deg,rgba(139,127,232,.10),rgba(139,127,232,.02));border-color:rgba(139,127,232,.28)}
+.act-badge{position:absolute;top:14px;right:14px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.2px;padding:3px 8px;border-radius:100px}
+.act-badge.eb{background:rgba(16,185,129,.15);color:var(--emerald)}
+.act-badge.ab{background:rgba(245,158,11,.15);color:var(--amber)}
+.act-badge.vb{background:rgba(139,127,232,.18);color:var(--cyan2)}
+.act-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.act-icon.e{background:rgba(16,185,129,.14);color:var(--emerald)}
+.act-icon.a{background:rgba(245,158,11,.14);color:var(--amber)}
+.act-icon.v{background:rgba(139,127,232,.16);color:var(--cyan2)}
+.act-head{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;padding-right:64px}
+.act-head .num{color:var(--cyan2)}
+.act-emerald .act-head .num{color:var(--emerald)}
+.act-amber .act-head .num{color:var(--amber)}
+.act p{font-size:12px;color:var(--muted2);line-height:1.55;margin:6px 0 10px}
+.act-cta{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;color:var(--cyan2);cursor:pointer}
+.act-emerald .act-cta{color:var(--emerald)}
+.act-amber .act-cta{color:var(--amber)}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px}
+.legend span.sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+.donut-wrap{display:flex;align-items:center;gap:18px}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:8px;font-size:12px}
+.donut-legend .row{display:flex;justify-content:space-between;gap:8px}
+.donut-legend .row .lab{display:flex;align-items:center;gap:8px;color:#c8c2dc}
+.donut-legend .row .lab .dot{width:8px;height:8px;border-radius:50%}
+.donut-legend .row .v{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--white)}
+
+.ref-band{
+  background:linear-gradient(135deg,rgba(107,95,212,.12) 0%,rgba(107,95,212,.04) 100%);
+  border:1px solid rgba(107,95,212,.25);border-radius:14px;
+  padding:18px 22px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:14px;
+}
+.ref-band .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+.ref-band .code{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:4px;color:var(--cyan2)}
+.ref-band .urls{flex:1;display:flex;flex-direction:column;gap:4px;min-width:280px}
+.ref-band .url{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan2);background:var(--bg2);padding:5px 10px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ref-band .url .copy{color:var(--muted);cursor:pointer;font-size:10px}
+
+.dl-row{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.dl-row:last-child{border-bottom:none}
+.dl-av{width:30px;height:30px;border-radius:50%;background:rgba(107,95,212,.18);color:var(--cyan2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.dl-mt{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.dl-stat{font-family:'JetBrains Mono',monospace;font-size:12px}
+.dl-stat .l{color:var(--muted);font-size:10px;display:block;text-transform:uppercase;letter-spacing:1px}
+.dl-sub{margin-left:44px;padding-left:16px;border-left:1px dashed rgba(255,255,255,.06);margin-top:4px;padding-bottom:6px}
+.live{display:inline-flex;gap:6px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green)}
+.live .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.4;transform:scale(1.4)}}
+
+/* ===== KOMISI / REFERRAL / PAYOUTS shared KPI row ===== */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi-row.kpi-3{grid-template-columns:repeat(3,1fr)}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.kpi .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.kpi .v{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;line-height:1}
+.kpi .v.green{color:var(--green)}.kpi .v.gold{color:var(--gold)}.kpi .v.cy{color:var(--cyan2)}
+.kpi .n{font-size:11px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace}
+
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin:0 4px 14px;font-family:'JetBrains Mono',monospace}
+.legend-row b{color:var(--white);font-weight:600}
+
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.toolbar .search{flex:1;min-width:200px;position:relative}
+.toolbar .search input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 14px 9px 36px;color:var(--white);font-size:13px;outline:none}
+.toolbar .search svg{position:absolute;left:11px;top:10px;color:var(--muted)}
+.toolbar .count{color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;white-space:nowrap}
+
+.pager{margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pager .nums{display:flex;gap:4px}
+.pager .num{padding:6px 11px;border-radius:6px;background:transparent;color:var(--muted2);border:1px solid var(--border);font-size:12px;font-family:'JetBrains Mono',monospace;cursor:pointer}
+.pager .num.active{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+.pager .num:disabled{opacity:.4;cursor:not-allowed}
+
+/* ===== REKRUT ===== */
+.split-bar{display:flex;height:48px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin:8px 0 6px}
+.split-bar .seg{display:flex;flex-direction:column;justify-content:center;padding:0 14px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px}
+.split-bar .you{background:linear-gradient(135deg,var(--cyan3),var(--cyan));}
+.split-bar .down{background:rgba(0,212,138,.18);color:var(--green);border-left:2px solid var(--green)}
+.split-bar .seg .pct{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px}
+.split-bar .seg .lab{font-size:9px;opacity:.85;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:2px}
+
+#new-link-commission{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:4px;border-radius:2px;outline:none;cursor:pointer;
+  background:linear-gradient(to right,var(--cyan2) 0%,var(--cyan2) 25%,var(--border2) 25%,var(--border2) 100%);
+  margin:0;padding:0;display:block;
+}
+#new-link-commission::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--cyan2);cursor:pointer;border:3px solid var(--bg);
+  box-shadow:0 0 0 1px var(--cyan2);
+}
+.range-marks{display:flex;justify-content:space-between;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+
+.tree-node{margin-bottom:14px}
+.tree-line{display:grid;grid-template-columns:auto 1fr auto auto auto auto;gap:14px;align-items:center;padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px}
+.tree-line .av{width:32px;height:32px;font-size:12px}
+.tree-line strong{font-size:13px}
+.tree-line .meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.tree-line .stat{font-family:'JetBrains Mono',monospace;font-size:11px;text-align:right}
+.tree-line .stat .l{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.tree-children{margin-left:24px;padding-left:20px;border-left:1px dashed rgba(255,255,255,.08);margin-top:8px}
+.tree-children .tree-line{background:rgba(255,255,255,.015)}
+.tree-empty{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;padding:8px 0 0 4px}
+
+/* ===== TRAFFIC ===== */
+.range{display:flex;gap:6px;background:var(--card);border:1px solid var(--border);padding:3px;border-radius:8px}
+.range button{padding:6px 12px;border-radius:6px;background:transparent;color:var(--muted);border:none;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:.5px}
+.range button.active{background:var(--cyan);color:#fff}
+
+.funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.fstep{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative}
+.fstep .l{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px}
+.fstep .v{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;line-height:1}
+.fstep .vu{font-size:11px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.fstep .conv{position:absolute;right:-7px;top:50%;transform:translateY(-50%);background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan2);z-index:1;letter-spacing:.5px}
+.fstep:last-child .conv{display:none}
+.fstep .v.cy{color:var(--cyan2)}.fstep .v.amber{color:var(--amber)}.fstep .v.green{color:var(--green)}
+
+/* ===== WITHDRAW ===== */
+.wd-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:14px;align-items:flex-start}
+@media (max-width:980px){.wd-grid{grid-template-columns:1fr}}
+
+.witem,.withdraw-item{
+  display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+  background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;margin-bottom:8px;cursor:pointer;
+  transition:border-color .15s;
+}
+.witem:hover,.withdraw-item:hover{border-color:rgba(255,255,255,.1)}
+.witem.selected,.withdraw-item.selected{border-color:var(--cyan);background:rgba(107,95,212,.06)}
+.witem input[type=checkbox],.withdraw-item input[type=checkbox]{
+  width:18px;height:18px;accent-color:var(--cyan);
+}
+.witem .nm,.withdraw-item .nm{font-size:13px;font-weight:600}
+.witem .meta,.withdraw-item .meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px}
+.witem .amt,.withdraw-item .amt{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--green)}
+
+.summary{
+  position:sticky;top:14px;
+  background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;
+}
+.summary .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.summary .v{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:1px;line-height:1;color:var(--green)}
+.summary .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}
+.summary .row:last-of-type{border-bottom:none}
+.summary .row .k{color:var(--muted)}
+.summary .row .v2{font-family:'JetBrains Mono',monospace;color:var(--white)}
+
+/* ===== PENGATURAN ===== */
+.set-tabs{display:flex;gap:2px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:18px;width:fit-content;flex-wrap:wrap}
+.set-tab{padding:8px 16px;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--muted);cursor:pointer;text-transform:uppercase}
+.set-tab.active{background:rgba(107,95,212,.18);color:var(--cyan2)}
+
+.pix-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0;overflow:hidden}
+.pix-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.pix-head .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.pix-head .t{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px}
+
+.pix-body{padding:18px 22px;display:grid;grid-template-columns:1fr 320px;gap:24px}
+@media (max-width:880px){.pix-body{grid-template-columns:1fr}}
+
+.help-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.help-card .lab{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--cyan2);text-transform:uppercase;margin-bottom:10px}
+.help-step{display:flex;gap:10px;margin-bottom:10px;font-size:12px;line-height:1.55;color:var(--muted2)}
+.help-step:last-child{margin-bottom:0}
+.help-step .n{flex-shrink:0;width:18px;height:18px;border-radius:50%;background:rgba(107,95,212,.18);color:var(--cyan2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600}
+.help-step code{background:var(--bg);padding:1px 6px;border-radius:4px;color:var(--cyan2);font-family:'JetBrains Mono',monospace;font-size:11px}
+
+/* ===== Auth invite card (register) ===== */
+.invite-card{
+  background:linear-gradient(135deg,rgba(107,95,212,.14),rgba(107,95,212,.04));
+  border:1px solid rgba(107,95,212,.3);border-radius:12px;
+  padding:14px 16px;margin-bottom:18px;
+  display:flex;gap:12px;align-items:center;
+}
+.invite-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--cyan3));display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;flex-shrink:0}
+.invite-card .txt{font-size:12px;color:var(--muted2);line-height:1.5}
+.invite-card .txt strong{color:var(--white)}
+.invite-card .pct{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--green);letter-spacing:1px;flex-shrink:0}
+
+/* ===== ref-copy-btn (used by JS) ===== */
+.ref-copy-btn{cursor:pointer}
 </style>
 </head>
 <body>
 
-<nav>
+<!-- Legacy nav kept hidden so existing JS that populates #nav-tabs / #nav-user / #nav-ref still works.
+     Real navigation is the sidebar below. -->
+<nav class="legacy-nav">
   <div class="nav-brand">TRXC <span>QRR</span> · AFFILIATE</div>
   <div class="nav-tabs" id="nav-tabs"></div>
   <div class="nav-right" id="nav-right" style="display:none">
@@ -412,467 +526,613 @@ input:focus, select:focus { border-color: var(--cyan2); }
   </div>
 </nav>
 
-<!-- LOGIN -->
+<!-- ===== LOGIN ===== -->
 <div class="auth-screen active" id="screen-login">
-  <div class="auth-box">
-    <h2>TRXC QRR Affiliate</h2>
-    <p class="subtitle">Masuk ke portal affiliate kamu</p>
-    <div class="alert alert-error" id="login-error"></div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="email@example.com"/>
+  <div class="auth-shell">
+    <div class="auth-box">
+      <div class="auth-brand">
+        <div class="brand-mark" style="width:36px;height:36px;font-size:14px">QR</div>
+        <div>
+          <div class="brand-text" style="font-size:18px">TRXC QRR</div>
+          <div class="brand-sub">Affiliate Console</div>
+        </div>
+      </div>
+      <h2>Masuk</h2>
+      <p class="subtitle">Lanjutkan ke portal affiliate kamu</p>
+
+      <div class="alert alert-error" id="login-error"></div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input class="input" type="email" id="login-email" placeholder="email@example.com"/>
+      </div>
+      <div class="form-group" style="margin-bottom:6px">
+        <label>Password</label>
+        <input class="input" type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+
+      <button class="btn btn-primary" id="login-btn" onclick="doLogin()" style="width:100%;justify-content:center;margin-top:10px">Masuk</button>
+
+      <div class="auth-link" onclick="showScreen('register')">Belum punya akun? <span style="color:var(--cyan2)">Daftar di sini</span></div>
+
+      <div class="auth-foot">
+        <span>TRXC QRR · AFFILIATE CONSOLE</span>
+      </div>
     </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
-    </div>
-    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doLogin()" id="login-btn">Masuk</button>
-    <div class="auth-link" onclick="showScreen('register')">Belum punya akun? Daftar di sini</div>
   </div>
 </div>
 
-<!-- REGISTER -->
+<!-- ===== REGISTER ===== -->
 <div class="auth-screen" id="screen-register">
-  <div class="auth-box">
-    <h2>Daftar Affiliate TRXC QRR</h2>
-    <p class="subtitle" id="reg-subtitle">Buat akun affiliate baru</p>
-    <div class="alert alert-info" id="recruit-info" style="display:none"></div>
-    <div id="reg-type-banner" style="display:none;border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:13px;line-height:1.5;"></div>
-    <div class="alert" id="register-alert"></div>
-    <div class="form-group">
-      <label>Nama Lengkap</label>
-      <input type="text" id="reg-name" placeholder="Nama kamu"/>
+  <div class="auth-shell">
+    <div class="auth-box" style="max-width:460px">
+      <div class="auth-brand">
+        <div class="brand-mark" style="width:36px;height:36px;font-size:14px">QR</div>
+        <div>
+          <div class="brand-text" style="font-size:18px">TRXC QRR</div>
+          <div class="brand-sub">Affiliate Console</div>
+        </div>
+      </div>
+      <h2>Daftar Affiliate</h2>
+      <p class="subtitle" id="reg-subtitle">Buat akun affiliate baru</p>
+
+      <div class="alert alert-info" id="recruit-info" style="display:none"></div>
+      <div id="reg-type-banner" style="display:none;border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:13px;line-height:1.5;"></div>
+      <div class="alert" id="register-alert"></div>
+
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input class="input" type="text" id="reg-name" placeholder="Nama kamu"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input class="input" type="email" id="reg-email" placeholder="email@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>No. HP <span style="color:var(--muted);text-transform:none;font-size:10px">(opsional)</span></label>
+        <input class="input" type="text" id="reg-phone" placeholder="08xxxxxxxxxx"/>
+      </div>
+      <div class="form-group" id="refcode-group">
+        <label>Kode Referral <span style="color:var(--muted);text-transform:none;font-size:10px">(opsional)</span></label>
+        <input class="input mono" type="text" id="reg-refcode" placeholder="Kosongkan untuk auto-generate" maxlength="20" style="text-transform:uppercase"/>
+        <div class="hint">4–20 karakter alfanumerik. Jika dikosongkan, akan dibuat otomatis.</div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input class="input" type="password" id="reg-password" placeholder="Minimal 6 karakter"/>
+      </div>
+      <input type="hidden" id="reg-recruitment-token" value=""/>
+      <input type="hidden" id="reg-affiliate-type" value="affiliate"/>
+
+      <button class="btn btn-primary" id="register-btn" onclick="doRegister()" style="width:100%;justify-content:center;margin-top:10px">Daftar Sekarang</button>
+
+      <div class="auth-link" onclick="showScreen('login')">Sudah punya akun? <span style="color:var(--cyan2)">Login di sini</span></div>
+
+      <div class="auth-foot">
+        Dengan daftar, kamu menyetujui syarat &amp; ketentuan TRXC QRR Affiliate
+      </div>
     </div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="reg-email" placeholder="email@example.com"/>
-    </div>
-    <div class="form-group">
-      <label>No. HP (opsional)</label>
-      <input type="text" id="reg-phone" placeholder="08xxxxxxxxxx"/>
-    </div>
-    <div class="form-group" id="refcode-group">
-      <label>Kode Referral (opsional)</label>
-      <input type="text" id="reg-refcode" placeholder="Kosongkan untuk auto-generate" style="text-transform:uppercase" maxlength="20"/>
-      <div class="hint">4–20 karakter alfanumerik. Jika dikosongkan, akan dibuat otomatis.</div>
-    </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="reg-password" placeholder="Minimal 6 karakter"/>
-    </div>
-    <input type="hidden" id="reg-recruitment-token" value=""/>
-    <input type="hidden" id="reg-affiliate-type" value="affiliate"/>
-    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doRegister()" id="register-btn">Daftar</button>
-    <div class="auth-link" onclick="showScreen('login')">Sudah punya akun? Login di sini</div>
   </div>
 </div>
 
-<!-- APP -->
+<!-- ===== APP (post-login) ===== -->
 <div id="app">
+<div class="stage">
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main">
 
-  <!-- OVERVIEW -->
+  <!-- ============ OVERVIEW ============ -->
   <div class="page" id="page-overview">
+    <div class="topbar">
+      <div>
+        <h1>Overview</h1>
+        <div class="sub">Ringkasan performa affiliate kamu</div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" title="Refresh" onclick="loadDashboard();loadOverviewCharts();">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
+        </button>
+      </div>
+    </div>
 
-    <!-- TRAFFIC CHART -->
-    <div style="margin-bottom:16px;">
-      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;">TRAFFIC HARIAN (30 HARI)</div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-          <div style="display:flex;flex-wrap:wrap;gap:14px;">
-            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-              <span style="width:10px;height:10px;border-radius:0;background:#7F77DD;display:inline-block;"></span>Kunjungan</div>
-            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-              <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Checkout</div>
-            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-              <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Form diisi</div>
-            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-              <span style="width:10px;height:10px;border-radius:0;background:#D85A30;display:inline-block;"></span>Paid</div>
+    <!-- HERO with key stats -->
+    <div class="hero">
+      <svg class="hero-spark" viewBox="0 0 500 220" preserveAspectRatio="none">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6B5FD4" stop-opacity="0.35"/><stop offset="100%" stop-color="#6B5FD4" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0,180 L40,170 L80,150 L120,155 L160,130 L200,140 L240,110 L280,100 L320,90 L360,70 L400,80 L440,55 L480,40 L500,35 L500,220 L0,220 Z" fill="url(#g1)"/>
+        <path d="M0,180 L40,170 L80,150 L120,155 L160,130 L200,140 L240,110 L280,100 L320,90 L360,70 L400,80 L440,55 L480,40 L500,35" stroke="#8B7FE8" stroke-width="2" fill="none"/>
+      </svg>
+      <div class="hero-grid">
+        <div>
+          <div class="hl">Total komisi · all-time</div>
+          <div class="hv" id="stat-total-earned">Rp 0</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+            <span class="hn">Total omzet referral <strong style="color:var(--white)" id="stat-total-omzet">Rp 0</strong></span>
+            <span class="hn">·</span>
+            <span class="hn"><strong style="color:var(--white)" id="stat-total-transactions">0x</strong> transaksi</span>
           </div>
-          <div style="display:flex;gap:4px;" id="traffic-period-toggle">
-            <button onclick="setTrafficPeriod(7,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">7D</button>
-            <button onclick="setTrafficPeriod(30,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:#6B5FD4;color:#fff;cursor:pointer;">30D</button>
-            <button onclick="setTrafficPeriod(90,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">90D</button>
+        </div>
+        <div>
+          <div class="hl">Withdrawable</div>
+          <div class="hm" style="color:var(--green);" id="stat-available">Rp 0</div>
+          <div class="hn ok">siap ditarik</div>
+        </div>
+        <div>
+          <div class="hl">Pending</div>
+          <div class="hm" style="color:var(--gold);" id="stat-pending">Rp 0</div>
+          <div class="hn">menunggu hold</div>
+        </div>
+        <div>
+          <div class="hl">Diproses</div>
+          <div class="hm" id="stat-requested">Rp 0</div>
+          <div class="hn">withdrawal requested</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS ROW -->
+    <div class="actions-row">
+      <div class="act act-emerald">
+        <span class="act-badge eb">Cash</span>
+        <div class="act-icon e">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+        </div>
+        <div>
+          <div class="act-head">SIAP DITARIK</div>
+          <p>Total komisi yang sudah lewat hold dan siap ditarik ke rekening tersimpan.</p>
+          <span class="act-cta" onclick="showPage('withdraw')">Request withdraw →</span>
+        </div>
+      </div>
+      <div class="act act-amber">
+        <span class="act-badge ab">Share</span>
+        <div class="act-icon a">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98"/><path d="M15.41 6.51l-6.82 3.98"/></svg>
+        </div>
+        <div>
+          <div class="act-head">LINK CHECKOUT</div>
+          <p>Bagikan link checkout dengan ref code kamu tertanam, scroll ke bawah untuk salin.</p>
+          <span class="act-cta">Lihat link →</span>
+        </div>
+      </div>
+      <div class="act act-violet">
+        <span class="act-badge vb">Network</span>
+        <div class="act-icon v">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5"/></svg>
+        </div>
+        <div>
+          <div class="act-head">REFERRAL · <span class="num" id="stat-referrals">0</span> UNIQUE</div>
+          <p>User unik yang sudah beli lewat ref code kamu. Rekrut affiliate baru di tab Rekrut.</p>
+          <span class="act-cta" onclick="showPage('recruit')">Lihat rekrutmen →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRAFFIC + STATUS KOMISI -->
+    <div class="row-2-1">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Traffic harian</div>
+            <div class="panel-sub">Visits → Checkout → Form → Paid · stacked</div>
           </div>
+          <div class="period" id="traffic-period-toggle">
+            <button onclick="setTrafficPeriod(7,this)">7D</button>
+            <button class="active" onclick="setTrafficPeriod(30,this)">30D</button>
+            <button onclick="setTrafficPeriod(90,this)">90D</button>
+          </div>
+        </div>
+        <div class="legend">
+          <span><span class="sw" style="background:#7F77DD;"></span>Kunjungan</span>
+          <span><span class="sw" style="background:#1D9E75;"></span>Checkout</span>
+          <span><span class="sw" style="background:#EF9F27;"></span>Form diisi</span>
+          <span><span class="sw" style="background:#D85A30;"></span>Paid</span>
         </div>
         <div style="position:relative;width:100%;height:200px;">
-          <canvas id="chart-traffic" role="img" aria-label="Stacked bar chart traffic harian 30 hari terakhir">Traffic harian stacked bar.</canvas>
+          <canvas id="chart-traffic" height="180" role="img" aria-label="Stacked bar chart traffic harian"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Status komisi</div>
+            <div class="panel-sub">All time · breakdown</div>
+          </div>
+        </div>
+        <div class="donut-wrap">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#100E20" stroke-width="18"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#00D48A" stroke-width="18" stroke-dasharray="135 301.6" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#8B7FE8" stroke-width="18" stroke-dasharray="80 301.6" stroke-dashoffset="-135" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#C9A84C" stroke-width="18" stroke-dasharray="62 301.6" stroke-dashoffset="-215" transform="rotate(-90 60 60)"/>
+            <text x="60" y="64" text-anchor="middle" fill="#F0EFF8" font-family="Bebas Neue" font-size="16">RP</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="row"><div class="lab"><span class="dot" style="background:#00D48A"></span>Dibayar</div><div class="v" id="stat-paid">Rp 0</div></div>
+            <div class="row"><div class="lab"><span class="dot" style="background:#8B7FE8"></span>Available</div><div class="v"><span id="stat-available-mirror">—</span></div></div>
+            <div class="row"><div class="lab"><span class="dot" style="background:#C9A84C"></span>Pending</div><div class="v"><span id="stat-pending-mirror">—</span></div></div>
+            <div class="row"><div class="lab"><span class="dot" style="background:#E8637A"></span>Diproses</div><div class="v"><span id="stat-requested-mirror">—</span></div></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- PENDING & INCOME CHART -->
-    <div style="margin-bottom:24px;">
-      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;">PENDING &amp; INCOME HARIAN (30 HARI)</div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Total pending</div>
-            <div style="font-size:18px;font-weight:500;color:#EF9F27;" id="chart-total-pending">—</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px;">menunggu 5 hari kerja</div>
-          </div>
-          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Total income</div>
-            <div style="font-size:18px;font-weight:500;color:#1D9E75;" id="chart-total-income">—</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px;">komisi terkonfirmasi</div>
-          </div>
+    <!-- INCOME CHART -->
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Pendapatan harian</div>
+          <div class="panel-sub">Komisi yang masuk per hari</div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-          <div style="display:flex;flex-wrap:wrap;gap:14px;">
-            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-              <span style="width:10px;height:10px;border-radius:0;background:#1D9E75;display:inline-block;"></span>Income (komisi paid)</div>
-            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);">
-              <span style="width:10px;height:10px;border-radius:0;background:#EF9F27;display:inline-block;"></span>Pending (form diisi, est.)</div>
-          </div>
-          <div style="display:flex;gap:4px;" id="income-period-toggle">
-            <button onclick="setIncomePeriod(7,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">7D</button>
-            <button onclick="setIncomePeriod(30,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:#6B5FD4;color:#fff;cursor:pointer;">30D</button>
-            <button onclick="setIncomePeriod(90,this)" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid rgba(107,95,212,.3);background:transparent;color:var(--muted);cursor:pointer;">90D</button>
-          </div>
+        <div class="period" id="income-period-toggle">
+          <button onclick="setIncomePeriod(7,this)">7D</button>
+          <button class="active" onclick="setIncomePeriod(30,this)">30D</button>
+          <button onclick="setIncomePeriod(90,this)">90D</button>
         </div>
-        <div style="position:relative;width:100%;height:185px;">
-          <canvas id="chart-income" role="img" aria-label="Stacked bar chart pending dan income harian">Pending dan income harian.</canvas>
-        </div>
+      </div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:11px;">
+        <div><span style="color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;">Total income</span> <strong id="chart-total-income" style="color:var(--green);margin-left:8px">Rp 0</strong></div>
+        <div><span style="color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;">Pending</span> <strong id="chart-total-pending" style="color:var(--gold);margin-left:8px">Rp 0</strong></div>
+      </div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="chart-income" height="180" role="img" aria-label="Bar chart pendapatan harian"></canvas>
       </div>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px;">
-
-      <!-- Row 1: Sales -->
-      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;">PERFORMA PENJUALAN</div>
-      <div class="stats-row-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
-        <div class="stat-card" style="border-color:rgba(201,168,76,0.2);">
-          <div class="stat-label">Total Omzet</div>
-          <div class="stat-value" id="stat-total-omzet" style="color:#C9A84C;">—</div>
-          <div class="stat-sub">gross dari buyer kamu</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(201,168,76,0.2);">
-          <div class="stat-label">Total Transaksi</div>
-          <div class="stat-value" id="stat-total-transactions" style="color:#C9A84C;">—</div>
-          <div class="stat-sub">order berhasil</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(201,168,76,0.2);">
-          <div class="stat-label">Total Referral</div>
-          <div class="stat-value" id="stat-referrals" style="color:#C9A84C;">—</div>
-          <div class="stat-sub">unique buyer</div>
-        </div>
+    <!-- REF CODE BAND -->
+    <div class="ref-band">
+      <div>
+        <div class="lbl">Ref code</div>
+        <div class="code" id="ref-code-display">—</div>
       </div>
-
-      <!-- Row 2: Commission -->
-      <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-top:8px;">KOMISI KAMU</div>
-      <div class="stats-row-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
-        <div class="stat-card">
-          <div class="stat-label">Total Komisi All Time</div>
-          <div class="stat-value" id="stat-total-earned" style="color:var(--cyan2);">—</div>
-          <div class="stat-sub">akumulasi semua komisi</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Komisi Pending</div>
-          <div class="stat-value" id="stat-pending" style="color:#C9A84C;">—</div>
-          <div class="stat-sub">menunggu 5 hari kerja</div>
-        </div>
-        <div class="stat-card highlight" style="border-color:rgba(74,222,128,0.25);">
-          <div class="stat-label">Withdrawable</div>
-          <div class="stat-value green" id="stat-available">—</div>
-          <div class="stat-sub">siap ditarik sekarang</div>
-        </div>
+      <div class="urls">
+        <div class="lbl" style="margin-bottom:4px;">Link siap share</div>
+        <div id="shareable-links"></div>
       </div>
-
-      <!-- Row 3: Paid out -->
-      <div class="stats-row-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:0;">
-        <div class="stat-card">
-          <div class="stat-label">Sedang Diproses</div>
-          <div class="stat-value" id="stat-requested" style="color:var(--muted);">—</div>
-          <div class="stat-sub">withdrawal diproses admin</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(74,222,128,0.15);">
-          <div class="stat-label">Sudah Dibayar</div>
-          <div class="stat-value" id="stat-paid" style="color:var(--green);">—</div>
-          <div class="stat-sub">total payout diterima</div>
-        </div>
-      </div>
-
+      <button class="btn btn-primary ref-copy-btn" onclick="copyRefCode()">Salin Kode</button>
     </div>
 
-    <div class="ref-card">
-      <div class="ref-card-title">Kode Referral Kamu</div>
-      <div class="ref-code-row">
-        <div class="ref-code-display" id="ref-code-display">—</div>
-        <button class="ref-copy-btn" onclick="copyRefCode()">📋 Copy Kode</button>
+    <!-- DOWNLINE -->
+    <div class="panel">
+      <div class="panel-head">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="panel-title">Downline kamu</div>
+        </div>
       </div>
-
-      <div style="height:1px;background:var(--border);margin:16px 0;"></div>
-
-      <div class="ref-card-title">Link Siap Share ke Calon Pembeli</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
-        Bagikan link di bawah ke calon pembeli. Ref code kamu sudah otomatis tertanam — kamu dapat komisi jika mereka beli lewat link ini.
-      </div>
-      <div id="shareable-links">
-        <div style="font-size:12px;color:var(--muted);">Loading...</div>
-      </div>
-    </div>
-
-    <!-- DOWNLINE TREE -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Downline Kamu</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadDownline()">↻ Refresh</button>
-      </div>
-      <div id="downline-content"><div class="empty"><span class="spinner"></span> Loading...</div></div>
+      <div id="downline-content"></div>
     </div>
   </div>
 
-  <!-- COMMISSIONS -->
+  <!-- ============ KOMISI ============ -->
   <div class="page" id="page-commissions">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Komisi</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadCommissions()">↻ Refresh</button>
+    <div class="topbar">
+      <div>
+        <h1>Komisi</h1>
+        <div class="sub">Riwayat semua komisi yang masuk dari ref code kamu</div>
       </div>
-      <div class="filter-tabs" id="commission-filters">
-        <div class="filter-tab active" onclick="filterCommissions(null, this)">Semua</div>
-        <div class="filter-tab" onclick="filterCommissions('pending', this)">Pending</div>
-        <div class="filter-tab" onclick="filterCommissions('available', this)">Available</div>
-        <div class="filter-tab" onclick="filterCommissions('withdrawal_requested', this)">Diproses</div>
-        <div class="filter-tab" onclick="filterCommissions('paid', this)">Dibayar</div>
-        <div class="filter-tab" onclick="filterCommissions('rejected', this)">Ditolak</div>
+      <div class="actions">
+        <button class="icon-btn" title="Refresh" onclick="loadCommissions()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
+        </button>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>Tanggal</th>
-            <th class="hide-mobile">TV Username</th>
-            <th class="hide-mobile">Order</th>
-            <th>Komisi</th>
-            <th class="hide-mobile">Tipe</th>
-            <th>Status</th>
-            <th class="hide-mobile">Available</th>
-          </tr></thead>
-          <tbody id="commissions-table"><tr><td colspan="7" class="empty">Loading...</td></tr></tbody>
-        </table>
-      </div>
-      <div style="margin-top:12px;text-align:center" id="commissions-pagination"></div>
     </div>
+
+    <div class="filter-tabs" id="commission-filters">
+      <div class="filter-tab active" onclick="setCommissionFilter(null,this)">Semua</div>
+      <div class="filter-tab" onclick="setCommissionFilter('pending',this)">Pending</div>
+      <div class="filter-tab" onclick="setCommissionFilter('available',this)">Available</div>
+      <div class="filter-tab" onclick="setCommissionFilter('withdrawal_requested',this)">Diproses</div>
+      <div class="filter-tab" onclick="setCommissionFilter('paid',this)">Dibayar</div>
+      <div class="filter-tab" onclick="setCommissionFilter('rejected',this)">Ditolak</div>
+    </div>
+
+    <div class="legend-row">
+      <span><span class="badge b-cyan">First</span> &nbsp;<b>First-time</b> · pembelian pertama dari user baru</span>
+      <span><span class="badge b-amber">Recurring</span> &nbsp;<b>Recurring</b> · pembelian ulang user yang sama</span>
+      <span><span class="badge b-muted">Upline</span> &nbsp;<b>Upline</b> · spread dari downline kamu</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Tanggal</th>
+          <th class="hide-mobile">TV Username</th>
+          <th class="hide-mobile">Order</th>
+          <th>Komisi</th>
+          <th class="hide-mobile">Tipe</th>
+          <th>Status</th>
+          <th class="hide-mobile">Available</th>
+        </tr></thead>
+        <tbody id="commissions-table"></tbody>
+      </table>
+    </div>
+
+    <div id="commissions-pagination" class="pager"></div>
   </div>
 
-  <!-- REFERRALS -->
+  <!-- ============ REFERRAL ============ -->
   <div class="page" id="page-referrals">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Referral Kamu</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadReferrals()">↻ Refresh</button>
+    <div class="topbar">
+      <div>
+        <h1>Referral kamu</h1>
+        <div class="sub">User unik yang beli lewat ref code · klik baris untuk detail order</div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>TV Username</th>
-            <th class="hide-mobile">Tanggal Referral</th>
-            <th>Total Komisi</th>
-          </tr></thead>
-          <tbody id="referrals-table"><tr><td colspan="3" class="empty">Loading...</td></tr></tbody>
-        </table>
+      <div class="actions">
+        <button class="icon-btn" title="Refresh" onclick="loadReferrals()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
+        </button>
       </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>TV Username</th>
+          <th class="hide-mobile">First Order</th>
+          <th class="hide-mobile">Total Order</th>
+          <th>Total Komisi</th>
+          <th class="hide-mobile">Status Komisi</th>
+        </tr></thead>
+        <tbody id="referrals-table"></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- RECRUIT -->
+  <!-- ============ REKRUT ============ -->
   <div class="page" id="page-recruit">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Rekrut Affiliate</div>
+    <div class="topbar">
+      <div>
+        <h1>Rekrut Affiliate</h1>
+        <div class="sub">Buat link rekrutmen permanen, kelola downline kamu</div>
       </div>
-      <div class="alert" id="recruit-alert"></div>
-
-      <!-- Commission info card -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:12px;">Info Komisi Rekrutmen</div>
-        <div id="recruit-commission-info" style="font-size:13px;color:var(--muted);line-height:1.8;">Loading...</div>
-      </div>
-
-      <!-- Inline create form (rendered dynamically) -->
-      <div id="recruit-form-area"></div>
-
-      <!-- Links table -->
-      <div id="recruit-content"><div class="empty"><span class="spinner"></span> Loading...</div></div>
     </div>
 
-    <!-- Downline tree -->
-    <div class="section" style="margin-top:32px;">
-      <div class="section-header">
-        <div class="section-title">Struktur Downline</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadDownline()">↻ Refresh</button>
+    <!-- alert slot -->
+    <div class="alert" id="recruit-alert"></div>
+
+    <!-- info komisi panel -->
+    <div class="panel" style="margin-bottom:14px" id="recruit-commission-info">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Cara kerja split komisi</div>
+          <div class="panel-sub">Tier kamu menentukan total komisi yang bisa kamu bagi</div>
+        </div>
       </div>
-      <div id="recruit-downline-content"><div class="empty"><span class="spinner"></span> Loading...</div></div>
+      <div style="font-size:12px;color:var(--muted2);line-height:1.6;">
+        Memuat info tier...
+      </div>
     </div>
+
+    <!-- create-link form (rendered by JS) -->
+    <div id="recruit-form-area"></div>
+
+    <!-- active links table (rendered by JS) -->
+    <div id="recruit-content"></div>
+
+    <!-- downline tree (rendered by JS) -->
+    <div id="recruit-downline-content" style="margin-top:14px"></div>
   </div>
 
-  <!-- TRAFFIC -->
+  <!-- ============ TRAFFIC ============ -->
   <div class="page" id="page-traffic">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Traffic Link Kamu</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadTraffic()">↻ Refresh</button>
-      </div>
-      <div id="traffic-content">
-        <div class="empty"><span class="spinner"></span> Loading...</div>
+    <div class="topbar">
+      <div>
+        <h1>Traffic</h1>
+        <div class="sub">Performa link kamu, breakdown source dan produk</div>
       </div>
     </div>
+
+    <div id="traffic-content"></div>
   </div>
 
-  <!-- WITHDRAW -->
+  <!-- ============ WITHDRAW ============ -->
   <div class="page" id="page-withdraw">
-    <div class="section">
+    <div class="topbar">
+      <div>
+        <h1>Withdraw</h1>
+        <div class="sub">Pilih komisi yang siap ditarik · transfer ke rekening tersimpan</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('payouts')">Riwayat pencairan →</button>
+      </div>
+    </div>
 
-      <!-- REKENING BANK -->
-      <div id="bank-form-section" style="margin-bottom:28px;">
-        <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:14px;">REKENING BANK PENCAIRAN</div>
-        <div class="alert" id="bank-alert"></div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;">
-          <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px;background:rgba(107,95,212,.06);border:1px solid rgba(107,95,212,.15);border-radius:8px;padding:10px 14px;">
-            Info rekening ini digunakan admin untuk mentransfer komisi kamu. Pastikan data benar sesuai buku tabungan/KTP.
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-            <div>
-              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Bank</label>
-              <select id="bank-name" style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;">
-                <option value="">-- Pilih Bank --</option>
-                <option>BCA</option><option>BNI</option><option>BRI</option><option>BSI</option>
-                <option>Mandiri</option><option>CIMB Niaga</option><option>Permata</option>
-                <option>Danamon</option><option>BTN</option><option>Maybank</option>
-                <option>GoPay</option><option>OVO</option><option>Dana</option><option>ShopeePay</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Nomor rekening</label>
-              <input type="text" id="bank-number" placeholder="Contoh: 1234567890"
-                style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none;"/>
-            </div>
-          </div>
-          <div style="margin-bottom:16px;">
-            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">Nama pemilik rekening</label>
-            <input type="text" id="bank-holder" placeholder="Sesuai buku tabungan / KTP"
-              style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;outline:none;"/>
-          </div>
-          <button onclick="saveBankAccount()" class="btn btn-primary">Simpan Rekening</button>
+    <div class="alert" id="withdraw-alert"></div>
+
+    <!-- saved bank form -->
+    <div class="panel" id="bank-form-section" style="margin-bottom:14px">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Rekening tersimpan</div>
+          <div class="panel-sub">Tujuan transfer untuk semua pencairan</div>
+        </div>
+      </div>
+      <div class="alert" id="bank-alert"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Bank</label>
+          <select id="bank-name" class="input">
+            <option value="">Pilih bank...</option>
+            <option value="BCA">BCA</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BNI">BNI</option>
+            <option value="BRI">BRI</option>
+            <option value="CIMB Niaga">CIMB Niaga</option>
+            <option value="Permata">Permata</option>
+            <option value="Danamon">Danamon</option>
+            <option value="BTN">BTN</option>
+            <option value="OCBC NISP">OCBC NISP</option>
+            <option value="Maybank">Maybank</option>
+            <option value="Bank Mega">Bank Mega</option>
+            <option value="Bank Jago">Bank Jago</option>
+            <option value="Seabank">Seabank</option>
+            <option value="Allo Bank">Allo Bank</option>
+            <option value="Blu BCA">Blu BCA</option>
+            <option value="Other">Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Nomor Rekening</label>
+          <input class="input mono" type="text" id="bank-number" placeholder="1234567890"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Atas Nama</label>
+          <input class="input" type="text" id="bank-holder" placeholder="Sesuai buku tabungan"/>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;">
+        <button class="btn btn-primary" onclick="saveBankAccount()">Simpan Rekening</button>
+      </div>
+    </div>
+
+    <!-- 2-col main: list + summary -->
+    <div class="wd-grid">
+      <div>
+        <div style="margin-bottom:12px;">
+          <div class="panel-title" style="margin-bottom:2px">Komisi siap ditarik</div>
+          <div class="panel-sub">Pilih komisi yang ingin ditarik bareng dalam satu pencairan</div>
+        </div>
+        <div id="withdraw-content"></div>
+
+        <div style="margin-top:14px;padding:12px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.18);border-radius:10px;font-size:12px;color:var(--muted2);line-height:1.6;">
+          <strong style="color:var(--amber)">Catatan:</strong> komisi yang masih <strong style="color:var(--white)">Pending</strong> belum bisa ditarik. Periode hold 5 hari kerja sejak transaksi untuk melindungi dari refund.
         </div>
       </div>
 
-      <div style="height:1px;background:var(--border);margin-bottom:24px;"></div>
-
-      <div class="section-header">
-        <div class="section-title">Tarik Komisi</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadWithdrawable()">↻ Refresh</button>
-      </div>
-      <div class="alert" id="withdraw-alert"></div>
-      <div id="withdraw-content">
-        <div class="empty">Loading...</div>
+      <div class="summary">
+        <div class="l">Total dipilih</div>
+        <div class="v"><span id="withdraw-total">Rp 0</span></div>
+        <button class="btn btn-green" id="withdraw-btn" disabled style="width:100%;margin-top:14px;justify-content:center" onclick="openWithdrawModal()">Request Withdraw →</button>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;">terkirim ke admin · proses ≤ 5 hari kerja</div>
       </div>
     </div>
   </div>
 
-  <!-- PAYOUTS -->
+  <!-- ============ PAYOUTS ============ -->
   <div class="page" id="page-payouts">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Riwayat Pembayaran</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadPayouts()">↻ Refresh</button>
+    <div class="topbar">
+      <div>
+        <h1>Pembayaran</h1>
+        <div class="sub">Riwayat pencairan yang sudah diproses admin</div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Tanggal</th><th>Total</th><th>Ref Transfer</th><th>Catatan</th></tr></thead>
-          <tbody id="payouts-table"><tr><td colspan="4" class="empty">Loading...</td></tr></tbody>
-        </table>
-      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Tanggal</th>
+          <th>Total</th>
+          <th class="hide-mobile">Komisi</th>
+          <th class="hide-mobile">Bank</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody id="payouts-table"></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- SETTINGS -->
+  <!-- ============ PENGATURAN ============ -->
   <div class="page" id="page-settings">
-    <div class="section">
-      <div class="section-title" style="margin-bottom:20px;">Pengaturan Pixel</div>
-      <div class="alert" id="settings-alert"></div>
+    <div class="topbar">
+      <div>
+        <h1>Pengaturan</h1>
+        <div class="sub">Pixel tracking dan integrasi konversi</div>
+      </div>
+    </div>
 
-      <div class="settings-pixel-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
-          font-family:'JetBrains Mono',monospace;margin-bottom:20px;">Meta Pixel</div>
+    <div class="alert" id="settings-alert"></div>
 
-        <div style="background:rgba(107,95,212,.06);border:1px solid rgba(107,95,212,.15);
-          border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.8;">
-          Dengan mengisi Pixel ID dan Access Token Meta kamu, setiap pembelian yang terjadi lewat
-          link referral kamu akan otomatis tercatat sebagai konversi di akun Meta Ads kamu.
-          <br/><br/>
-          <strong style="color:var(--white);">Cara dapat Access Token:</strong><br/>
-          1. Buka <span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;">business.facebook.com/events_manager2</span><br/>
-          2. Pilih pixel kamu → tab Settings<br/>
-          3. Scroll ke Conversions API → Generate access token
-        </div>
-
-        <div class="form-group">
-          <label>Meta Pixel ID</label>
-          <input type="text" id="s-meta-pixel-id" placeholder="contoh: 1234567890123456"
-            style="font-family:'JetBrains Mono',monospace;"/>
-          <div class="hint">Angka 15–16 digit dari Events Manager</div>
-        </div>
-
-        <div class="form-group">
-          <label>Meta Access Token</label>
-          <input type="password" id="s-meta-token" placeholder="EAABsbCS..."/>
-          <div class="hint">Dari tab Settings pixel → Conversions API → Generate access token</div>
-        </div>
-
-        <div style="display:flex;gap:10px;margin-top:8px;">
-          <button class="btn btn-primary" onclick="saveMetaPixel()">Simpan Meta Pixel</button>
-          <button class="btn btn-ghost" onclick="clearMetaPixel()">Hapus Meta Pixel</button>
+    <!-- META PIXEL -->
+    <div class="pix-card" style="margin-bottom:16px">
+      <div class="pix-head">
+        <div>
+          <div class="l">Tracking</div>
+          <div class="t">Meta Pixel</div>
         </div>
       </div>
-
-      <!-- Google Ads section -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
-          font-family:'JetBrains Mono',monospace;margin-bottom:20px;">Google Ads</div>
-
-        <div style="background:rgba(107,95,212,.06);border:1px solid rgba(107,95,212,.15);
-          border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.8;">
-          Dengan mengisi Google Ads Conversion ID dan Label, setiap kali ada yang buka
-          halaman checkout lewat link kamu, pixel Google Ads kamu akan aktif untuk
-          remarketing dan audience building.
-          <br/><br/>
-          <strong style="color:var(--white);">Cara dapat Conversion ID & Label:</strong><br/>
-          1. Buka <span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;">ads.google.com</span><br/>
-          2. Goals → Conversions → + New conversion action → Website<br/>
-          3. Pilih kategori Purchase → isi nama → Save<br/>
-          4. Pilih "Install the tag yourself"<br/>
-          5. Copy <strong style="color:var(--white)">Conversion ID</strong> (format: AW-XXXXXXXXX)
-             dan <strong style="color:var(--white)">Conversion Label</strong>
+      <div class="pix-body">
+        <div>
+          <div class="form-group">
+            <label>Meta Pixel ID</label>
+            <input class="input mono" type="text" id="s-meta-pixel-id" placeholder="contoh: 1234567890123456"/>
+            <div class="hint">Angka 15–16 digit dari Events Manager</div>
+          </div>
+          <div class="form-group">
+            <label>Meta Access Token</label>
+            <input class="input mono" type="password" id="s-meta-token" placeholder="EAABsbCS..."/>
+            <div class="hint">Tab Settings pixel → Conversions API → Generate</div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="saveMetaPixel()">Simpan Meta Pixel</button>
+            <button class="btn btn-ghost" onclick="clearMetaPixel()">Hapus Meta Pixel</button>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Google Ads Conversion ID</label>
-          <input type="text" id="s-gads-id" placeholder="contoh: AW-123456789"
-            style="font-family:'JetBrains Mono',monospace;"/>
-          <div class="hint">Format: AW-XXXXXXXXX</div>
-        </div>
-
-        <div class="form-group">
-          <label>Google Ads Conversion Label</label>
-          <input type="text" id="s-gads-label" placeholder="contoh: AbCdEfGhIjKlMnOp"
-            style="font-family:'JetBrains Mono',monospace;"/>
-          <div class="hint">String pendek yang didapat bersama Conversion ID</div>
-        </div>
-
-        <div style="display:flex;gap:10px;margin-top:8px;">
-          <button class="btn btn-primary" onclick="saveGoogleAds()">Simpan Google Ads</button>
-          <button class="btn btn-ghost" onclick="clearGoogleAds()">Hapus Google Ads</button>
+        <div class="help-card">
+          <div class="lab">→ Cara dapat Access Token</div>
+          <div class="help-step"><div class="n">1</div><div>Buka <code>business.facebook.com/events_manager2</code></div></div>
+          <div class="help-step"><div class="n">2</div><div>Pilih pixel kamu → tab <strong style="color:var(--white)">Settings</strong></div></div>
+          <div class="help-step"><div class="n">3</div><div>Scroll ke <strong style="color:var(--white)">Conversions API</strong> → Generate access token</div></div>
+          <div class="help-step"><div class="n">4</div><div>Salin token, paste di field sebelah kiri</div></div>
         </div>
       </div>
-      </div><!-- end .settings-pixel-grid -->
+    </div>
 
+    <!-- GOOGLE ADS -->
+    <div class="pix-card">
+      <div class="pix-head">
+        <div>
+          <div class="l">Tracking</div>
+          <div class="t">Google Ads</div>
+        </div>
+      </div>
+      <div class="pix-body">
+        <div>
+          <div class="form-group">
+            <label>Conversion ID</label>
+            <input class="input mono" type="text" id="s-gads-id" placeholder="contoh: AW-123456789"/>
+            <div class="hint">Format: AW-XXXXXXXXX</div>
+          </div>
+          <div class="form-group">
+            <label>Conversion Label</label>
+            <input class="input mono" type="text" id="s-gads-label" placeholder="contoh: AbCdEfGhIjKlMnOp"/>
+            <div class="hint">String pendek di-pair dengan Conversion ID</div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="saveGoogleAds()">Simpan Google Ads</button>
+            <button class="btn btn-ghost" onclick="clearGoogleAds()">Hapus Google Ads</button>
+          </div>
+        </div>
+
+        <div class="help-card">
+          <div class="lab">→ Cara dapat Conversion ID &amp; Label</div>
+          <div class="help-step"><div class="n">1</div><div>Buka <code>ads.google.com</code></div></div>
+          <div class="help-step"><div class="n">2</div><div><strong style="color:var(--white)">Goals</strong> → Conversions → + New conversion → Website</div></div>
+          <div class="help-step"><div class="n">3</div><div>Kategori <strong style="color:var(--white)">Purchase</strong> → isi nama → Save</div></div>
+          <div class="help-step"><div class="n">4</div><div>Pilih "Install the tag yourself"</div></div>
+          <div class="help-step"><div class="n">5</div><div>Salin <strong style="color:var(--white)">Conversion ID</strong> dan <strong style="color:var(--white)">Label</strong></div></div>
+        </div>
+      </div>
     </div>
   </div>
 
+</div><!-- /.main -->
+</div><!-- /.stage -->
+</div><!-- /#app -->
+
+<!-- Legacy bottom nav (kept hidden so existing JS that queries .bottom-nav-item never errors) -->
+<div class="bottom-nav" id="bottom-nav" aria-hidden="true">
+  <div class="bottom-nav-item" data-page="overview"></div>
+  <div class="bottom-nav-item" data-page="commissions"></div>
+  <div class="bottom-nav-item" data-page="referrals"></div>
+  <div class="bottom-nav-item" data-page="recruit"></div>
+  <div class="bottom-nav-item" data-page="traffic"></div>
+  <div class="bottom-nav-item" data-page="withdraw"></div>
+  <div class="bottom-nav-item" data-page="payouts"></div>
+  <div class="bottom-nav-item" data-page="settings"></div>
 </div>
 
-<!-- CONFIRM MODAL -->
+<!-- ===== WITHDRAW MODAL ===== -->
 <div class="modal-overlay" id="withdraw-modal">
   <div class="modal">
     <h3>KONFIRMASI WITHDRAW</h3>
@@ -883,6 +1143,149 @@ input:focus, select:focus { border-color: var(--cyan2); }
     </div>
   </div>
 </div>
+
+<!-- ===== Sidebar injection (runs before main script so showPage() can find sidebar items) ===== -->
+<script>
+(function(){
+  // Map sidebar data-key → showPage(name)
+  var keyToPage = {
+    overview: 'overview', komisi: 'commissions', referral: 'referrals',
+    rekrut: 'recruit', traffic: 'traffic', withdraw: 'withdraw',
+    payouts: 'payouts', settings: 'settings'
+  };
+  var html = ''
+    + '<div class="brand">'
+    +   '<div class="brand-mark">QR</div>'
+    +   '<div>'
+    +     '<div class="brand-text">TRXC QRR</div>'
+    +     '<div class="brand-sub">Affiliate Console</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="nav-section">Earnings</div>'
+    + '<a class="nav-item" data-key="overview">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>'
+    +   'Overview</a>'
+    + '<a class="nav-item" data-key="komisi">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/></svg>'
+    +   'Komisi</a>'
+    + '<a class="nav-item" data-key="referral">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>'
+    +   'Referral</a>'
+    + '<div class="nav-section">Network</div>'
+    + '<a class="nav-item" data-key="rekrut">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M12 7v4M12 13h-6v4M12 13h6v4"/><circle cx="6" cy="19" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="18" cy="19" r="2"/></svg>'
+    +   'Rekrut</a>'
+    + '<a class="nav-item" data-key="traffic">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
+    +   'Traffic</a>'
+    + '<div class="nav-section">Cash</div>'
+    + '<a class="nav-item" data-key="withdraw">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>'
+    +   'Withdraw</a>'
+    + '<a class="nav-item" data-key="payouts">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
+    +   'Pembayaran</a>'
+    + '<a class="nav-item" data-key="settings">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+    +   'Pengaturan</a>'
+    + '<div class="sf">'
+    +   '<div class="sf-user"><div class="av" id="sb-avatar">·</div>'
+    +     '<div><div class="nm" id="sb-username">—</div><div class="rf" id="sb-refcode">—</div></div>'
+    +   '</div>'
+    +   '<div class="sf-logout" onclick="doLogout()">[ logout ]</div>'
+    + '</div>';
+
+  var el = document.getElementById('sidebar');
+  if (!el) return;
+  el.innerHTML = html;
+
+  // Hook up clicks → showPage()
+  el.querySelectorAll('.nav-item[data-key]').forEach(function(item){
+    item.addEventListener('click', function(e){
+      e.preventDefault();
+      var key = item.getAttribute('data-key');
+      var page = keyToPage[key];
+      if (page && typeof showPage === 'function') showPage(page);
+    });
+  });
+
+  // Mirror active state from existing JS (which sets .nav-tab.active in the hidden legacy nav)
+  // by observing showPage() calls — simplest is to also wire on click, plus a MutationObserver
+  // on the legacy #nav-tabs to copy active state by index.
+  function syncActiveFromLegacy(){
+    var tabs = document.querySelectorAll('#nav-tabs .nav-tab');
+    var keys = ['overview','komisi','referral','rekrut','traffic','withdraw','payouts','settings'];
+    el.querySelectorAll('.nav-item[data-key]').forEach(function(n){ n.classList.remove('active'); });
+    tabs.forEach(function(t, i){
+      if (t.classList.contains('active')) {
+        var k = keys[i];
+        var n = el.querySelector('.nav-item[data-key="'+k+'"]');
+        if (n) n.classList.add('active');
+      }
+    });
+  }
+  // Patch document.querySelectorAll-driven flow: observe legacy nav for class changes.
+  var legacy = document.getElementById('nav-tabs');
+  if (legacy) {
+    var mo = new MutationObserver(syncActiveFromLegacy);
+    mo.observe(legacy, { subtree:true, attributes:true, attributeFilter:['class'], childList:true });
+  }
+  // And after initial paint:
+  setTimeout(syncActiveFromLegacy, 0);
+
+  // Mirror nav-user / nav-ref into sidebar footer when they update.
+  function syncFooter(){
+    var nu = document.getElementById('nav-user');
+    var nr = document.getElementById('nav-ref');
+    var nm = document.getElementById('sb-username');
+    var rf = document.getElementById('sb-refcode');
+    var av = document.getElementById('sb-avatar');
+    if (nu && nm) nm.textContent = nu.textContent || '—';
+    if (nr && rf) rf.textContent = nr.textContent || '—';
+    if (nu && av) {
+      var t = (nu.textContent || '').trim();
+      av.textContent = t ? t.split(/\s+/).slice(0,2).map(function(s){return s[0]||'';}).join('').toUpperCase() : '·';
+    }
+  }
+  ['nav-user','nav-ref'].forEach(function(id){
+    var n = document.getElementById(id);
+    if (n) new MutationObserver(syncFooter).observe(n, { childList:true, characterData:true, subtree:true });
+  });
+  setTimeout(syncFooter, 0);
+
+  // Helper used by overview ref-band copy button (lives in main script via document onclick scope)
+  window.copyRefCode = window.copyRefCode || function(){
+    var el2 = document.getElementById('ref-code-display');
+    if (!el2) return;
+    var code = el2.textContent || '';
+    if (!code) return;
+    navigator.clipboard && navigator.clipboard.writeText(code).then(function(){
+      var btn = document.querySelector('.ref-copy-btn');
+      if (btn) {
+        var orig = btn.textContent;
+        btn.textContent = 'Tersalin!';
+        setTimeout(function(){ btn.textContent = orig; }, 1200);
+      }
+    });
+  };
+
+  // Mirror stat-available / stat-pending / stat-requested into the donut legend mirrors
+  ['stat-available','stat-pending','stat-requested'].forEach(function(id){
+    var src = document.getElementById(id);
+    var dst = document.getElementById(id+'-mirror');
+    if (!src || !dst) return;
+    var copy = function(){ dst.textContent = src.textContent; };
+    new MutationObserver(copy).observe(src, { childList:true, characterData:true, subtree:true });
+    setTimeout(copy, 0);
+  });
+
+  // setIncomePeriod placeholder — existing JS uses setTrafficPeriod; income period is decorative.
+  window.setIncomePeriod = window.setIncomePeriod || function(days, btn){
+    var grp = document.getElementById('income-period-toggle');
+    if (grp) grp.querySelectorAll('button').forEach(function(b){ b.classList.toggle('active', b===btn); });
+  };
+})();
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -2243,64 +2646,5 @@ document.getElementById('withdraw-modal').addEventListener('click', function(e) 
   if (e.target === this) closeWithdrawModal();
 });
 </script>
-
-<!-- MOBILE BOTTOM NAV -->
-<div class="bottom-nav" id="bottom-nav">
-  <div class="bottom-nav-item active" onclick="showPage('overview')" data-page="overview">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-    </svg>
-    Overview
-  </div>
-  <div class="bottom-nav-item" onclick="showPage('commissions')" data-page="commissions">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-    </svg>
-    Komisi
-  </div>
-  <div class="bottom-nav-item" onclick="showPage('referrals')" data-page="referrals">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-    Referral
-  </div>
-  <div class="bottom-nav-item" onclick="showPage('recruit')" data-page="recruit">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
-      <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
-    </svg>
-    Rekrut
-  </div>
-  <div class="bottom-nav-item" onclick="showPage('traffic')" data-page="traffic">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-    </svg>
-    Traffic
-  </div>
-  <div class="bottom-nav-item" onclick="showPage('withdraw')" data-page="withdraw">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="17 11 21 7 17 3"/><line x1="21" y1="7" x2="9" y2="7"/>
-      <polyline points="7 21 3 17 7 13"/><line x1="15" y1="17" x2="3" y2="17"/>
-    </svg>
-    Withdraw
-  </div>
-  <div class="bottom-nav-item" onclick="showPage('payouts')" data-page="payouts">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="9 11 12 14 22 4"/>
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-    </svg>
-    Bayar
-  </div>
-  <div class="bottom-nav-item" onclick="showPage('settings')" data-page="settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
-    Setting
-  </div>
-</div>
-
 </body>
 </html>
