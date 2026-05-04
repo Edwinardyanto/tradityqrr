@@ -1261,7 +1261,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
             <span style="font-size:12px;color:var(--muted)">Loading produk…</span>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic">
-            Lifetime products tidak bisa dipilih — tidak pernah expire, slot tidak akan free up.
+            Hanya produk dengan durasi (non-lifetime) yang muncul. Aktif/nonaktif tidak menentukan tampil — jadi produk yang sementara dinonaktifkan tetap bisa di-flag in-cap.
           </div>
         </div>
 
@@ -2630,19 +2630,20 @@ async function loadCapConfig() {
     document.getElementById('cap-config-fields').style.display = config.is_enabled ? 'block' : 'none';
     document.getElementById('cap-limit').value = config.limit_value;
 
-    // Render pills — lifetime products greyed out (months IS NULL).
+    // Render pills for non-lifetime products only — lifetime products
+    // are excluded entirely (they'd never expire so could never free a
+    // slot). is_active is intentionally NOT a filter so admin can mark
+    // a temporarily-deactivated product as in-cap and have it count
+    // again the moment it's re-activated.
     const selected = new Set((config.product_ids || []).map(Number));
-    const pillsHtml = products.map(p => {
-      const isLifetime = !p.months;
+    const eligible = products.filter(p => !!p.months);
+    const pillsHtml = eligible.map(p => {
       const isOn = selected.has(p.id);
-      const cls = ['cap-pill',
-        isOn && 'cap-pill-on',
-        isLifetime && 'cap-pill-disabled'].filter(Boolean).join(' ');
-      const onclick = isLifetime ? '' : `onclick="toggleCapPill(${p.id})"`;
-      const title   = isLifetime ? 'title="Lifetime — tidak bisa dipilih (slot tidak akan free up)"' : '';
-      return `<span class="${cls}" data-id="${p.id}" ${onclick} ${title}>${p.product_name}</span>`;
+      const cls = isOn ? 'cap-pill cap-pill-on' : 'cap-pill';
+      return `<span class="${cls}" data-id="${p.id}" onclick="toggleCapPill(${p.id})">${p.product_name}</span>`;
     }).join('');
-    document.getElementById('cap-product-pills').innerHTML = pillsHtml || '<span style="font-size:12px;color:var(--muted)">Belum ada produk.</span>';
+    document.getElementById('cap-product-pills').innerHTML = pillsHtml
+      || '<span style="font-size:12px;color:var(--muted)">Belum ada produk non-lifetime untuk dipilih.</span>';
 
     renderCapSnapshot(snapshot);
   } catch (e) {
@@ -2819,7 +2820,10 @@ async function saveProduct() {
 }
 
 async function toggleProduct(id, active) {
-  try { await api('PUT', `/admin/products/${id}`, { is_active: active }); }
+  // Dedicated PATCH endpoint — only touches is_active. The legacy PUT
+  // would null out `months` on a partial body and silently convert the
+  // product to lifetime; PATCH avoids that entire class of bug.
+  try { await api('PATCH', `/admin/products/${id}/active`, { is_active: active }); }
   catch(e) { showAlert('products', e.message, 'error'); loadProducts(); }
 }
 
