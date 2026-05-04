@@ -1218,8 +1218,33 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
         <div class="section-title">Subscribers</div>
         <button class="btn btn-ghost btn-sm" onclick="loadSubscribers()">↻ Refresh</button>
       </div>
-      <div style="margin-bottom:12px">
-        <input type="text" id="sub-search" placeholder="Cari TV username..." style="width:300px" oninput="filterSubscribers()"/>
+      <!-- FILTERS -->
+      <div class="orders-filters">
+        <input type="text" id="sub-search" placeholder="Cari nama / username / email / phone..." class="of-sel" style="max-width:240px" oninput="filterSubscribers()"/>
+
+        <select id="f-sub-status" onchange="filterSubscribers()" class="of-sel">
+          <option value="">Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+
+        <select id="f-sub-tv" onchange="filterSubscribers()" class="of-sel">
+          <option value="">TV Status</option>
+          <option value="granted">Granted</option>
+          <option value="failed">Failed</option>
+        </select>
+
+        <select id="f-sub-telegram" onchange="filterSubscribers()" class="of-sel">
+          <option value="">Telegram</option>
+          <option value="joined">Joined</option>
+          <option value="not_joined">Not joined</option>
+        </select>
+
+        <select id="f-sub-plan" onchange="filterSubscribers()" class="of-sel">
+          <option value="">Plan</option>
+        </select>
+
+        <button onclick="resetSubFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
       </div>
       <div class="table-wrap">
         <table>
@@ -2711,17 +2736,72 @@ async function loadSubscribers() {
   try {
     const { subscribers } = await api('GET', '/admin/subscribers');
     allSubscribers = subscribers;
-    renderSubscribers(subscribers);
+    populateSubPlanFilter(subscribers);
+    renderSubscribers(getFilteredSubscribers());
   } catch(e) { console.error(e); }
+}
+
+// Populate the Plan dropdown from whatever product_name values are
+// actually present on the loaded subscribers. Preserves the user's
+// current selection if the value still exists after a reload.
+function populateSubPlanFilter(subs) {
+  const sel = document.getElementById('f-sub-plan');
+  if (!sel) return;
+  const current = sel.value;
+  const plans = Array.from(new Set(subs.map(s => s.product_name).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="">Plan</option>'
+    + plans.map(p => `<option value="${p}">${p}</option>`).join('');
+  if (current && plans.includes(current)) sel.value = current;
+}
+
+// Single source of truth for the visible subscriber list. Reused by
+// filterSubscribers (called on every input change) and goSubPage so
+// pagination stays in sync with whatever filters are active.
+function getFilteredSubscribers() {
+  const q       = (document.getElementById('sub-search')?.value || '').toLowerCase().trim();
+  const fStatus = document.getElementById('f-sub-status')?.value   || '';
+  const fTv     = document.getElementById('f-sub-tv')?.value       || '';
+  const fTg     = document.getElementById('f-sub-telegram')?.value || '';
+  const fPlan   = document.getElementById('f-sub-plan')?.value     || '';
+  const now = new Date();
+  return allSubscribers.filter(s => {
+    if (q) {
+      const blob = ((s.tv_username||'') + ' ' + (s.email||'') + ' '
+                  + (s.customer_name||'') + ' ' + (s.phone||'')).toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    // Recompute the same active/tv/tg derivations the renderer uses so the
+    // filter labels match exactly what the user sees in the table badges.
+    const expired  = !s.is_lifetime && s.expires_at && new Date(s.expires_at) < now;
+    const isActive = !expired && s.is_active !== 0;
+    if (fStatus === 'active'   && !isActive) return false;
+    if (fStatus === 'inactive' &&  isActive) return false;
+    if (fTv) {
+      const tvGranted = s.tv_status === 'granted' || (!s.tv_status && isActive);
+      if (fTv === 'granted' && !tvGranted) return false;
+      if (fTv === 'failed'  &&  tvGranted) return false;
+    }
+    if (fTg) {
+      const tgJoined = s.telegram_status === 'joined';
+      if (fTg === 'joined'     && !tgJoined) return false;
+      if (fTg === 'not_joined' &&  tgJoined) return false;
+    }
+    if (fPlan && s.product_name !== fPlan) return false;
+    return true;
+  });
 }
 
 function filterSubscribers() {
   subscriberPage = 1;
-  const q = document.getElementById('sub-search').value.toLowerCase();
-  renderSubscribers(allSubscribers.filter(s =>
-    s.tv_username.toLowerCase().includes(q) ||
-    (s.email || '').toLowerCase().includes(q)
-  ));
+  renderSubscribers(getFilteredSubscribers());
+}
+
+function resetSubFilters() {
+  ['sub-search','f-sub-status','f-sub-tv','f-sub-telegram','f-sub-plan'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  filterSubscribers();
 }
 
 function renderSubscribers(list) {
@@ -2790,13 +2870,10 @@ function renderSubscribers(list) {
 }
 
 function goSubPage(p) {
-  const totalPages = Math.ceil(allSubscribers.length / SUBSCRIBER_PAGE_SIZE);
+  const filtered = getFilteredSubscribers();
+  const totalPages = Math.ceil(filtered.length / SUBSCRIBER_PAGE_SIZE);
   if (p < 1 || p > totalPages) return;
   subscriberPage = p;
-  const q = document.getElementById('sub-search').value.toLowerCase();
-  const filtered = q
-    ? allSubscribers.filter(s => s.tv_username.toLowerCase().includes(q) || (s.email||'').toLowerCase().includes(q))
-    : allSubscribers;
   renderSubscribers(filtered);
 }
 
