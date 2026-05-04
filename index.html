@@ -246,6 +246,71 @@ section{position:relative;z-index:1}
 @keyframes swpAU{0%,35%{left:-80%}65%,100%{left:130%}}
 .btn-annual:hover{background:#DDB85A;transform:translateY(-2px);box-shadow:0 0 40px rgba(201,168,76,.6)}
 
+/* ── KUOTA BANNER (membership cap state) ── */
+/* Banner is rendered in the DOM but display:none until the /quota fetch
+   resolves with enabled=true. State class (qb-plenty/qb-medium/qb-urgent)
+   drives all the color shifts so the same markup handles every state. */
+.qb-sec{padding:0 48px;max-width:1120px;margin:32px auto 0}
+.qb-card{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;padding:18px 24px;border-radius:14px;background:#0C0A1A;border:1px solid rgba(107,95,212,.35);overflow:hidden}
+.qb-card.qb-medium{border-color:rgba(201,168,76,.4)}
+.qb-card.qb-urgent{border-color:rgba(232,99,122,.5);background:#1A0A12}
+.qb-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(107,95,212,.18) 0%,transparent 60%);pointer-events:none}
+.qb-card.qb-medium .qb-glow{background:radial-gradient(ellipse at 50% 50%,rgba(201,168,76,.18) 0%,transparent 60%)}
+.qb-card.qb-urgent .qb-glow{background:radial-gradient(ellipse at 50% 50%,rgba(232,99,122,.22) 0%,transparent 60%)}
+.qb-left{position:relative;z-index:1;display:flex;align-items:center;gap:10px}
+.qb-pulse{position:relative;width:10px;height:10px}
+.qb-pulse::before{content:'';position:absolute;inset:0;background:#22c55e;border-radius:50%}
+.qb-pulse::after{content:'';position:absolute;inset:-4px;border:1.5px solid #22c55e;border-radius:50%;opacity:.6;animation:qbPulse 2s ease-out infinite}
+.qb-card.qb-medium .qb-pulse::before{background:#C9A84C}.qb-card.qb-medium .qb-pulse::after{border-color:#C9A84C;animation-duration:1.5s}
+.qb-card.qb-urgent .qb-pulse::before{background:#E8637A;animation:qbDot .8s ease-in-out infinite}.qb-card.qb-urgent .qb-pulse::after{border-color:#E8637A;animation-duration:1s}
+@keyframes qbPulse{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.8);opacity:0}}
+@keyframes qbDot{0%,100%{opacity:1}50%{opacity:.3}}
+.qb-labels{display:flex;flex-direction:column;gap:2px}
+.qb-live{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;font-weight:700;color:#22c55e}
+.qb-card.qb-medium .qb-live{color:#C9A84C}.qb-card.qb-urgent .qb-live{color:#E8637A}
+.qb-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#A8A2C9}
+.qb-sub{font-size:11px;color:#6B6490;margin-top:1px}
+.qb-card.qb-urgent .qb-sub{color:#E8637A;font-weight:700}
+.qb-card.qb-medium .qb-sub{color:#C9A84C;font-weight:700}
+.qb-mid{position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.qb-row1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.qb-row1-label{font-size:13px;color:#F0EFF8}
+.qb-num{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;color:#22c55e;letter-spacing:-1px;font-weight:700}
+.qb-card.qb-medium .qb-num{color:#C9A84C}.qb-card.qb-urgent .qb-num{color:#E8637A}
+.qb-of{font-size:13px;color:#6B6490}
+.qb-bar{position:relative;height:8px;border-radius:4px;background:#1A1830;overflow:hidden}
+.qb-fill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#16a34a,#22c55e);width:0;transition:width .6s ease-out}
+.qb-card.qb-medium .qb-fill{background:#C9A84C}.qb-card.qb-urgent .qb-fill{background:#E8637A}
+.qb-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B6490}
+.qb-card.qb-medium .qb-meta{color:#C9A84C}.qb-card.qb-urgent .qb-meta{color:#E8637A;font-weight:700}
+.qb-cta{position:relative;z-index:1;background:#6B5FD4;color:#fff;font-size:13px;font-weight:700;padding:12px 22px;border:none;border-radius:24px;cursor:pointer;text-decoration:none;display:inline-block;white-space:nowrap;transition:all .2s}
+.qb-cta:hover{background:#7B6FE4;transform:translateY(-1px)}
+.qb-card.qb-urgent .qb-cta{background:#E8637A}.qb-card.qb-urgent .qb-cta:hover{background:#F07788}
+
+/* ── WAITLIST SECTION ── */
+.wl-sec{padding:48px 48px 0;max-width:1120px;margin:0 auto}
+.wl-card{background:#0E0B1A;border:1px solid rgba(201,168,76,.18);border-radius:14px;padding:28px 32px}
+.wl-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.wl-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:#F0EFF8}
+.wl-title span{color:#C9A84C}
+.wl-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:#6B6490}
+.wl-table{width:100%;border-collapse:collapse}
+.wl-table th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:#6B6490;padding:8px 12px;border-bottom:1px solid #1A1830;text-transform:uppercase}
+.wl-table td{padding:12px;font-size:13px;color:#A8A2C9;border-bottom:1px solid rgba(26,24,48,.6)}
+.wl-table tr:last-child td{border-bottom:none}
+.wl-pos{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#C9A84C;letter-spacing:-.5px}
+.wl-email{font-family:'JetBrains Mono',monospace;font-size:12px;color:#F0EFF8}
+.wl-eta{font-size:12px;color:#6B6490}
+
+@media(max-width:900px){
+  .qb-sec{padding:0 22px;margin-top:24px}
+  .qb-card{grid-template-columns:1fr;gap:14px;padding:16px 18px}
+  .qb-cta{justify-self:start}
+  .wl-sec{padding:32px 22px 0}
+  .wl-card{padding:20px 18px}
+  .wl-table th:nth-child(2),.wl-table td:nth-child(2){display:none}
+}
+
 /* ── FAQ ── */
 .faq-sec{padding:88px 48px;max-width:760px;margin:0 auto}
 .faq-list{margin-top:46px}
@@ -655,6 +720,31 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
   </div>
 </section>
 
+<!-- KUOTA BANNER (membership cap state — JS reveals based on /quota) -->
+<section id="quota-banner-sec" class="qb-sec" style="display:none">
+  <div class="qb-card qb-plenty" id="qb-card">
+    <div class="qb-glow"></div>
+    <div class="qb-left">
+      <div class="qb-pulse"></div>
+      <div class="qb-labels">
+        <div class="qb-live">LIVE</div>
+        <div class="qb-title">KUOTA SLOT AKTIF</div>
+        <div class="qb-sub" id="qb-sub">masih banyak slot</div>
+      </div>
+    </div>
+    <div class="qb-mid">
+      <div class="qb-row1">
+        <span class="qb-row1-label">Tersisa</span>
+        <span class="qb-num" id="qb-num">—</span>
+        <span class="qb-of" id="qb-of">/ — slot</span>
+      </div>
+      <div class="qb-bar"><div class="qb-fill" id="qb-fill"></div></div>
+      <div class="qb-meta" id="qb-meta">—</div>
+    </div>
+    <a class="qb-cta" id="qb-cta" href="#pricing">Pilih Paket →</a>
+  </div>
+</section>
+
 <!-- PRICING -->
 <section id="pricing">
   <div class="price-sec">
@@ -764,6 +854,29 @@ footer{border-top:1px solid var(--border);padding:36px 48px;display:flex;align-i
       </div>
     </div>
     <p class="price-note">⚠️ Untuk member TRXC QRR · Bukan financial advice · Harga dapat berubah sewaktu-waktu</p>
+  </div>
+</section>
+
+<!-- WAITLIST (rendered only when cap full + queue not empty) -->
+<section id="waitlist-sec" class="wl-sec" style="display:none">
+  <div class="wl-card">
+    <div class="wl-head">
+      <div>
+        <div class="wl-title">ANTRIAN <span>AKTIF</span></div>
+        <div class="wl-sub">10 teratas — slot otomatis terbuka saat subscriber lama expired</div>
+      </div>
+      <div class="wl-sub" id="wl-count">—</div>
+    </div>
+    <table class="wl-table">
+      <thead><tr>
+        <th>#</th>
+        <th>Email</th>
+        <th>Estimasi Masuk</th>
+      </tr></thead>
+      <tbody id="wl-tbody">
+        <tr><td colspan="3" style="padding:24px;text-align:center;color:#6B6490">Loading…</td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
@@ -933,6 +1046,159 @@ function getCheckoutUrl(base) {
       outer.dataset.totalCount = leftVisible + bigVisible;
     })
     .catch(function(){});
+})();
+
+// ── MEMBERSHIP CAP BANNER + WAITLIST ──
+// Subscribes to GET /quota/events SSE for live cap state. Each event
+// payload mirrors GET /quota — { enabled, limit, active, remaining,
+// percent_filled, waiting, queue: [...] }. The renderer:
+//   - reveals the banner above pricing when enabled, hides when not
+//   - shifts state class (qb-plenty/qb-medium/qb-urgent) by % filled
+//   - updates the number / progress bar / sub-label / CTA copy
+//   - reveals the waitlist section + renders top-10 queue if cap full
+//   - swaps in-cap pricing card CTAs to "Join Waitlist →" when full
+//
+// On SSE failure, falls back to a one-shot GET /quota so the banner
+// still renders (just won't update live until reconnect).
+(function(){
+  var SERVER = 'https://tradity-qrr-server-production.up.railway.app';
+  // Pricing-card slugs that count toward the cap. Hardcoded because the
+  // mapping rarely changes — keeps CTA swap snappy on first paint without
+  // a second round-trip to /admin/cap-config (which is admin-only anyway).
+  var IN_CAP_SLUGS = ['checkout-basic', 'checkout-silver'];
+
+  var bannerSec = document.getElementById('quota-banner-sec');
+  var card      = document.getElementById('qb-card');
+  var subEl     = document.getElementById('qb-sub');
+  var numEl     = document.getElementById('qb-num');
+  var ofEl      = document.getElementById('qb-of');
+  var fillEl    = document.getElementById('qb-fill');
+  var metaEl    = document.getElementById('qb-meta');
+  var ctaEl     = document.getElementById('qb-cta');
+  var wlSec     = document.getElementById('waitlist-sec');
+  var wlCount   = document.getElementById('wl-count');
+  var wlBody    = document.getElementById('wl-tbody');
+
+  // Original button label cached so we can restore it when cap reopens
+  // (avoids the "Pilih X →" text getting permanently overwritten).
+  var ctaCache = {};
+  IN_CAP_SLUGS.forEach(function(slug){
+    var card = document.querySelector('[data-checkout="' + slug + '"]');
+    if (!card) return;
+    var btn = card.querySelector('button');
+    if (btn) ctaCache[slug] = btn.textContent;
+  });
+
+  function fmtIdDate(iso){
+    if (!iso) return 'TBD';
+    try {
+      var d = new Date(iso);
+      return d.toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' });
+    } catch (_) { return 'TBD'; }
+  }
+
+  function renderBannerState(snap){
+    if (!snap || !snap.enabled) {
+      bannerSec.style.display = 'none';
+      wlSec.style.display = 'none';
+      restoreCtas();
+      return;
+    }
+    bannerSec.style.display = 'block';
+
+    // Color shift by remaining% (mirror of the SVG mockup spec):
+    // ≥50% remaining → green; 20-50% → gold; <20% → red.
+    var pctRemaining = snap.limit > 0 ? (snap.remaining / snap.limit) * 100 : 0;
+    var state = 'qb-plenty', subText = 'masih banyak slot';
+    if (snap.remaining === 0)         { state = 'qb-urgent'; subText = '🔥 Slot habis · gabung waitlist'; }
+    else if (pctRemaining < 20)       { state = 'qb-urgent'; subText = '🔥 Hampir habis!'; }
+    else if (pctRemaining < 50)       { state = 'qb-medium'; subText = '⚡ Mengisi cepat'; }
+
+    card.classList.remove('qb-plenty','qb-medium','qb-urgent');
+    card.classList.add(state);
+
+    numEl.textContent  = snap.remaining;
+    ofEl.textContent   = '/ ' + snap.limit + ' slot';
+    subEl.textContent  = subText;
+    fillEl.style.width = snap.percent_filled + '%';
+    metaEl.textContent = snap.active + ' / ' + snap.limit + ' terjual · ' + snap.percent_filled + '% terisi';
+
+    // CTA copy + behavior shifts when full.
+    if (snap.remaining === 0) {
+      ctaEl.textContent = '⚡ Gabung Waitlist';
+      swapCtas('Join Waitlist →');
+    } else {
+      ctaEl.textContent = state === 'qb-urgent' ? '⚡ Klaim Sekarang' : (state === 'qb-medium' ? 'Ambil Slot →' : 'Pilih Paket →');
+      restoreCtas();
+    }
+
+    renderWaitlist(snap.queue || [], snap.waiting || 0);
+  }
+
+  function swapCtas(label){
+    IN_CAP_SLUGS.forEach(function(slug){
+      var card = document.querySelector('[data-checkout="' + slug + '"]');
+      if (!card) return;
+      var btn = card.querySelector('button');
+      if (btn) btn.textContent = label;
+    });
+  }
+
+  function restoreCtas(){
+    Object.keys(ctaCache).forEach(function(slug){
+      var card = document.querySelector('[data-checkout="' + slug + '"]');
+      if (!card) return;
+      var btn = card.querySelector('button');
+      if (btn) btn.textContent = ctaCache[slug];
+    });
+  }
+
+  function renderWaitlist(queue, totalWaiting){
+    if (!queue.length) {
+      wlSec.style.display = 'none';
+      return;
+    }
+    wlSec.style.display = 'block';
+    wlCount.textContent = totalWaiting + ' total · 10 teratas';
+    wlBody.innerHTML = queue.map(function(q){
+      return '<tr>'
+        + '<td><span class="wl-pos">#' + q.position + '</span></td>'
+        + '<td><span class="wl-email">' + q.email_masked + '</span></td>'
+        + '<td><span class="wl-eta">' + fmtIdDate(q.estimated_entry) + '</span></td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  // SSE + fallback. EventSource auto-reconnects on transient errors so
+  // we don't need a manual retry loop. Polling fallback is kept narrow:
+  // only fire when EventSource is unavailable or the very first connect
+  // fails — once SSE is working it carries the state.
+  function openStream(){
+    if (typeof EventSource === 'undefined') return fetchOnce();
+    try {
+      var es = new EventSource(SERVER + '/quota/events');
+      es.onmessage = function(evt){
+        try { renderBannerState(JSON.parse(evt.data)); } catch (_) {}
+      };
+      es.onerror = function(){
+        // Silent — EventSource will auto-reconnect. Don't close.
+      };
+    } catch (_) {
+      fetchOnce();
+    }
+  }
+
+  function fetchOnce(){
+    fetch(SERVER + '/quota')
+      .then(function(r){ return r.json(); })
+      .then(renderBannerState)
+      .catch(function(){});
+  }
+
+  // Initial paint: one-shot fetch so the banner shows ASAP without
+  // waiting for the SSE handshake. Stream then takes over for live state.
+  fetchOnce();
+  openStream();
 })();
 
 // ── CURSOR ──
