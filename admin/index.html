@@ -652,6 +652,52 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
   font-size: 12px; font-weight: 600;
 }
 
+/* ─── MEMBERSHIP CAP CARD ──────────────────────────────────── */
+.cap-row { display: flex; align-items: center; gap: 12px; }
+.cap-field-label {
+  display: block; font-size: 11px; color: var(--muted);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;
+}
+.cap-input {
+  width: 140px; padding: 8px 10px; height: 34px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--white); font-size: 14px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.cap-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.cap-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--muted); font-size: 12px; cursor: pointer;
+  transition: all .15s; user-select: none;
+}
+.cap-pill:hover:not(.cap-pill-disabled) {
+  border-color: var(--accent); color: var(--white);
+}
+.cap-pill.cap-pill-on {
+  background: var(--accent); color: #fff;
+  border-color: var(--accent);
+}
+.cap-pill.cap-pill-on:before { content: '✓ '; }
+.cap-pill-disabled {
+  opacity: .35; cursor: not-allowed;
+  text-decoration: line-through;
+}
+.cap-snapshot {
+  margin-top: 14px; padding: 12px 14px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 6px; font-size: 13px; line-height: 1.6;
+  color: var(--white);
+}
+.cap-status-pill {
+  font-size: 11px; padding: 4px 10px; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+  background: var(--card); border: 1px solid var(--border); color: var(--muted);
+}
+.cap-status-pill.on  { background: rgba(34,197,94,.12);  border-color: rgba(34,197,94,.4);  color: #22c55e; }
+.cap-status-pill.off { background: rgba(160,160,160,.1); border-color: var(--border);       color: var(--muted); }
+
 /* ACTION TILES */
 .cc-actions {
   display: grid; grid-template-columns: repeat(3, 1fr);
@@ -1187,6 +1233,80 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 
   <!-- PRODUCTS -->
   <div class="page" id="page-products">
+    <!-- ── MEMBERSHIP CAP CONFIG ── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Membership Cap</div>
+        <span id="cap-status-pill" class="cap-status-pill">—</span>
+      </div>
+      <div id="alert-cap" class="alert"></div>
+
+      <div class="cap-row">
+        <label class="toggle">
+          <input type="checkbox" id="cap-toggle" onchange="onCapToggleChange()">
+          <span class="toggle-slider"></span>
+        </label>
+        <span id="cap-toggle-label" style="font-size:13px;color:var(--white)">Aktifkan max cap active subscribers</span>
+      </div>
+
+      <div id="cap-config-fields" style="display:none;margin-top:14px">
+        <div class="cap-field">
+          <label class="cap-field-label">LIMIT TOTAL</label>
+          <input type="number" id="cap-limit" min="0" class="cap-input"/>
+        </div>
+
+        <div class="cap-field" style="margin-top:14px">
+          <label class="cap-field-label">PRODUK YANG MASUK HITUNGAN</label>
+          <div id="cap-product-pills" class="cap-pills">
+            <span style="font-size:12px;color:var(--muted)">Loading produk…</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic">
+            Lifetime products tidak bisa dipilih — tidak pernah expire, slot tidak akan free up.
+          </div>
+        </div>
+
+        <div id="cap-snapshot" class="cap-snapshot">—</div>
+
+        <div style="margin-top:14px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="saveCapConfig()">💾 Simpan</button>
+          <button class="btn btn-ghost" onclick="loadCapConfig()">↻ Refresh</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WAITLIST VIEWER ── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Waitlist</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="waitlist-status-filter" onchange="loadWaitlist()" class="of-sel">
+            <option value="waiting">Waiting</option>
+            <option value="promoted">Promoted</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="">Semua</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadWaitlist()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th>
+            <th>Email</th>
+            <th class="hide-mobile">Nama</th>
+            <th class="hide-mobile">Phone</th>
+            <th class="hide-mobile">TV Username</th>
+            <th class="hide-mobile">Plan</th>
+            <th class="hide-mobile">Joined</th>
+            <th class="hide-mobile">Promoted</th>
+            <th>Status</th>
+          </tr></thead>
+          <tbody id="waitlist-table"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PRODUCT TABLE ── -->
     <div class="section">
       <div class="section-header">
         <div class="section-title">Produk Terdaftar</div>
@@ -2483,8 +2603,138 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero) {
 
 
 
+// ── Membership cap ────────────────────────────────────────────────
+// Cap config + waitlist live in the Products tab. Cached so saveCapConfig
+// can read the current selection without reading from DOM every time.
+let _capConfig = null;
+let _capProducts = [];
+
+async function loadCapConfig() {
+  try {
+    // Pull both the saved config and the full product list — we need
+    // products to render the pills (with lifetime ones disabled).
+    const [{ config, snapshot }, { products }] = await Promise.all([
+      api('GET', '/admin/cap-config'),
+      api('GET', '/admin/products'),
+    ]);
+    _capConfig = config;
+    _capProducts = products;
+
+    // Toggle + status pill in the section header reflect persisted state.
+    document.getElementById('cap-toggle').checked = !!config.is_enabled;
+    const statusPill = document.getElementById('cap-status-pill');
+    statusPill.textContent = config.is_enabled ? 'AKTIF' : 'NONAKTIF';
+    statusPill.className = 'cap-status-pill ' + (config.is_enabled ? 'on' : 'off');
+
+    // Conditional fields visibility follows the toggle.
+    document.getElementById('cap-config-fields').style.display = config.is_enabled ? 'block' : 'none';
+    document.getElementById('cap-limit').value = config.limit_value;
+
+    // Render pills — lifetime products greyed out (months IS NULL).
+    const selected = new Set((config.product_ids || []).map(Number));
+    const pillsHtml = products.map(p => {
+      const isLifetime = !p.months;
+      const isOn = selected.has(p.id);
+      const cls = ['cap-pill',
+        isOn && 'cap-pill-on',
+        isLifetime && 'cap-pill-disabled'].filter(Boolean).join(' ');
+      const onclick = isLifetime ? '' : `onclick="toggleCapPill(${p.id})"`;
+      const title   = isLifetime ? 'title="Lifetime — tidak bisa dipilih (slot tidak akan free up)"' : '';
+      return `<span class="${cls}" data-id="${p.id}" ${onclick} ${title}>${p.product_name}</span>`;
+    }).join('');
+    document.getElementById('cap-product-pills').innerHTML = pillsHtml || '<span style="font-size:12px;color:var(--muted)">Belum ada produk.</span>';
+
+    renderCapSnapshot(snapshot);
+  } catch (e) {
+    showAlert('cap', e.message, 'error');
+  }
+}
+
+function renderCapSnapshot(snapshot) {
+  const el = document.getElementById('cap-snapshot');
+  if (!snapshot || !snapshot.enabled) {
+    el.innerHTML = '<span style="color:var(--muted)">Cap belum aktif — banner di landing tidak muncul, semua order dilayani normal.</span>';
+    return;
+  }
+  const { active, limit, remaining, percent_filled, waiting } = snapshot;
+  let stateColor = '#22c55e', stateLabel = 'masih banyak slot';
+  if (percent_filled >= 80) { stateColor = '#E8637A'; stateLabel = '🔥 hampir habis'; }
+  else if (percent_filled >= 50) { stateColor = '#C9A84C'; stateLabel = '⚡ mengisi cepat'; }
+  el.innerHTML = `
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <strong style="font-size:18px;color:${stateColor}">${active} / ${limit}</strong>
+      <span style="color:var(--muted)">aktif · ${remaining} tersisa · ${percent_filled}% terisi</span>
+      <span style="color:${stateColor};font-size:12px">${stateLabel}</span>
+    </div>
+    ${waiting > 0 ? `<div style="margin-top:6px;font-size:12px;color:var(--gold)">⏳ ${waiting} customer di waitlist</div>` : ''}
+  `;
+}
+
+function onCapToggleChange() {
+  const on = document.getElementById('cap-toggle').checked;
+  document.getElementById('cap-config-fields').style.display = on ? 'block' : 'none';
+}
+
+function toggleCapPill(productId) {
+  const pill = document.querySelector(`.cap-pill[data-id="${productId}"]`);
+  if (!pill || pill.classList.contains('cap-pill-disabled')) return;
+  pill.classList.toggle('cap-pill-on');
+}
+
+async function saveCapConfig() {
+  try {
+    const is_enabled  = document.getElementById('cap-toggle').checked;
+    const limit_value = parseInt(document.getElementById('cap-limit').value || 0);
+    const product_ids = Array.from(document.querySelectorAll('.cap-pill.cap-pill-on'))
+      .map(el => parseInt(el.dataset.id));
+    const { snapshot } = await api('PUT', '/admin/cap-config', { is_enabled, limit_value, product_ids });
+    renderCapSnapshot(snapshot);
+    showAlert('cap', 'Konfigurasi cap tersimpan.', 'success');
+    // Refresh status pill
+    const statusPill = document.getElementById('cap-status-pill');
+    statusPill.textContent = is_enabled ? 'AKTIF' : 'NONAKTIF';
+    statusPill.className = 'cap-status-pill ' + (is_enabled ? 'on' : 'off');
+  } catch (e) {
+    showAlert('cap', e.message, 'error');
+  }
+}
+
+async function loadWaitlist() {
+  try {
+    const status = document.getElementById('waitlist-status-filter').value;
+    const path = status ? `/admin/waitlist?status=${encodeURIComponent(status)}` : '/admin/waitlist';
+    const { waitlist } = await api('GET', path);
+    document.getElementById('waitlist-table').innerHTML = waitlist.length
+      ? waitlist.map((w, i) => {
+          const badge = w.status === 'promoted'  ? '<span class="badge badge-green">Promoted</span>'
+                      : w.status === 'cancelled' ? '<span class="badge badge-muted">Cancelled</span>'
+                      : w.status === 'withdraw_requested' ? '<span class="badge badge-red">Withdraw</span>'
+                      : w.status === 'refunded'  ? '<span class="badge badge-muted">Refunded</span>'
+                      : '<span class="badge badge-yellow">Waiting</span>';
+          return `<tr>
+            <td><strong>${i + 1}</strong></td>
+            <td style="font-size:12px">${w.email}</td>
+            <td class="hide-mobile" style="font-size:12px">${w.customer_name || '—'}</td>
+            <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.customer_phone || '—'}</td>
+            <td class="hide-mobile mono" style="font-size:12px">${w.tv_username || '—'}</td>
+            <td class="hide-mobile" style="font-size:12px">${w.product_name || '—'}</td>
+            <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.joined_at ? fmtDateTime(w.joined_at) : '—'}</td>
+            <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.promoted_at ? fmtDateTime(w.promoted_at) : '—'}</td>
+            <td>${badge}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="9" class="empty">Tidak ada entry di waitlist.</td></tr>';
+  } catch (e) {
+    document.getElementById('waitlist-table').innerHTML =
+      `<tr><td colspan="9" class="empty">Error: ${e.message}</td></tr>`;
+  }
+}
+
 // ── Products ──────────────────────────────────────────────────────
 async function loadProducts() {
+  // Load cap config + waitlist alongside products since they share the tab.
+  loadCapConfig();
+  loadWaitlist();
   try {
     const { products } = await api('GET', '/admin/products');
     document.getElementById('products-table').innerHTML = products.length
