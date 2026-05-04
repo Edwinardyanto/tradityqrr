@@ -723,7 +723,7 @@ input:focus, select:focus { border-color: var(--cyan2); }
     <div class="section">
 
       <!-- REKENING BANK -->
-      <div style="margin-bottom:28px;">
+      <div id="bank-form-section" style="margin-bottom:28px;">
         <div style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;margin-bottom:14px;">REKENING BANK PENCAIRAN</div>
         <div class="alert" id="bank-alert"></div>
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;">
@@ -821,8 +821,8 @@ input:focus, select:focus { border-color: var(--cyan2); }
         </div>
 
         <div style="display:flex;gap:10px;margin-top:8px;">
-          <button class="btn btn-primary" onclick="savePixelSettings()">Simpan</button>
-          <button class="btn btn-ghost" onclick="clearPixelSettings()">Hapus</button>
+          <button class="btn btn-primary" onclick="saveMetaPixel()">Simpan Meta Pixel</button>
+          <button class="btn btn-ghost" onclick="clearMetaPixel()">Hapus Meta Pixel</button>
         </div>
       </div>
 
@@ -861,8 +861,8 @@ input:focus, select:focus { border-color: var(--cyan2); }
         </div>
 
         <div style="display:flex;gap:10px;margin-top:8px;">
-          <button class="btn btn-primary" onclick="savePixelSettings()">Simpan</button>
-          <button class="btn btn-ghost" onclick="clearGadsSettings()">Hapus Google Ads</button>
+          <button class="btn btn-primary" onclick="saveGoogleAds()">Simpan Google Ads</button>
+          <button class="btn btn-ghost" onclick="clearGoogleAds()">Hapus Google Ads</button>
         </div>
       </div>
       </div><!-- end .settings-pixel-grid -->
@@ -1216,18 +1216,16 @@ async function loadCommissions() {
       '<td class="mono hide-mobile">' + fmtDate(c.available_at) + '</td>' +
     '</tr>').join('');
 
-    // Pagination
+    // Pagination — windowed view with prev/next + ellipsis. The old
+    // implementation rendered every page button (100 pages = 100 buttons
+    // in the DOM, unusable on mobile). We always show first + last,
+    // surrounding the current page with a 2-on-each-side window, and
+    // collapse the gap with a "…" indicator. Plus prev/next arrows so
+    // the user can step one at a time without hunting for the nearest
+    // numbered button.
     const totalPages = Math.ceil(data.total / data.limit);
-    if (totalPages > 1) {
-      let html = '';
-      for (let i = 1; i <= totalPages; i++) {
-        html += '<button class="btn btn-sm ' + (i === currentCommissionPage ? 'btn-primary' : 'btn-ghost') +
-          '" onclick="goCommissionPage(' + i + ')" style="margin:0 2px">' + i + '</button>';
-      }
-      document.getElementById('commissions-pagination').innerHTML = html;
-    } else {
-      document.getElementById('commissions-pagination').innerHTML = '';
-    }
+    document.getElementById('commissions-pagination').innerHTML =
+      totalPages > 1 ? renderPagination(currentCommissionPage, totalPages, 'goCommissionPage') : '';
   } catch (e) {
     tbody.innerHTML = '<tr><td colspan="7" class="empty">Gagal memuat: ' + e.message + '</td></tr>';
   }
@@ -1244,6 +1242,41 @@ function filterCommissions(status, el) {
 function goCommissionPage(p) {
   currentCommissionPage = p;
   loadCommissions();
+}
+
+// Windowed pagination that scales to any page count without flooding the
+// DOM. Always shows first + last; centers a small window around the
+// current page; emits "…" markers to bridge gaps. handlerName is the
+// global JS function name to invoke onclick (so the same helper can
+// drive other paginated tables in the future without coupling).
+function renderPagination(currentPage, totalPages, handlerName) {
+  if (totalPages <= 1) return '';
+  const window = 2;  // pages on each side of current
+  const set = new Set([1, totalPages, currentPage]);
+  for (let i = 1; i <= window; i++) {
+    if (currentPage - i >= 1)         set.add(currentPage - i);
+    if (currentPage + i <= totalPages) set.add(currentPage + i);
+  }
+  const pages = Array.from(set).sort((a, b) => a - b);
+
+  const btn = (label, page, opts = {}) => {
+    const cls = opts.active ? 'btn-primary' : 'btn-ghost';
+    const dis = opts.disabled ? 'disabled' : '';
+    return '<button class="btn btn-sm ' + cls + '" ' + dis +
+      ' onclick="' + handlerName + '(' + page + ')" style="margin:0 2px">' + label + '</button>';
+  };
+
+  let html = btn('‹ Prev', Math.max(1, currentPage - 1), { disabled: currentPage === 1 });
+  let prev = 0;
+  for (const p of pages) {
+    if (prev && p - prev > 1) {
+      html += '<span style="margin:0 6px;color:var(--muted);font-size:12px;">…</span>';
+    }
+    html += btn(String(p), p, { active: p === currentPage });
+    prev = p;
+  }
+  html += btn('Next ›', Math.min(totalPages, currentPage + 1), { disabled: currentPage === totalPages });
+  return html;
 }
 
 // ── Referrals ────────────────────────────────────────────────────
@@ -1356,6 +1389,25 @@ function updateWithdrawTotal() {
 
 function requestWithdraw() {
   if (selectedWithdrawIds.size === 0) return;
+
+  // Block withdraw if bank account fields aren't all filled in. Without
+  // this, the user clicks Request, the modal opens, they confirm, and
+  // the POST silently lands without bank info — admin gets a payout
+  // request they can't actually transfer to. Reading from the form
+  // (already populated by loadBankAccount on page enter) is enough; the
+  // backend cross-checks anyway.
+  var bankName    = (document.getElementById('bank-name')?.value   || '').trim();
+  var accountNum  = (document.getElementById('bank-number')?.value || '').trim();
+  var accountName = (document.getElementById('bank-holder')?.value || '').trim();
+  if (!bankName || !accountNum || !accountName) {
+    showPageAlert('withdraw-alert',
+      'Lengkapi & simpan rekening bank dulu sebelum request withdraw.',
+      'error');
+    // Scroll the bank form into view so the user can see what's missing.
+    document.getElementById('bank-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
   let total = 0;
   for (const c of withdrawableCommissions) {
     if (selectedWithdrawIds.has(c.id)) total += parseInt(c.commission_amount);
@@ -1759,51 +1811,56 @@ async function loadPixelSettings() {
   } catch(e) { console.error('loadPixelSettings error:', e); }
 }
 
-async function savePixelSettings() {
-  const meta_pixel_id = document.getElementById('s-meta-pixel-id').value.trim();
+// Pixel save buttons used to share one savePixelSettings() that PUT
+// all four fields. If a user typed only the Meta inputs, the empty
+// Google Ads inputs were sent along and (after the BE fix) would be
+// preserved — but if the user explicitly cleared a Google Ads field
+// in the form first, that empty string still landed and nulled the
+// row. Splitting into per-card handlers + relying on the new partial-
+// body BE keeps each card's state strictly independent.
+
+async function saveMetaPixel() {
+  const meta_pixel_id     = document.getElementById('s-meta-pixel-id').value.trim();
   const meta_access_token = document.getElementById('s-meta-token').value.trim();
-  const google_ads_id = document.getElementById('s-gads-id').value.trim();
+  try {
+    await api('PUT', '/affiliate/pixels', { meta_pixel_id, meta_access_token });
+    showPageAlert('settings-alert', 'Meta Pixel disimpan!', 'success');
+  } catch (e) {
+    showPageAlert('settings-alert', e.message, 'error');
+  }
+}
+
+async function clearMetaPixel() {
+  if (!confirm('Hapus Meta Pixel settings?')) return;
+  try {
+    await api('PUT', '/affiliate/pixels', { meta_pixel_id: null, meta_access_token: null });
+    document.getElementById('s-meta-pixel-id').value = '';
+    document.getElementById('s-meta-token').value    = '';
+    showPageAlert('settings-alert', 'Meta Pixel settings dihapus', 'success');
+  } catch (e) {
+    showPageAlert('settings-alert', e.message, 'error');
+  }
+}
+
+async function saveGoogleAds() {
+  const google_ads_id    = document.getElementById('s-gads-id').value.trim();
   const google_ads_label = document.getElementById('s-gads-label').value.trim();
   try {
-    await api('PUT', '/affiliate/pixels', {
-      meta_pixel_id, meta_access_token, google_ads_id, google_ads_label
-    });
-    showPageAlert('settings-alert', 'Pixel settings disimpan!', 'success');
-  } catch(e) {
+    await api('PUT', '/affiliate/pixels', { google_ads_id, google_ads_label });
+    showPageAlert('settings-alert', 'Google Ads disimpan!', 'success');
+  } catch (e) {
     showPageAlert('settings-alert', e.message, 'error');
   }
 }
 
-async function clearPixelSettings() {
-  if (!confirm('Hapus semua pixel settings?')) return;
-  try {
-    await api('PUT', '/affiliate/pixels', {
-      meta_pixel_id: null, meta_access_token: null,
-      google_ads_id: null, google_ads_label: null
-    });
-    document.getElementById('s-meta-pixel-id').value = '';
-    document.getElementById('s-meta-token').value = '';
-    document.getElementById('s-gads-id').value = '';
-    document.getElementById('s-gads-label').value = '';
-    showPageAlert('settings-alert', 'Semua pixel settings dihapus', 'success');
-  } catch(e) {
-    showPageAlert('settings-alert', e.message, 'error');
-  }
-}
-
-async function clearGadsSettings() {
+async function clearGoogleAds() {
   if (!confirm('Hapus Google Ads settings?')) return;
-  const meta_pixel_id = document.getElementById('s-meta-pixel-id').value.trim();
-  const meta_access_token = document.getElementById('s-meta-token').value.trim();
   try {
-    await api('PUT', '/affiliate/pixels', {
-      meta_pixel_id, meta_access_token,
-      google_ads_id: null, google_ads_label: null
-    });
-    document.getElementById('s-gads-id').value = '';
+    await api('PUT', '/affiliate/pixels', { google_ads_id: null, google_ads_label: null });
+    document.getElementById('s-gads-id').value    = '';
     document.getElementById('s-gads-label').value = '';
     showPageAlert('settings-alert', 'Google Ads settings dihapus', 'success');
-  } catch(e) {
+  } catch (e) {
     showPageAlert('settings-alert', e.message, 'error');
   }
 }
@@ -2018,7 +2075,10 @@ function renderCreateLinkForm(affiliate) {
       '-webkit-appearance:none;appearance:none;' +
       'width:100%;height:3px;border-radius:2px;' +
       'outline:none;cursor:pointer;' +
-      'background:linear-gradient(to right,var(--cyan2) 0%,var(--cyan2) ' + Math.round(100/steps) + '%,var(--border) ' + Math.round(100/steps) + '%,var(--border) 100%);' +
+      // Background gradient is set by updateRecruitSlider() so the fill
+      // tracks the actual thumb position (which spans (val-1)/(steps-1)
+      // of the track, not val/steps — those differ by a step's width).
+      'background:var(--border);' +
       'margin:0;padding:0;display:block;' +
     '}' +
     '#new-link-commission::-webkit-slider-thumb {' +
@@ -2097,9 +2157,14 @@ function updateRecruitSlider(maxComm) {
 
   const val = parseInt(slider.value);
   const steps = parseInt(slider.max);
-  const give = val * 10;
+  const give = val * 10;            // slider stores 1..steps; we display in 10% increments
   const spread = maxComm - give;
-  const fillPct = Math.round((val / steps) * 100);
+  // Slider thumb position is normalized over (min..max), which here is
+  // (1..steps), so the track span is (val - 1) / (steps - 1). Using
+  // val / steps overshoots by one step's width and the gradient fill
+  // visually drifts ahead of the thumb. Edge case: steps=1 means only
+  // one selectable option, treat as fully filled.
+  const fillPct = steps <= 1 ? 100 : Math.round(((val - 1) / (steps - 1)) * 100);
 
   document.getElementById('rl-commission-display').textContent = give + '%';
   document.getElementById('rl-spread-display').textContent = spread + '%';
