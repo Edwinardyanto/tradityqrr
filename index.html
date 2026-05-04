@@ -211,6 +211,28 @@ section{position:relative;z-index:1}
 .f-big-note{font-family:'JetBrains Mono',monospace;font-size:8px;color:#6B5243;text-align:center;margin-top:6px}
 .price-note{text-align:center;font-size:11px;color:var(--dim);margin-top:16px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
 
+/* Plans hidden by /products sync (set in JS, see SYNC PRICING block) */
+.plan-hidden{display:none}
+
+/* Desktop: rebalance pricing grid based on how many plans remain visible.
+   Mobile (<=900px) already collapses to 1 column so it adapts naturally. */
+@media(min-width:901px){
+  /* Nothing active → hide section entirely */
+  .f-outer[data-total-count="0"]{display:none}
+  /* Only 1 plan visible (any side) → center single card with capped width */
+  .f-outer[data-total-count="1"]{grid-template-columns:1fr;max-width:520px;margin:0 auto}
+  .f-outer[data-total-count="1"][data-left-count="0"] .f-left{display:none}
+  /* Gold hidden, 2-3 left cards → collapse to 1 grid col, flow left cards horizontally */
+  .f-outer[data-big-visible="0"][data-left-count="2"],
+  .f-outer[data-big-visible="0"][data-left-count="3"]{grid-template-columns:1fr}
+  .f-outer[data-big-visible="0"][data-left-count="2"] .f-left,
+  .f-outer[data-big-visible="0"][data-left-count="3"] .f-left{flex-direction:row;flex-wrap:wrap;align-items:stretch;gap:2px}
+  .f-outer[data-big-visible="0"][data-left-count="2"] .f-left > [data-checkout]:not(.plan-hidden),
+  .f-outer[data-big-visible="0"][data-left-count="3"] .f-left > [data-checkout]:not(.plan-hidden){flex:1 1 280px;min-width:0}
+  /* Left has only 1 visible card AND Gold visible → stretch lone card to fill column */
+  .f-outer[data-left-count="1"][data-big-visible="1"] .f-left > [data-checkout]:not(.plan-hidden){flex:1}
+}
+
 /* ── BUTTONS ── */
 .btn-basic{font-family:'DM Sans',sans-serif;font-weight:600;font-size:12px;padding:8px 20px;cursor:pointer;background:var(--dim);color:var(--purple);border:1px solid #3D3069;border-radius:100px;transition:all .2s}
 .btn-basic:hover{background:var(--purple4);color:var(--purple2)}
@@ -887,8 +909,10 @@ function getCheckoutUrl(base) {
 
 // ── SYNC PRICING WITH ACTIVE PRODUCTS ──
 // Hide pricing cards whose checkout slug isn't returned by /products
-// (which already filters by is_active = TRUE). On API failure, leave
-// every card visible — checkout pages still validate server-side.
+// (already filters is_active = TRUE server-side). After hiding, set
+// data attributes on .f-outer so the desktop CSS can rebalance the
+// grid for whatever count remains. On API failure, leave every card
+// visible — checkout pages still validate server-side anyway.
 (function(){
   fetch('https://tradity-qrr-server-production.up.railway.app/products')
     .then(function(r){ return r.json(); })
@@ -897,8 +921,16 @@ function getCheckoutUrl(base) {
       document.querySelectorAll('[data-checkout]').forEach(function(card){
         var slug = card.getAttribute('data-checkout');
         var active = urls.some(function(u){ return u && u.indexOf(slug) !== -1; });
-        if (!active) card.style.display = 'none';
+        if (!active) card.classList.add('plan-hidden');
       });
+      var outer = document.querySelector('.f-outer');
+      if (!outer) return;
+      var leftVisible = outer.querySelectorAll('.f-left > [data-checkout]:not(.plan-hidden)').length;
+      var bigEl = outer.querySelector('.f-big[data-checkout]');
+      var bigVisible = bigEl && !bigEl.classList.contains('plan-hidden') ? 1 : 0;
+      outer.dataset.leftCount = leftVisible;
+      outer.dataset.bigVisible = bigVisible;
+      outer.dataset.totalCount = leftVisible + bigVisible;
     })
     .catch(function(){});
 })();
