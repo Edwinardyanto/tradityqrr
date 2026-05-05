@@ -883,14 +883,18 @@ nav.legacy-nav{display:none !important}
       <button class="btn btn-primary ref-copy-btn" onclick="copyRefCode()">Copy Code</button>
     </div>
 
-    <!-- DOWNLINE -->
+    <!-- TOP PERFORMANCE TEAM -->
     <div class="panel">
       <div class="panel-head">
-        <div style="display:flex;gap:12px;align-items:center;">
-          <div class="panel-title">Your downlines</div>
+        <div>
+          <div class="panel-title">Top performance team</div>
+          <div class="panel-sub">Top 3 by sales count · last 7 days</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="showPage('teams')">View all teams →</button>
         </div>
       </div>
-      <div id="downline-content"></div>
+      <div id="top-team-content"></div>
     </div>
   </div>
 
@@ -954,6 +958,18 @@ nav.legacy-nav{display:none !important}
       <button onclick="resetAffiliateOrderFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
     </div>
 
+    <!-- STATUS LEGEND (collapsible) -->
+    <details class="status-legend" style="margin-bottom:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px">
+      <summary style="cursor:pointer;font-size:12px;color:var(--muted2);font-family:'JetBrains Mono',monospace;letter-spacing:.5px">What do these statuses mean?</summary>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin-top:10px;font-size:12px;color:var(--muted2);line-height:1.5">
+        <span class="badge b-gold">Pending</span><span>Order paid, but commission still in 5-business-day hold (refund-protection window). Cannot be withdrawn yet.</span>
+        <span class="badge b-green">Available</span><span>Hold cleared. Commission ready to withdraw.</span>
+        <span class="badge b-cyan">Processing</span><span>You requested a withdrawal — commission locked, waiting for admin to transfer.</span>
+        <span class="badge b-muted">Paid</span><span>Admin has transferred the funds to your bank account.</span>
+        <span class="badge b-red">Rejected</span><span>Order was refunded or cancelled, so this commission won't be paid.</span>
+      </div>
+    </details>
+
     <!-- SUMMARY -->
     <div id="aff-orders-summary" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
 
@@ -986,7 +1002,7 @@ nav.legacy-nav{display:none !important}
     <div class="topbar">
       <div>
         <h1>Your Teams</h1>
-        <div class="sub">Direct downlines · click a row for the orders that earned you upline overrides</div>
+        <div class="sub">Your team · click a row to open detail view</div>
       </div>
       <div class="actions">
         <button class="icon-btn" title="Refresh" onclick="loadTeams()">
@@ -996,7 +1012,7 @@ nav.legacy-nav{display:none !important}
     </div>
 
     <div class="kpi-row" id="teams-kpis">
-      <div class="kpi"><div class="l">Total downlines</div><div class="v cy" id="kpi-total-teams">—</div><div class="n">direct recruits</div></div>
+      <div class="kpi"><div class="l">Total teams</div><div class="v cy" id="kpi-total-teams">—</div><div class="n">direct recruits</div></div>
       <div class="kpi"><div class="l">Active 30d</div><div class="v" id="kpi-teams-active-30d">—</div><div class="n">sale &lt; 30 days</div></div>
       <div class="kpi"><div class="l">Top performer</div><div class="v" id="kpi-top-performer" style="font-size:18px">—</div><div class="n">most overrides</div></div>
       <div class="kpi"><div class="l">Total override</div><div class="v green" id="kpi-teams-total-override">—</div><div class="n" id="kpi-teams-total-override-sub">earned from team</div></div>
@@ -1005,20 +1021,14 @@ nav.legacy-nav{display:none !important}
     <div class="toolbar">
       <div class="search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="teams-search" placeholder="Search downline name or ref code..." oninput="renderTeamsTable()"/>
+        <input id="teams-search" placeholder="Search team name or ref code..." oninput="renderTeamsTable()"/>
       </div>
-      <div class="period" id="teams-filter-pills">
-        <button class="active" data-filter="all" onclick="setTeamsFilter('all')">All</button>
-        <button data-filter="active" onclick="setTeamsFilter('active')">Active</button>
-        <button data-filter="earning" onclick="setTeamsFilter('earning')">Earning</button>
-      </div>
-      <div class="count" id="teams-count"></div>
     </div>
 
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Downline</th>
+          <th>Team</th>
           <th class="hide-mobile">Joined</th>
           <th class="hide-mobile">Sales</th>
           <th>My Override</th>
@@ -1026,6 +1036,56 @@ nav.legacy-nav{display:none !important}
         </tr></thead>
         <tbody id="teams-table"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ============ TEAM DETAIL (sub-page) ============ -->
+  <div class="page" id="page-team-detail">
+    <div class="topbar">
+      <div>
+        <h1 id="td-name">—</h1>
+        <div class="sub" id="td-meta">—</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('teams')">← Back to Teams</button>
+      </div>
+    </div>
+
+    <!-- Funnel for this team (last 30 days) -->
+    <div class="funnel" style="margin-bottom:14px">
+      <div class="fstep"><div class="l">Visits</div><div class="v cy" id="td-fnl-visits">—</div><div class="vu">unique sessions</div><div class="conv" id="td-fnl-conv-1">→ —</div></div>
+      <div class="fstep"><div class="l">Checkout view</div><div class="v cy" id="td-fnl-checkout">—</div><div class="vu">viewed checkout</div><div class="conv" id="td-fnl-conv-2">→ —</div></div>
+      <div class="fstep"><div class="l">Form filled</div><div class="v amber" id="td-fnl-form">—</div><div class="vu">started filling</div><div class="conv" id="td-fnl-conv-3">→ —</div></div>
+      <div class="fstep"><div class="l">Paid</div><div class="v green" id="td-fnl-paid">—</div><div class="vu" id="td-fnl-paid-sub">conv — from visit</div></div>
+    </div>
+
+    <!-- Override KPIs -->
+    <div class="row-3" style="margin-bottom:14px">
+      <div class="kpi"><div class="l">Total sales</div><div class="v cy" id="td-sales">—</div><div class="n">all-time</div></div>
+      <div class="kpi"><div class="l">My override (paid)</div><div class="v green" id="td-override-paid">—</div><div class="n">already paid out</div></div>
+      <div class="kpi"><div class="l">My override (pending)</div><div class="v" id="td-override-pending" style="color:var(--gold)">—</div><div class="n">available + pending + processing</div></div>
+    </div>
+
+    <!-- Orders this team produced (where I get override) -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Override orders</div>
+          <div class="panel-sub">Orders from this team that earned you an upline override</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Date</th>
+            <th class="hide-mobile">Order ID</th>
+            <th>Product</th>
+            <th>My Override</th>
+            <th class="hide-mobile">Status</th>
+          </tr></thead>
+          <tbody id="td-orders-table"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1578,6 +1638,7 @@ function showPage(name) {
 
   if (name === 'commissions') loadCommissions();
   if (name === 'teams') loadTeams();
+  if (name === 'team-detail') loadTeamDetail();
   if (name === 'recruit') {
     const aff = JSON.parse(localStorage.getItem('affiliate_data') || '{}');
     updateRecruitInfoCard(aff);
@@ -1708,7 +1769,7 @@ async function loadDashboard() {
     document.getElementById('nav-ref').textContent = aff.ref_code;
     updateRecruitInfoCard(aff);
     renderCreateLinkForm(aff);
-    loadDownline();
+    loadTopPerformanceTeam();
 
     document.getElementById('stat-total-omzet').textContent        = fmtRp(s.total_omzet);
     document.getElementById('stat-total-transactions').textContent = (s.total_transactions || 0) + 'x';
@@ -1967,15 +2028,40 @@ function renderPagination(currentPage, totalPages, handlerName) {
 
 // ── Teams ────────────────────────────────────────────────────────
 let _teamsData = [];
-let _teamsFilter = 'all';
-// Cache of drill-down orders keyed by team_id so re-opening a row
-// after collapse doesn't refetch.
-let _teamsOrdersCache = {};
+let _currentTeamId = null;
+
+async function loadTopPerformanceTeam() {
+  const container = document.getElementById('top-team-content');
+  if (!container) return;
+  container.innerHTML = '<div class="empty"><span class="spinner"></span> Loading...</div>';
+
+  try {
+    const data = await api('GET', '/affiliate/teams?days=7&limit=3');
+    const teams = data.teams || [];
+    if (!teams.length) {
+      container.innerHTML = '<div class="empty">No team activity in the last 7 days</div>';
+      return;
+    }
+    container.innerHTML = teams.map((t, i) => {
+      const subRef = t.ref_code ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--muted);margin-left:8px">' + t.ref_code + '</span>' : '';
+      return '<div class="src-row" style="cursor:pointer" onclick="showTeamDetail(' + t.team_id + ')">' +
+        '<div class="src-icon" style="background:rgba(107,95,212,.15);color:var(--cyan2);font-family:\'Bebas Neue\',sans-serif;font-size:18px">' + (i + 1) + '</div>' +
+        '<div>' +
+          '<div class="src-name"><strong>' + (t.name || 'Untitled') + '</strong>' + subRef + '</div>' +
+          '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--muted);margin-top:3px">' + (t.sales_count || 0) + ' sales · ' + fmtRp(t.my_override || 0) + ' override</div>' +
+        '</div>' +
+        '<div class="mono" style="font-size:13px;color:var(--white)">' + (t.sales_count || 0) + '</div>' +
+        '<div class="mono" style="font-size:11px;color:var(--green)">' + fmtRp(t.my_override || 0) + '</div>' +
+      '</div>';
+    }).join('');
+  } catch (e) {
+    container.innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
+  }
+}
 
 async function loadTeams() {
   const tbody = document.getElementById('teams-table');
   tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span> Loading...</td></tr>';
-  _teamsOrdersCache = {};
 
   try {
     const data = await api('GET', '/affiliate/teams');
@@ -1987,7 +2073,7 @@ async function loadTeams() {
     document.getElementById('kpi-top-performer').textContent = s.top_performer || '—';
     document.getElementById('kpi-teams-total-override').textContent = fmtRp(s.total_override_all || 0);
     document.getElementById('kpi-teams-total-override-sub').textContent =
-      'from ' + (s.total_teams || 0) + ' downlines';
+      'from ' + (s.total_teams || 0) + ' teams';
 
     renderTeamsTable();
   } catch (e) {
@@ -1995,39 +2081,18 @@ async function loadTeams() {
   }
 }
 
-function setTeamsFilter(f) {
-  _teamsFilter = f;
-  document.querySelectorAll('#teams-filter-pills button').forEach(b => {
-    b.classList.toggle('active', b.dataset.filter === f);
-  });
-  renderTeamsTable();
-}
-
 function renderTeamsTable() {
   const tbody = document.getElementById('teams-table');
   const search = (document.getElementById('teams-search').value || '').trim().toLowerCase();
-  const now = Date.now();
-  const THIRTY = 30 * 86400000;
 
   const filtered = _teamsData.filter(t => {
-    if (search) {
-      const hit = (t.name || '').toLowerCase().includes(search) ||
-                  (t.ref_code || '').toLowerCase().includes(search);
-      if (!hit) return false;
-    }
-    if (_teamsFilter === 'active') {
-      if (!t.last_sale_at || (now - new Date(t.last_sale_at).getTime()) >= THIRTY) return false;
-    } else if (_teamsFilter === 'earning') {
-      if ((t.my_override || 0) <= 0) return false;
-    }
-    return true;
+    if (!search) return true;
+    return (t.name || '').toLowerCase().includes(search) ||
+           (t.ref_code || '').toLowerCase().includes(search);
   });
 
-  document.getElementById('teams-count').textContent =
-    filtered.length + ' / ' + _teamsData.length + ' downlines';
-
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">No downlines match.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No teams match.</td></tr>';
     return;
   }
 
@@ -2059,68 +2124,108 @@ function renderTeamsTable() {
     const subRef = t.ref_code ? ' <span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--muted)">' + t.ref_code + '</span>' : '';
     const inactive = t.status !== 'active' ? ' <span class="badge badge-red" style="font-size:9px;margin-left:4px">' + (t.status || 'inactive') + '</span>' : '';
 
-    return '<tr class="ref-row" data-tid="' + t.team_id + '" onclick="toggleTeamRow(' + t.team_id + ', this)">' +
-      '<td><span class="ex">▶</span><strong>' + (t.name || 'Untitled') + '</strong>' + subRef + inactive + '</td>' +
+    // Whole row navigates to the detail sub-page — no inline expand.
+    return '<tr class="ref-row" onclick="showTeamDetail(' + t.team_id + ')">' +
+      '<td><strong>' + (t.name || 'Untitled') + '</strong>' + subRef + inactive + '</td>' +
       '<td class="hide-mobile mono">' + (t.joined_at ? fmtDate(t.joined_at) : '—') + '</td>' +
       '<td class="hide-mobile mono">' + (t.sales_count || 0) + '</td>' +
       '<td class="mono">' + fmtRp(t.my_override || 0) + '</td>' +
       '<td class="hide-mobile">' + statusHtml + '</td>' +
-    '</tr>' +
-    '<tr class="expand-wrap" data-tid-expand="' + t.team_id + '" style="display:none">' +
-      '<td colspan="5"><div class="expand-inner" id="team-expand-' + t.team_id + '">' +
-        '<div class="empty"><span class="spinner"></span> Loading orders...</div>' +
-      '</div></td>' +
     '</tr>';
   }).join('');
 }
 
-async function toggleTeamRow(teamId, rowEl) {
-  const expand = document.querySelector('tr[data-tid-expand="' + teamId + '"]');
-  if (!expand) return;
-
-  if (rowEl.classList.contains('open')) {
-    rowEl.classList.remove('open');
-    expand.style.display = 'none';
-    return;
-  }
-  rowEl.classList.add('open');
-  expand.style.display = '';
-
-  const inner = document.getElementById('team-expand-' + teamId);
-  if (_teamsOrdersCache[teamId]) {
-    inner.innerHTML = _renderTeamOrders(_teamsOrdersCache[teamId]);
-    return;
-  }
-  try {
-    const data = await api('GET', '/affiliate/orders?team_id=' + teamId + '&limit=100');
-    _teamsOrdersCache[teamId] = data.orders || [];
-    inner.innerHTML = _renderTeamOrders(_teamsOrdersCache[teamId]);
-  } catch (e) {
-    inner.innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
-  }
+function showTeamDetail(teamId) {
+  _currentTeamId = teamId;
+  showPage('team-detail');
 }
 
-function _renderTeamOrders(orders) {
-  if (!orders.length) return '<div class="empty">No upline-override orders for this downline yet.</div>';
-  const statusBadge = (s) => {
-    if (s === 'paid')                  return '<span class="badge b-muted">Paid</span>';
-    if (s === 'available')             return '<span class="badge b-green">Available</span>';
-    if (s === 'pending')               return '<span class="badge b-gold">Pending</span>';
-    if (s === 'withdrawal_requested')  return '<span class="badge b-cyan">Requested</span>';
-    if (s === 'rejected')              return '<span class="badge b-red">Rejected</span>';
-    return '<span class="badge b-muted">' + s + '</span>';
-  };
-  return '<table>' +
-    '<thead><tr><th>Date</th><th>Order ID</th><th>Product</th><th>My Override</th><th>Status</th></tr></thead>' +
-    '<tbody>' + orders.map(o =>
-      '<tr>' +
-        '<td class="mono">' + fmtDate(o.created_at) + '</td>' +
-        '<td class="mono">' + (o.order_id || '—') + '</td>' +
-        '<td>' + (o.product_name || '—') + '</td>' +
-        '<td class="mono">' + fmtRp(o.commission_amount || 0) + '</td>' +
-        '<td>' + statusBadge(o.commission_status) + '</td>' +
-      '</tr>'
-    ).join('') + '</tbody></table>';
+async function loadTeamDetail() {
+  if (!_currentTeamId) return;
+  const team = _teamsData.find(t => t.team_id === _currentTeamId);
+
+  // Header — fall back to refetching teams if state was lost
+  // (e.g. user opened detail via deep-link or after a reload).
+  if (team) {
+    _renderTeamDetailHeader(team);
+  } else {
+    try {
+      const data = await api('GET', '/affiliate/teams');
+      _teamsData = data.teams || [];
+      const fresh = _teamsData.find(t => t.team_id === _currentTeamId);
+      if (fresh) _renderTeamDetailHeader(fresh);
+    } catch (_) {}
+  }
+
+  // Funnel for this team's last-30-day traffic, plus orders that
+  // earned the affiliator an upline override from this team.
+  await Promise.all([_loadTeamDetailFunnel(_currentTeamId), _loadTeamDetailOrders(_currentTeamId)]);
+}
+
+function _renderTeamDetailHeader(t) {
+  document.getElementById('td-name').textContent = t.name || 'Untitled';
+  const meta = [];
+  if (t.ref_code) meta.push('Ref: ' + t.ref_code);
+  if (t.status)   meta.push('Status: ' + t.status);
+  if (t.joined_at) meta.push('Joined ' + fmtDate(t.joined_at));
+  document.getElementById('td-meta').textContent = meta.join(' · ');
+
+  document.getElementById('td-sales').textContent = (t.sales_count || 0).toLocaleString('id-ID');
+  document.getElementById('td-override-paid').textContent = fmtRp(t.paid_amount || 0);
+  const pend = (t.available_amount || 0) + (t.pending_amount || 0) + (t.requested_amount || 0);
+  document.getElementById('td-override-pending').textContent = fmtRp(pend);
+}
+
+async function _loadTeamDetailFunnel(teamId) {
+  try {
+    const data = await api('GET', '/affiliate/stats/traffic?team_id=' + teamId + '&days=30');
+    const trend = data.trend || [];
+    const sum = (k) => trend.reduce((s, d) => s + (d[k] || 0), 0);
+    const visits   = sum('homepage');
+    const checkout = sum('checkout');
+    const form     = sum('form_fill');
+    const paid     = sum('paid');
+    const conv = (a, b) => (!a ? '—' : Math.round((b / a) * 100) + '%');
+    const setEl = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+
+    setEl('td-fnl-visits',   visits.toLocaleString('id-ID'));
+    setEl('td-fnl-checkout', checkout.toLocaleString('id-ID'));
+    setEl('td-fnl-form',     form.toLocaleString('id-ID'));
+    setEl('td-fnl-paid',     paid.toLocaleString('id-ID'));
+    setEl('td-fnl-conv-1',   '→ ' + conv(visits, checkout));
+    setEl('td-fnl-conv-2',   '→ ' + conv(checkout, form));
+    setEl('td-fnl-conv-3',   '→ ' + conv(form, paid));
+    setEl('td-fnl-paid-sub', 'conv ' + (visits ? ((paid / visits) * 100).toFixed(1) : '0') + '% from visit');
+  } catch (e) { console.error('team funnel error', e); }
+}
+
+async function _loadTeamDetailOrders(teamId) {
+  const tbody = document.getElementById('td-orders-table');
+  tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span> Loading...</td></tr>';
+  try {
+    const data = await api('GET', '/affiliate/orders?team_id=' + teamId + '&limit=100');
+    if (!data.orders || !data.orders.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">No upline-override orders from this team yet.</td></tr>';
+      return;
+    }
+    const statusBadge = (s) => {
+      if (s === 'paid')                  return '<span class="badge b-muted">Paid</span>';
+      if (s === 'available')             return '<span class="badge b-green">Available</span>';
+      if (s === 'pending')               return '<span class="badge b-gold">Pending</span>';
+      if (s === 'withdrawal_requested')  return '<span class="badge b-cyan">Processing</span>';
+      if (s === 'rejected')              return '<span class="badge b-red">Rejected</span>';
+      return '<span class="badge b-muted">' + s + '</span>';
+    };
+    tbody.innerHTML = data.orders.map(o => '<tr>' +
+      '<td class="mono">' + fmtDate(o.created_at) + '</td>' +
+      '<td class="hide-mobile mono">' + (o.order_id || '—') + '</td>' +
+      '<td>' + (o.product_name || '—') + '</td>' +
+      '<td class="mono">' + fmtRp(o.commission_amount || 0) + '</td>' +
+      '<td class="hide-mobile">' + statusBadge(o.commission_status) + '</td>' +
+    '</tr>').join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Failed to load: ' + e.message + '</td></tr>';
+  }
 }
 
 // ── Withdraw ─────────────────────────────────────────────────────
