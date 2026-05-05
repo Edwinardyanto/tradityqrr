@@ -533,6 +533,19 @@ nav.legacy-nav{display:none !important}
 .wd-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:14px;align-items:flex-start}
 @media (max-width:980px){.wd-grid{grid-template-columns:1fr}}
 
+/* Withdraw card inner split: amount left, bank dropdown right */
+.wd-split{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-bottom:6px}
+@media (max-width:780px){.wd-split{grid-template-columns:1fr}}
+
+/* Bank accounts list rows */
+.bank-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+.bank-row .bk-info{flex:1;min-width:0}
+.bank-row .bk-name{font-size:13px;font-weight:600}
+.bank-row .bk-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px}
+.bank-row .bk-del{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:6px;border-radius:6px;display:flex;align-items:center}
+.bank-row .bk-del:hover{color:var(--red);background:rgba(232,99,122,.08)}
+.bank-empty{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;padding:14px 0;text-align:center}
+
 .witem,.withdraw-item{
   display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
   background:var(--card2);border:1px solid var(--border);border-radius:10px;
@@ -1127,7 +1140,7 @@ nav.legacy-nav{display:none !important}
 
     <div class="alert" id="withdraw-alert"></div>
 
-    <!-- Available balance + amount input -->
+    <!-- Withdraw card (left 2.2fr) + Bank accounts panel (right 1fr) -->
     <div class="row-2-1">
       <div class="panel">
         <div class="panel-head">
@@ -1143,63 +1156,83 @@ nav.legacy-nav{display:none !important}
           <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px"><span id="wd-available-count">—</span> commissions ready</div>
         </div>
 
-        <div class="form-group">
-          <label>Withdraw amount</label>
-          <input class="input mono" type="text" id="wd-amount" inputmode="numeric" placeholder="100000"/>
-          <div class="hint" id="wd-amount-hint">You receive: <strong style="color:var(--green)" id="wd-net">Rp 0</strong> after Rp 3.000 transfer fee</div>
+        <!-- Split: amount input on left, bank-account dropdown on right -->
+        <div class="wd-split">
+          <div>
+            <div class="form-group">
+              <label>Withdraw amount</label>
+              <input class="input mono" type="text" id="wd-amount" inputmode="numeric" placeholder="100000"/>
+              <div class="hint" id="wd-amount-hint">You receive: <strong style="color:var(--green)">Rp 0</strong> after Rp 3.000 transfer fee</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(100000)">Rp 100k</button>
+              <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(500000)">Rp 500k</button>
+              <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(1000000)">Rp 1jt</button>
+              <button class="btn btn-ghost btn-sm" onclick="setWithdrawMax()">Max</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="form-group">
+              <label>Transfer to</label>
+              <select id="wd-bank-account" class="input" onchange="updateWithdrawNet()">
+                <option value="">— choose saved account —</option>
+              </select>
+              <div class="hint" id="wd-bank-hint" style="color:var(--muted)">Saved bank accounts appear here</div>
+            </div>
+          </div>
         </div>
 
-        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(100000)">Rp 100k</button>
-          <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(500000)">Rp 500k</button>
-          <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(1000000)">Rp 1jt</button>
-          <button class="btn btn-ghost btn-sm" onclick="setWithdrawMax()">Max</button>
-        </div>
-
-        <button class="btn btn-green" id="withdraw-btn" style="width:100%;justify-content:center" onclick="openWithdrawModal()">Request Withdrawal →</button>
+        <button class="btn btn-green" id="withdraw-btn" style="width:100%;justify-content:center;margin-top:14px" onclick="openWithdrawModal()">Request Withdrawal →</button>
         <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px">processed in ≤ 5 business days</div>
       </div>
 
-      <!-- Saved bank account -->
+      <!-- Bank accounts: list + add -->
       <div class="panel" id="bank-form-section">
         <div class="panel-head">
           <div>
-            <div class="panel-title">Bank account</div>
-            <div class="panel-sub">Transfer destination</div>
+            <div class="panel-title">Bank accounts</div>
+            <div class="panel-sub">Add multiple · pick one when withdrawing</div>
           </div>
         </div>
         <div class="alert" id="bank-alert"></div>
-        <div class="form-group">
-          <label>Bank</label>
-          <select id="bank-name" class="input">
-            <option value="">Select bank...</option>
-            <option value="BCA">BCA</option>
-            <option value="Mandiri">Mandiri</option>
-            <option value="BNI">BNI</option>
-            <option value="BRI">BRI</option>
-            <option value="CIMB Niaga">CIMB Niaga</option>
-            <option value="Permata">Permata</option>
-            <option value="Danamon">Danamon</option>
-            <option value="BTN">BTN</option>
-            <option value="OCBC NISP">OCBC NISP</option>
-            <option value="Maybank">Maybank</option>
-            <option value="Bank Mega">Bank Mega</option>
-            <option value="Bank Jago">Bank Jago</option>
-            <option value="Seabank">Seabank</option>
-            <option value="Allo Bank">Allo Bank</option>
-            <option value="Blu BCA">Blu BCA</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Account number</label>
-          <input class="input mono" type="text" id="bank-number" placeholder="1234567890"/>
-        </div>
-        <div class="form-group">
-          <label>Account holder</label>
-          <input class="input" type="text" id="bank-holder" placeholder="As on bankbook"/>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="saveBankAccount()" style="width:100%;justify-content:center">Save</button>
+
+        <div id="bank-accounts-list" style="margin-bottom:14px"></div>
+
+        <details style="border-top:1px solid var(--border);padding-top:12px">
+          <summary style="cursor:pointer;font-size:12px;color:var(--cyan2);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;margin-bottom:10px">+ Add new account</summary>
+          <div class="form-group">
+            <label>Bank</label>
+            <select id="bank-name" class="input">
+              <option value="">Select bank...</option>
+              <option value="BCA">BCA</option>
+              <option value="Mandiri">Mandiri</option>
+              <option value="BNI">BNI</option>
+              <option value="BRI">BRI</option>
+              <option value="CIMB Niaga">CIMB Niaga</option>
+              <option value="Permata">Permata</option>
+              <option value="Danamon">Danamon</option>
+              <option value="BTN">BTN</option>
+              <option value="OCBC NISP">OCBC NISP</option>
+              <option value="Maybank">Maybank</option>
+              <option value="Bank Mega">Bank Mega</option>
+              <option value="Bank Jago">Bank Jago</option>
+              <option value="Seabank">Seabank</option>
+              <option value="Allo Bank">Allo Bank</option>
+              <option value="Blu BCA">Blu BCA</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Account number</label>
+            <input class="input mono" type="text" id="bank-number" placeholder="1234567890"/>
+          </div>
+          <div class="form-group">
+            <label>Account holder</label>
+            <input class="input" type="text" id="bank-holder" placeholder="As on bankbook"/>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveBankAccount()" style="width:100%;justify-content:center">Add account</button>
+        </details>
       </div>
     </div>
 
@@ -1221,8 +1254,8 @@ nav.legacy-nav{display:none !important}
             <th>Date</th>
             <th>Total</th>
             <th>Status</th>
+            <th class="hide-mobile">Bank Account</th>
             <th class="hide-mobile">Reference</th>
-            <th class="hide-mobile">Note</th>
           </tr></thead>
           <tbody id="payouts-table"></tbody>
         </table>
@@ -2240,6 +2273,7 @@ const WITHDRAW_TRANSFER_FEE = 3000;
 let _withdrawAvailableBalance = 0;
 let _payoutsAll = [];
 let _payoutsExpanded = false;
+let _bankAccounts = [];
 
 async function loadWithdraw() {
   // Available balance from the same endpoint Overview uses
@@ -2260,8 +2294,72 @@ async function loadWithdraw() {
     input.oninput = updateWithdrawNet;
     input.value = '';
   }
+  loadBankAccounts();
   updateWithdrawNet();
   loadPayoutHistory();
+}
+
+async function loadBankAccounts() {
+  try {
+    const data = await api('GET', '/affiliate/bank-accounts');
+    _bankAccounts = data.bank_accounts || [];
+  } catch (e) {
+    _bankAccounts = [];
+  }
+  renderBankAccountsList();
+  renderBankAccountsDropdown();
+}
+
+function renderBankAccountsList() {
+  const container = document.getElementById('bank-accounts-list');
+  if (!container) return;
+  if (!_bankAccounts.length) {
+    container.innerHTML = '<div class="bank-empty">No accounts yet — add one below</div>';
+    return;
+  }
+  const trash = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+  container.innerHTML = _bankAccounts.map(b =>
+    '<div class="bank-row">' +
+      '<div class="bk-info">' +
+        '<div class="bk-name">' + b.bank_name + '</div>' +
+        '<div class="bk-meta">' + b.account_number + ' · ' + b.account_holder + '</div>' +
+      '</div>' +
+      '<button class="bk-del" title="Delete account" onclick="deleteBankAccount(' + b.id + ', \'' + (b.bank_name + ' · ' + b.account_number).replace(/'/g, "\\'") + '\')">' + trash + '</button>' +
+    '</div>'
+  ).join('');
+}
+
+function renderBankAccountsDropdown() {
+  const sel = document.getElementById('wd-bank-account');
+  const hint = document.getElementById('wd-bank-hint');
+  if (!sel) return;
+  const prev = sel.value;
+  if (!_bankAccounts.length) {
+    sel.innerHTML = '<option value="">— no accounts saved —</option>';
+    sel.disabled = true;
+    if (hint) hint.innerHTML = '<strong style="color:var(--amber)">Add a bank account first</strong>';
+  } else {
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">— choose saved account —</option>' +
+      _bankAccounts.map(b =>
+        '<option value="' + b.id + '">' + b.bank_name + ' · ' + b.account_number + ' · ' + b.account_holder + '</option>'
+      ).join('');
+    // Auto-select first account if only one (most common case)
+    if (_bankAccounts.length === 1) sel.value = String(_bankAccounts[0].id);
+    else if (prev) sel.value = prev;
+    if (hint) hint.innerHTML = 'Account that admin will transfer to';
+  }
+}
+
+async function deleteBankAccount(id, label) {
+  if (!confirm('Delete bank account: ' + label + '?\n\nPast payouts referencing this account will keep their record.')) return;
+  try {
+    await api('DELETE', '/affiliate/bank-accounts/' + id);
+    showPageAlert('bank-alert', 'Bank account deleted', 'success');
+    loadBankAccounts();
+  } catch (e) {
+    showPageAlert('bank-alert', 'Delete failed: ' + e.message, 'error');
+  }
 }
 
 function _parseRupiahInput(s) {
@@ -2310,20 +2408,20 @@ function openWithdrawModal() {
   const amt = _parseRupiahInput(document.getElementById('wd-amount').value);
   if (amt < WITHDRAW_MIN_AMOUNT || amt > _withdrawAvailableBalance) return;
 
-  // Bank account guard — same as before
-  const bankName    = (document.getElementById('bank-name')?.value   || '').trim();
-  const accountNum  = (document.getElementById('bank-number')?.value || '').trim();
-  const accountName = (document.getElementById('bank-holder')?.value || '').trim();
-  if (!bankName || !accountNum || !accountName) {
-    showPageAlert('withdraw-alert', 'Please complete and save your bank account before requesting a withdrawal.', 'error');
+  // Require a bank account selection.
+  const bankAccountId = document.getElementById('wd-bank-account')?.value;
+  if (!bankAccountId) {
+    showPageAlert('withdraw-alert', 'Pilih rekening tujuan dulu (atau add a new bank account first).', 'error');
     document.getElementById('bank-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
-  const net = amt - WITHDRAW_TRANSFER_FEE;
+  const bank = _bankAccounts.find(b => String(b.id) === String(bankAccountId));
+  const net  = amt - WITHDRAW_TRANSFER_FEE;
   document.getElementById('withdraw-confirm-text').textContent =
     'You are about to request a withdrawal of ' + fmtRp(amt) +
     '. After Rp 3.000 transfer fee, you will receive ' + fmtRp(net) +
+    (bank ? ' to ' + bank.bank_name + ' · ' + bank.account_number + ' (' + bank.account_holder + ')' : '') +
     '. Funds processed within 5 business days after admin confirmation.';
   document.getElementById('withdraw-modal').classList.add('open');
 }
@@ -2338,7 +2436,8 @@ async function confirmWithdraw() {
 
   try {
     const amount = _parseRupiahInput(document.getElementById('wd-amount').value);
-    const data = await api('POST', '/affiliate/withdraw', { amount });
+    const bank_account_id = parseInt(document.getElementById('wd-bank-account').value);
+    const data = await api('POST', '/affiliate/withdraw', { amount, bank_account_id });
     closeWithdrawModal();
     showPageAlert('withdraw-alert',
       'Withdrawal submitted! ' + fmtRp(data.requested_amount) +
@@ -2386,12 +2485,17 @@ function renderPayoutHistory() {
     const statusBadge = isPending
       ? '<span class="badge badge-yellow">Pending</span>'
       : '<span class="badge badge-green">Paid</span>';
+    const bankCell = p.bank_name
+      ? '<div style="font-size:12px">' + p.bank_name + '</div>' +
+        '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--muted)">' +
+        (p.account_number || '') + (p.account_holder ? ' · ' + p.account_holder : '') + '</div>'
+      : '<span style="color:var(--muted)">—</span>';
     return '<tr>' +
       '<td class="mono" style="font-size:11px">' + dateStr + '</td>' +
       '<td class="mono"><strong>' + fmtRp(p.total_amount) + '</strong></td>' +
       '<td>' + statusBadge + '</td>' +
+      '<td class="hide-mobile">' + bankCell + '</td>' +
       '<td class="mono hide-mobile" style="font-size:11px;color:var(--muted2)">' + (p.transfer_ref || '—') + '</td>' +
-      '<td class="hide-mobile" style="font-size:12px;color:var(--muted)">' + (p.note || '—') + '</td>' +
     '</tr>';
   }).join('');
 }
@@ -2654,20 +2758,10 @@ function setIncomePeriod(days, btn) {
 }
 
 // ── Bank Account ────────────────────────────────────────────────
-async function loadBankAccount() {
-  try {
-    const data = await api('GET', '/affiliate/bank-account');
-    if (data.bank_account) {
-      const b = data.bank_account;
-      const nameEl   = document.getElementById('bank-name');
-      const numberEl = document.getElementById('bank-number');
-      const holderEl = document.getElementById('bank-holder');
-      if (nameEl)   nameEl.value   = b.bank_name      || '';
-      if (numberEl) numberEl.value = b.account_number || '';
-      if (holderEl) holderEl.value = b.account_holder || '';
-    }
-  } catch (e) { console.error('loadBankAccount error:', e); }
-}
+// Legacy single-account loader retained as a no-op so showPage's
+// `loadBankAccount()` call doesn't 404. The list+dropdown render via
+// loadBankAccounts() (plural) inside loadWithdraw.
+async function loadBankAccount() { /* no-op */ }
 
 async function saveBankAccount() {
   const bank_name      = document.getElementById('bank-name').value;
@@ -2679,8 +2773,13 @@ async function saveBankAccount() {
   }
 
   try {
-    await api('POST', '/affiliate/bank-account', { bank_name, account_number, account_holder });
-    showAuthAlert('bank-alert', 'Bank account successfully saved', 'success');
+    await api('POST', '/affiliate/bank-accounts', { bank_name, account_number, account_holder });
+    showAuthAlert('bank-alert', 'Bank account added', 'success');
+    // Clear the form and refresh the list/dropdown
+    document.getElementById('bank-name').value   = '';
+    document.getElementById('bank-number').value = '';
+    document.getElementById('bank-holder').value = '';
+    loadBankAccounts();
   } catch (e) {
     showAuthAlert('bank-alert', 'Failed to save: ' + e.message, 'error');
   }
