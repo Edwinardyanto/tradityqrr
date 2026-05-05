@@ -278,21 +278,18 @@ label.form-label{
 .alert-success{background:rgba(0,212,138,.06);border-color:rgba(0,212,138,.25);color:var(--green)}
 .alert-warn{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.25);color:var(--amber)}
 
-/* ===== HIDE MOBILE ===== */
+/* ===== MOBILE BOTTOM NAV ===== */
+.aff-bottom-nav{display:none}
+
 @media (max-width:760px){
-  /* Stack sidebar above main, otherwise sidebar (width:100%) and
-     main (flex:1) compete for the same row and both end up squished. */
-  .stage{flex-direction:column}
-  .sidebar{position:static;width:100%;height:auto;flex-direction:row;flex-wrap:wrap;padding:10px 12px;gap:6px}
-  .sidebar .brand{padding:4px 8px 8px;width:100%}
-  .nav-item{padding:6px 10px;font-size:12px;flex:0 0 auto}
-  .nav-item svg{width:14px;height:14px}
-  .main{margin-left:0;padding:18px;width:100%;max-width:100%}
+  /* Hide the desktop sidebar entirely; nav lives in the bottom bar
+     (mirrors admin's pattern). */
+  .sidebar{display:none}
+  .main{margin-left:0;padding:18px 14px 90px;width:100%;max-width:100%}
   .hero-grid{grid-template-columns:1fr 1fr;gap:14px}
   .hide-mobile{display:none}
   .row-2-1,.row-1-1,.row-3{grid-template-columns:1fr}
   .actions-row{grid-template-columns:1fr !important}
-  .nav-section,.brand-sub,.sf{display:none}
   /* Tables overflow horizontally with their own scroll instead of
      blowing the page layout out. */
   .table-wrap{overflow-x:auto}
@@ -300,6 +297,25 @@ label.form-label{
   .kpi-row{grid-template-columns:1fr 1fr}
   .funnel{grid-template-columns:1fr 1fr}
   .fstep .conv{display:none}
+
+  .aff-bottom-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    z-index:200;background:rgba(10,8,20,.92);
+    border-top:1px solid var(--border);
+    height:64px;padding:0;
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+  .aff-bottom-nav-item{
+    flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;
+    font-size:9px;letter-spacing:.5px;color:var(--muted2);
+    cursor:pointer;border:none;background:transparent;
+    transition:color .15s;user-select:none;
+    padding:6px 2px;
+  }
+  .aff-bottom-nav-item.active{color:var(--cyan2)}
+  .aff-bottom-nav-item svg{width:18px;height:18px}
 }
 
 /* ===== AUTH ===== */
@@ -1370,6 +1386,35 @@ nav.legacy-nav{display:none !important}
   <div class="bottom-nav-item" data-page="settings"></div>
 </div>
 
+<!-- Visible mobile bottom nav (mirrors admin's pattern). Hidden via
+     CSS at desktop widths. -->
+<nav class="aff-bottom-nav" aria-label="Bottom navigation">
+  <div class="aff-bottom-nav-item active" data-page="overview" onclick="showPage('overview')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Overview
+  </div>
+  <div class="aff-bottom-nav-item" data-page="commissions" onclick="showPage('commissions')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/></svg>
+    Orders
+  </div>
+  <div class="aff-bottom-nav-item" data-page="teams" onclick="showPage('teams')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Teams
+  </div>
+  <div class="aff-bottom-nav-item" data-page="recruit" onclick="showPage('recruit')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M12 7v4M12 13h-6v4M12 13h6v4"/><circle cx="6" cy="19" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="18" cy="19" r="2"/></svg>
+    Recruit
+  </div>
+  <div class="aff-bottom-nav-item" data-page="withdraw" onclick="showPage('withdraw')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+    Withdraw
+  </div>
+  <div class="aff-bottom-nav-item" data-page="settings" onclick="showPage('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </div>
+</nav>
+
 <!-- ===== WITHDRAW MODAL ===== -->
 <div class="modal-overlay" id="withdraw-modal">
   <div class="modal">
@@ -1694,8 +1739,8 @@ function showPage(name) {
   if (name === 'withdraw') { loadWithdraw(); loadBankAccount(); }
   if (name === 'settings') loadPixelSettings();
 
-  // Sync bottom nav active state
-  document.querySelectorAll('.bottom-nav-item').forEach(t => {
+  // Sync bottom nav active state (legacy hidden + visible mobile bar)
+  document.querySelectorAll('.bottom-nav-item, .aff-bottom-nav-item').forEach(t => {
     t.classList.toggle('active', t.dataset.page === name);
   });
 }
