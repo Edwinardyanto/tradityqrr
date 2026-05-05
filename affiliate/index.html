@@ -783,11 +783,19 @@ nav.legacy-nav{display:none !important}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5"/></svg>
         </div>
         <div>
-          <div class="act-head">REFERRALS · <span class="num" id="stat-referrals">0</span> UNIQUE</div>
-          <p>Unique users who have purchased via your ref code. Recruit new affiliates in the Recruit tab.</p>
-          <span class="act-cta" onclick="showPage('recruit')">View recruitment →</span>
+          <div class="act-head">TEAMS</div>
+          <p>Direct downlines you've recruited and the upline overrides they've earned for you.</p>
+          <span class="act-cta" onclick="showPage('teams')">View teams →</span>
         </div>
       </div>
+    </div>
+
+    <!-- FUNNEL (me + team traffic, last 30 days) -->
+    <div class="funnel" id="overview-funnel" style="margin-top:14px">
+      <div class="fstep"><div class="l">Visits</div><div class="v cy" id="ov-fnl-visits">—</div><div class="vu">unique sessions</div><div class="conv" id="ov-fnl-conv-1">→ —</div></div>
+      <div class="fstep"><div class="l">Checkout view</div><div class="v cy" id="ov-fnl-checkout">—</div><div class="vu">viewed checkout</div><div class="conv" id="ov-fnl-conv-2">→ —</div></div>
+      <div class="fstep"><div class="l">Form filled</div><div class="v amber" id="ov-fnl-form">—</div><div class="vu">started filling</div><div class="conv" id="ov-fnl-conv-3">→ —</div></div>
+      <div class="fstep"><div class="l">Paid</div><div class="v green" id="ov-fnl-paid">—</div><div class="vu" id="ov-fnl-paid-sub">conv — from visit</div></div>
     </div>
 
     <!-- TRAFFIC + STATUS KOMISI -->
@@ -910,6 +918,7 @@ nav.legacy-nav{display:none !important}
         <label><input type="checkbox" id="aff-col-tv-username" onchange="applyAffiliateColumnPrefs()"/> TV Username</label>
         <label><input type="checkbox" id="aff-col-promo" onchange="applyAffiliateColumnPrefs()"/> Promo Code</label>
         <label><input type="checkbox" id="aff-col-type" onchange="applyAffiliateColumnPrefs()"/> Type</label>
+        <label><input type="checkbox" id="aff-col-ref-code" onchange="applyAffiliateColumnPrefs()"/> Ref Code</label>
         <label><input type="checkbox" id="aff-col-available" onchange="applyAffiliateColumnPrefs()"/> Available At</label>
       </div>
     </div>
@@ -931,9 +940,8 @@ nav.legacy-nav{display:none !important}
 
       <select id="aff-f-type" onchange="loadCommissions()" class="of-sel">
         <option value="">Type</option>
-        <option value="first">First-time</option>
-        <option value="recurring">Recurring</option>
-        <option value="upline">Upline</option>
+        <option value="direct">Direct</option>
+        <option value="team">Team</option>
       </select>
 
       <div class="of-group" title="Order date range">
@@ -973,50 +981,50 @@ nav.legacy-nav{display:none !important}
     <div id="commissions-pagination" class="pager"></div>
   </div>
 
-  <!-- ============ REFERRAL ============ -->
-  <div class="page" id="page-referrals">
+  <!-- ============ TEAMS ============ -->
+  <div class="page" id="page-teams">
     <div class="topbar">
       <div>
-        <h1>Your Referrals</h1>
-        <div class="sub">Unique users who purchased via your ref code · click a row for order details</div>
+        <h1>Your Teams</h1>
+        <div class="sub">Direct downlines · click a row for the orders that earned you upline overrides</div>
       </div>
       <div class="actions">
-        <button class="icon-btn" title="Refresh" onclick="loadReferrals()">
+        <button class="icon-btn" title="Refresh" onclick="loadTeams()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
         </button>
       </div>
     </div>
 
-    <div class="kpi-row" id="referrals-kpis">
-      <div class="kpi"><div class="l">Total referrals</div><div class="v cy" id="kpi-total-refs">—</div><div class="n">unique users all-time</div></div>
-      <div class="kpi"><div class="l">Active 30d</div><div class="v" id="kpi-active-30d">—</div><div class="n">order &lt; 30 days</div></div>
-      <div class="kpi"><div class="l">Repeat buyers</div><div class="v" id="kpi-repeat">—</div><div class="n">≥ 2 purchases</div></div>
-      <div class="kpi"><div class="l">Total commission</div><div class="v green" id="kpi-total-comm">—</div><div class="n" id="kpi-total-comm-sub">from referrals</div></div>
+    <div class="kpi-row" id="teams-kpis">
+      <div class="kpi"><div class="l">Total downlines</div><div class="v cy" id="kpi-total-teams">—</div><div class="n">direct recruits</div></div>
+      <div class="kpi"><div class="l">Active 30d</div><div class="v" id="kpi-teams-active-30d">—</div><div class="n">sale &lt; 30 days</div></div>
+      <div class="kpi"><div class="l">Top performer</div><div class="v" id="kpi-top-performer" style="font-size:18px">—</div><div class="n">most overrides</div></div>
+      <div class="kpi"><div class="l">Total override</div><div class="v green" id="kpi-teams-total-override">—</div><div class="n" id="kpi-teams-total-override-sub">earned from team</div></div>
     </div>
 
     <div class="toolbar">
       <div class="search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="referrals-search" placeholder="Search TV username..." oninput="renderReferralsTable()"/>
+        <input id="teams-search" placeholder="Search downline name or ref code..." oninput="renderTeamsTable()"/>
       </div>
-      <div class="period" id="referrals-filter-pills">
-        <button class="active" data-filter="all" onclick="setReferralsFilter('all')">All</button>
-        <button data-filter="active" onclick="setReferralsFilter('active')">Active</button>
-        <button data-filter="repeat" onclick="setReferralsFilter('repeat')">Repeat</button>
+      <div class="period" id="teams-filter-pills">
+        <button class="active" data-filter="all" onclick="setTeamsFilter('all')">All</button>
+        <button data-filter="active" onclick="setTeamsFilter('active')">Active</button>
+        <button data-filter="earning" onclick="setTeamsFilter('earning')">Earning</button>
       </div>
-      <div class="count" id="referrals-count"></div>
+      <div class="count" id="teams-count"></div>
     </div>
 
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>TV Username</th>
-          <th class="hide-mobile">First Order</th>
-          <th class="hide-mobile">Total Orders</th>
-          <th>Total Commission</th>
-          <th class="hide-mobile">Commission Status</th>
+          <th>Downline</th>
+          <th class="hide-mobile">Joined</th>
+          <th class="hide-mobile">Sales</th>
+          <th>My Override</th>
+          <th class="hide-mobile">Override Status</th>
         </tr></thead>
-        <tbody id="referrals-table"></tbody>
+        <tbody id="teams-table"></tbody>
       </table>
     </div>
   </div>
@@ -1056,103 +1064,60 @@ nav.legacy-nav{display:none !important}
     <div id="recruit-downline-content" style="margin-top:14px"></div>
   </div>
 
-  <!-- ============ TRAFFIC ============ -->
-  <div class="page" id="page-traffic">
-    <div class="topbar">
-      <div>
-        <h1>Traffic</h1>
-        <div class="sub" id="traffic-sub">Your link performance · last 30 days</div>
-      </div>
-      <div class="actions">
-        <div class="range" id="traffic-range">
-          <button data-days="1"    onclick="setTrafficRange(1)">Today</button>
-          <button data-days="7"    onclick="setTrafficRange(7)">7D</button>
-          <button data-days="30"   class="active" onclick="setTrafficRange(30)">30D</button>
-          <button data-days="90"   onclick="setTrafficRange(90)">90D</button>
-          <button data-days="9999" onclick="setTrafficRange(9999)">All</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Funnel -->
-    <div class="funnel" id="traffic-funnel">
-      <div class="fstep"><div class="l">Visits</div><div class="v cy" id="fnl-visits">—</div><div class="vu" id="fnl-visits-u">— unique</div><div class="conv" id="fnl-conv-1">→ —</div></div>
-      <div class="fstep"><div class="l">Checkout view</div><div class="v cy" id="fnl-checkout">—</div><div class="vu" id="fnl-checkout-u">— unique</div><div class="conv" id="fnl-conv-2">→ —</div></div>
-      <div class="fstep"><div class="l">Form filled</div><div class="v amber" id="fnl-form">—</div><div class="vu" id="fnl-form-u">— unique</div><div class="conv" id="fnl-conv-3">→ —</div></div>
-      <div class="fstep"><div class="l">Paid</div><div class="v green" id="fnl-paid">—</div><div class="vu" id="fnl-paid-u">conv — from unique</div></div>
-    </div>
-
-    <!-- Trend chart full width -->
-    <div class="panel" style="margin-bottom:14px">
-      <div class="panel-head">
-        <div>
-          <div class="panel-title" id="trend-title">Trend 30 days</div>
-          <div class="panel-sub">Stacked: visits → checkout → form → paid</div>
-        </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">
-          <span><span style="display:inline-block;width:8px;height:8px;background:#7F77DD;margin-right:4px;border-radius:2px;"></span>Visit</span>
-          <span><span style="display:inline-block;width:8px;height:8px;background:#1D9E75;margin-right:4px;border-radius:2px;"></span>Checkout</span>
-          <span><span style="display:inline-block;width:8px;height:8px;background:#EF9F27;margin-right:4px;border-radius:2px;"></span>Form</span>
-          <span><span style="display:inline-block;width:8px;height:8px;background:#D85A30;margin-right:4px;border-radius:2px;"></span>Paid</span>
-        </div>
-      </div>
-      <div class="bar-vis" id="trend-bars"></div>
-      <div class="x-axis" id="trend-xaxis"></div>
-    </div>
-
-    <!-- Your links + Per-product side by side -->
-    <div class="row-1-1">
-      <div class="panel">
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Your links</div>
-            <div class="panel-sub">Main referral + recruitment links you've shared</div>
-          </div>
-        </div>
-        <div id="traffic-links">
-          <div class="empty"><span class="spinner"></span> Loading...</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Per-product conversion</div>
-            <div class="panel-sub">What your referrals are buying</div>
-          </div>
-        </div>
-        <div id="traffic-products">
-          <div class="empty"><span class="spinner"></span> Loading...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- ============ WITHDRAW ============ -->
   <div class="page" id="page-withdraw">
     <div class="topbar">
       <div>
         <h1>Withdraw</h1>
-        <div class="sub">Select commissions ready to withdraw · transfer to your saved account</div>
-      </div>
-      <div class="actions">
-        <button class="btn btn-ghost btn-sm" onclick="showPage('payouts')">Payout history →</button>
+        <div class="sub">Request a payout from your available balance</div>
       </div>
     </div>
 
     <div class="alert" id="withdraw-alert"></div>
 
-    <!-- saved bank form -->
-    <div class="panel" id="bank-form-section" style="margin-bottom:14px">
-      <div class="panel-head">
-        <div>
-          <div class="panel-title">Saved bank account</div>
-          <div class="panel-sub">Transfer destination for all payouts</div>
+    <!-- Available balance + amount input -->
+    <div class="row-2-1">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Request withdrawal</div>
+            <div class="panel-sub">Min Rp 100.000 · transfer fee Rp 3.000 per request</div>
+          </div>
         </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Available balance</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--green);letter-spacing:1px;line-height:1" id="wd-available">—</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px"><span id="wd-available-count">—</span> commissions ready</div>
+        </div>
+
+        <div class="form-group">
+          <label>Withdraw amount</label>
+          <input class="input mono" type="text" id="wd-amount" inputmode="numeric" placeholder="100000"/>
+          <div class="hint" id="wd-amount-hint">You receive: <strong style="color:var(--green)" id="wd-net">Rp 0</strong> after Rp 3.000 transfer fee</div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(100000)">Rp 100k</button>
+          <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(500000)">Rp 500k</button>
+          <button class="btn btn-ghost btn-sm" onclick="setWithdrawAmount(1000000)">Rp 1jt</button>
+          <button class="btn btn-ghost btn-sm" onclick="setWithdrawMax()">Max</button>
+        </div>
+
+        <button class="btn btn-green" id="withdraw-btn" style="width:100%;justify-content:center" onclick="openWithdrawModal()">Request Withdrawal →</button>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px">processed in ≤ 5 business days</div>
       </div>
-      <div class="alert" id="bank-alert"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
-        <div class="form-group" style="margin-bottom:0">
+
+      <!-- Saved bank account -->
+      <div class="panel" id="bank-form-section">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Bank account</div>
+            <div class="panel-sub">Transfer destination</div>
+          </div>
+        </div>
+        <div class="alert" id="bank-alert"></div>
+        <div class="form-group">
           <label>Bank</label>
           <select id="bank-name" class="input">
             <option value="">Select bank...</option>
@@ -1174,63 +1139,41 @@ nav.legacy-nav{display:none !important}
             <option value="Other">Other</option>
           </select>
         </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label>Account Number</label>
+        <div class="form-group">
+          <label>Account number</label>
           <input class="input mono" type="text" id="bank-number" placeholder="1234567890"/>
         </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label>Account Holder</label>
-          <input class="input" type="text" id="bank-holder" placeholder="As shown on bankbook"/>
+        <div class="form-group">
+          <label>Account holder</label>
+          <input class="input" type="text" id="bank-holder" placeholder="As on bankbook"/>
         </div>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:10px;">
-        <button class="btn btn-primary" onclick="saveBankAccount()">Save Account</button>
+        <button class="btn btn-primary btn-sm" onclick="saveBankAccount()" style="width:100%;justify-content:center">Save</button>
       </div>
     </div>
 
-    <!-- 2-col main: list + summary -->
-    <div class="wd-grid">
-      <div>
-        <div style="margin-bottom:12px;">
-          <div class="panel-title" style="margin-bottom:2px">Commissions ready to withdraw</div>
-          <div class="panel-sub">Select commissions to withdraw together in a single payout</div>
+    <!-- Last 5 payout history -->
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Recent payouts</div>
+          <div class="panel-sub">Last 5 completed transfers</div>
         </div>
-        <div id="withdraw-content"></div>
-
-        <div style="margin-top:14px;padding:12px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.18);border-radius:10px;font-size:12px;color:var(--muted2);line-height:1.6;">
-          <strong style="color:var(--amber)">Note:</strong> commissions that are still <strong style="color:var(--white)">Pending</strong> cannot yet be withdrawn. There is a 5-business-day hold period from the transaction to protect against refunds.
+        <div class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="togglePayoutHistory()" id="payouts-toggle">View all</button>
         </div>
       </div>
 
-      <div class="summary">
-        <div class="l">Total selected</div>
-        <div class="v"><span id="withdraw-total">Rp 0</span></div>
-        <button class="btn btn-green" id="withdraw-btn" disabled style="width:100%;margin-top:14px;justify-content:center" onclick="openWithdrawModal()">Request Withdrawal →</button>
-        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;">sent to admin · processed in ≤ 5 business days</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Date</th>
+            <th>Total</th>
+            <th class="hide-mobile">Reference</th>
+            <th class="hide-mobile">Note</th>
+          </tr></thead>
+          <tbody id="payouts-table"></tbody>
+        </table>
       </div>
-    </div>
-  </div>
-
-  <!-- ============ PAYOUTS ============ -->
-  <div class="page" id="page-payouts">
-    <div class="topbar">
-      <div>
-        <h1>Payouts</h1>
-        <div class="sub">History of payouts already processed by admin</div>
-      </div>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th>Date</th>
-          <th>Total</th>
-          <th class="hide-mobile">Commissions</th>
-          <th class="hide-mobile">Bank</th>
-          <th>Status</th>
-        </tr></thead>
-        <tbody id="payouts-table"></tbody>
-      </table>
     </div>
   </div>
 
@@ -1327,11 +1270,9 @@ nav.legacy-nav{display:none !important}
 <div class="bottom-nav" id="bottom-nav" aria-hidden="true">
   <div class="bottom-nav-item" data-page="overview"></div>
   <div class="bottom-nav-item" data-page="commissions"></div>
-  <div class="bottom-nav-item" data-page="referrals"></div>
+  <div class="bottom-nav-item" data-page="teams"></div>
   <div class="bottom-nav-item" data-page="recruit"></div>
-  <div class="bottom-nav-item" data-page="traffic"></div>
   <div class="bottom-nav-item" data-page="withdraw"></div>
-  <div class="bottom-nav-item" data-page="payouts"></div>
   <div class="bottom-nav-item" data-page="settings"></div>
 </div>
 
@@ -1352,9 +1293,8 @@ nav.legacy-nav{display:none !important}
 (function(){
   // Map sidebar data-key → showPage(name)
   var keyToPage = {
-    overview: 'overview', komisi: 'commissions', referral: 'referrals',
-    rekrut: 'recruit', traffic: 'traffic', withdraw: 'withdraw',
-    payouts: 'payouts', settings: 'settings'
+    overview: 'overview', komisi: 'commissions', teams: 'teams',
+    rekrut: 'recruit', withdraw: 'withdraw', settings: 'settings'
   };
   var html = ''
     + '<div class="brand">'
@@ -1371,23 +1311,17 @@ nav.legacy-nav{display:none !important}
     + '<a class="nav-item" data-key="komisi">'
     +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/></svg>'
     +   'Orders</a>'
-    + '<a class="nav-item" data-key="referral">'
-    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>'
-    +   'Referrals</a>'
     + '<div class="nav-section">Network</div>'
+    + '<a class="nav-item" data-key="teams">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+    +   'Teams</a>'
     + '<a class="nav-item" data-key="rekrut">'
     +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M12 7v4M12 13h-6v4M12 13h6v4"/><circle cx="6" cy="19" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="18" cy="19" r="2"/></svg>'
     +   'Recruit</a>'
-    + '<a class="nav-item" data-key="traffic">'
-    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
-    +   'Traffic</a>'
     + '<div class="nav-section">Cash</div>'
     + '<a class="nav-item" data-key="withdraw">'
     +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>'
     +   'Withdraw</a>'
-    + '<a class="nav-item" data-key="payouts">'
-    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
-    +   'Payouts</a>'
     + '<a class="nav-item" data-key="settings">'
     +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
     +   'Settings</a>'
@@ -1417,7 +1351,7 @@ nav.legacy-nav{display:none !important}
   // on the legacy #nav-tabs to copy active state by index.
   function syncActiveFromLegacy(){
     var tabs = document.querySelectorAll('#nav-tabs .nav-tab');
-    var keys = ['overview','komisi','referral','rekrut','traffic','withdraw','payouts','settings'];
+    var keys = ['overview','komisi','teams','rekrut','withdraw','settings'];
     el.querySelectorAll('.nav-item[data-key]').forEach(function(n){ n.classList.remove('active'); });
     tabs.forEach(function(t, i){
       if (t.classList.contains('active')) {
@@ -1505,8 +1439,6 @@ const API = window.location.hostname === 'trxcqrr.com'
 // ── State ────────────────────────────────────────────────────────
 let currentCommissionFilter = null;
 let currentCommissionPage = 1;
-let withdrawableCommissions = [];
-let selectedWithdrawIds = new Set();
 
 // ── Helpers ──────────────────────────────────────────────────────
 function fmtRp(amount) {
@@ -1532,6 +1464,11 @@ function statusBadge(status) {
 function typeBadge(type) {
   if (type === 'first') return '<span class="badge badge-cyan">First</span>';
   return '<span class="badge badge-muted">Recurring</span>';
+}
+
+function commissionKindBadge(kind) {
+  if (kind === 'team') return '<span class="badge badge-yellow">Team</span>';
+  return '<span class="badge badge-cyan">Direct</span>';
 }
 
 // ── API ──────────────────────────────────────────────────────────
@@ -1621,11 +1558,9 @@ function buildNav() {
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'commissions', label: 'Orders' },
-    { id: 'referrals', label: 'Referrals' },
+    { id: 'teams', label: 'Teams' },
     { id: 'recruit', label: 'Recruit' },
-    { id: 'traffic', label: 'Traffic' },
     { id: 'withdraw', label: 'Withdraw' },
-    { id: 'payouts', label: 'Payouts' },
     { id: 'settings', label: 'Settings' },
   ];
   document.getElementById('nav-tabs').innerHTML = tabs.map(t =>
@@ -1642,7 +1577,7 @@ function showPage(name) {
   if (tab) tab.classList.add('active');
 
   if (name === 'commissions') loadCommissions();
-  if (name === 'referrals') loadReferrals();
+  if (name === 'teams') loadTeams();
   if (name === 'recruit') {
     const aff = JSON.parse(localStorage.getItem('affiliate_data') || '{}');
     updateRecruitInfoCard(aff);
@@ -1651,9 +1586,7 @@ function showPage(name) {
     loadDownline();
   }
   if (name === 'overview') loadOverviewCharts();
-  if (name === 'traffic') loadTraffic();
-  if (name === 'withdraw') { loadWithdrawable(); loadBankAccount(); }
-  if (name === 'payouts') loadPayouts();
+  if (name === 'withdraw') { loadWithdraw(); loadBankAccount(); }
   if (name === 'settings') loadPixelSettings();
 
   // Sync bottom nav active state
@@ -1779,7 +1712,10 @@ async function loadDashboard() {
 
     document.getElementById('stat-total-omzet').textContent        = fmtRp(s.total_omzet);
     document.getElementById('stat-total-transactions').textContent = (s.total_transactions || 0) + 'x';
-    document.getElementById('stat-referrals').textContent          = s.total_referrals || 0;
+    // stat-referrals tile removed in the Teams redesign — guard the
+    // setter so legacy data shape doesn't crash the dashboard.
+    const refEl = document.getElementById('stat-referrals');
+    if (refEl) refEl.textContent = s.total_referrals || 0;
     document.getElementById('stat-total-earned').textContent       = fmtRp(s.total_earned);
     document.getElementById('stat-pending').textContent            = fmtRp(s.pending_amount);
     document.getElementById('stat-available').textContent          = fmtRp(s.available_amount);
@@ -1814,15 +1750,17 @@ function copyRefCode() {
 // Internal naming kept as "commissions" so existing showPage() / state
 // machinery still works without rewiring.
 
-// Default optional column visibility — tv_username on by default since
-// it's the customer-chosen identifier the affiliate already knows.
+// Default optional column visibility — tv_username + type on by default
+// since they're the most useful for an affiliator's mental model
+// ("which of my links sold this", "is this direct or team").
 const _affiliateOptionalCols = {
   'tv-username': true,
   'promo':       false,
-  'type':        false,
+  'type':        true,
+  'ref-code':    true,
   'available':   false,
 };
-const AFF_COL_PREFS_KEY = 'aff_orders_col_prefs';
+const AFF_COL_PREFS_KEY = 'aff_orders_col_prefs_v2';
 try {
   const saved = JSON.parse(localStorage.getItem(AFF_COL_PREFS_KEY) || '{}');
   Object.assign(_affiliateOptionalCols, saved);
@@ -1832,8 +1770,10 @@ function toggleAffiliateColumnPicker() {
   document.getElementById('aff-col-picker').classList.toggle('open');
 }
 
+const AFF_OPTIONAL_KEYS = ['tv-username','promo','type','ref-code','available'];
+
 function applyAffiliateColumnPrefs() {
-  ['tv-username','promo','type','available'].forEach(key => {
+  AFF_OPTIONAL_KEYS.forEach(key => {
     const el = document.getElementById('aff-col-' + key);
     if (el) _affiliateOptionalCols[key] = el.checked;
   });
@@ -1847,6 +1787,7 @@ function _getActiveOptionalCols() {
     { key: 'tv-username', header: 'TV Username' },
     { key: 'promo',       header: 'Promo' },
     { key: 'type',        header: 'Type' },
+    { key: 'ref-code',    header: 'Ref Code' },
     { key: 'available',   header: 'Available' },
   ].filter(c => _affiliateOptionalCols[c.key]);
 }
@@ -1864,7 +1805,7 @@ function _renderAffiliateOptionalHeaders() {
     thead.appendChild(th);
   });
   // Sync checkbox state too
-  ['tv-username','promo','type','available'].forEach(key => {
+  AFF_OPTIONAL_KEYS.forEach(key => {
     const el = document.getElementById('aff-col-' + key);
     if (el) el.checked = !!_affiliateOptionalCols[key];
   });
@@ -1935,7 +1876,8 @@ async function loadCommissions() {
       const optionalCells = optionalCols.map(c => {
         if (c.key === 'tv-username') return '<td class="hide-mobile mono" style="font-size:11px;color:var(--cyan2)">' + (o.tv_username || '—') + '</td>';
         if (c.key === 'promo')       return '<td class="hide-mobile mono" style="font-size:11px">' + (o.promo_code ? '<span class="badge b-amber">' + o.promo_code + '</span>' : '<span style="color:var(--muted)">—</span>') + '</td>';
-        if (c.key === 'type')        return '<td class="hide-mobile">' + typeBadge(o.commission_type) + '</td>';
+        if (c.key === 'type')        return '<td class="hide-mobile">' + commissionKindBadge(o.commission_kind) + '</td>';
+        if (c.key === 'ref-code')    return '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted2)">' + (o.ref_code || '—') + '</td>';
         if (c.key === 'available')   return '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + fmtDate(o.available_at) + '</td>';
         return '';
       }).join('');
@@ -2023,76 +1965,77 @@ function renderPagination(currentPage, totalPages, handlerName) {
   return html;
 }
 
-// ── Referrals ────────────────────────────────────────────────────
-let _referralsData = [];
-let _referralsFilter = 'all';
-// Cache of drill-down orders keyed by referral_id, so re-opening a row
+// ── Teams ────────────────────────────────────────────────────────
+let _teamsData = [];
+let _teamsFilter = 'all';
+// Cache of drill-down orders keyed by team_id so re-opening a row
 // after collapse doesn't refetch.
-let _referralsOrdersCache = {};
+let _teamsOrdersCache = {};
 
-async function loadReferrals() {
-  const tbody = document.getElementById('referrals-table');
+async function loadTeams() {
+  const tbody = document.getElementById('teams-table');
   tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span> Loading...</td></tr>';
-  _referralsOrdersCache = {};
+  _teamsOrdersCache = {};
 
   try {
-    const data = await api('GET', '/affiliate/referrals');
-    _referralsData = data.referrals || [];
+    const data = await api('GET', '/affiliate/teams');
+    _teamsData = data.teams || [];
 
-    // KPI tiles
     const s = data.stats || {};
-    document.getElementById('kpi-total-refs').textContent = s.total_referrals || 0;
-    document.getElementById('kpi-active-30d').textContent = s.active_30d || 0;
-    document.getElementById('kpi-repeat').textContent = s.repeat_buyers || 0;
-    document.getElementById('kpi-total-comm').textContent = fmtRp(s.total_commission_all || 0);
-    document.getElementById('kpi-total-comm-sub').textContent =
-      'from ' + (s.total_referrals || 0) + ' referrals';
+    document.getElementById('kpi-total-teams').textContent = s.total_teams || 0;
+    document.getElementById('kpi-teams-active-30d').textContent = s.active_30d || 0;
+    document.getElementById('kpi-top-performer').textContent = s.top_performer || '—';
+    document.getElementById('kpi-teams-total-override').textContent = fmtRp(s.total_override_all || 0);
+    document.getElementById('kpi-teams-total-override-sub').textContent =
+      'from ' + (s.total_teams || 0) + ' downlines';
 
-    renderReferralsTable();
+    renderTeamsTable();
   } catch (e) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">Failed to load: ' + e.message + '</td></tr>';
   }
 }
 
-function setReferralsFilter(f) {
-  _referralsFilter = f;
-  document.querySelectorAll('#referrals-filter-pills button').forEach(b => {
+function setTeamsFilter(f) {
+  _teamsFilter = f;
+  document.querySelectorAll('#teams-filter-pills button').forEach(b => {
     b.classList.toggle('active', b.dataset.filter === f);
   });
-  renderReferralsTable();
+  renderTeamsTable();
 }
 
-function renderReferralsTable() {
-  const tbody = document.getElementById('referrals-table');
-  const search = (document.getElementById('referrals-search').value || '').trim().toLowerCase();
+function renderTeamsTable() {
+  const tbody = document.getElementById('teams-table');
+  const search = (document.getElementById('teams-search').value || '').trim().toLowerCase();
   const now = Date.now();
   const THIRTY = 30 * 86400000;
 
-  const filtered = _referralsData.filter(r => {
-    if (search && !(r.tv_username || '').toLowerCase().includes(search)) return false;
-    if (_referralsFilter === 'active') {
-      if (!r.last_order_date || (now - new Date(r.last_order_date).getTime()) >= THIRTY) return false;
-    } else if (_referralsFilter === 'repeat') {
-      if ((r.total_order_count || 0) < 2) return false;
+  const filtered = _teamsData.filter(t => {
+    if (search) {
+      const hit = (t.name || '').toLowerCase().includes(search) ||
+                  (t.ref_code || '').toLowerCase().includes(search);
+      if (!hit) return false;
+    }
+    if (_teamsFilter === 'active') {
+      if (!t.last_sale_at || (now - new Date(t.last_sale_at).getTime()) >= THIRTY) return false;
+    } else if (_teamsFilter === 'earning') {
+      if ((t.my_override || 0) <= 0) return false;
     }
     return true;
   });
 
-  document.getElementById('referrals-count').textContent =
-    filtered.length + ' / ' + _referralsData.length + ' referrals';
+  document.getElementById('teams-count').textContent =
+    filtered.length + ' / ' + _teamsData.length + ' downlines';
 
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">No referrals match.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No downlines match.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = filtered.map(r => {
-    const paid = r.paid_amount || 0;
-    const pend = (r.available_amount || 0) + (r.pending_amount || 0) + (r.requested_amount || 0);
-    const rej  = r.rejected_amount || 0;
+  tbody.innerHTML = filtered.map(t => {
+    const paid = t.paid_amount || 0;
+    const pend = (t.available_amount || 0) + (t.pending_amount || 0) + (t.requested_amount || 0);
+    const rej  = t.rejected_amount || 0;
 
-    // Bar widths proportional to total commission, capped to 80px max
-    // so the column doesn't blow out on big-amount rows.
     const total = paid + pend + rej || 1;
     const MAX = 80;
     const wPaid = Math.round((paid / total) * MAX);
@@ -2100,7 +2043,7 @@ function renderReferralsTable() {
 
     let statusHtml;
     if (paid === 0 && pend === 0 && rej === 0) {
-      statusHtml = '<span style="color:var(--muted);font-family:\'JetBrains Mono\',monospace;font-size:11px">No commissions yet</span>';
+      statusHtml = '<span style="color:var(--muted);font-family:\'JetBrains Mono\',monospace;font-size:11px">No overrides yet</span>';
     } else if (paid === 0 && pend === 0 && rej > 0) {
       statusHtml = '<span style="color:var(--red);font-family:\'JetBrains Mono\',monospace;font-size:11px">Rejected</span>';
     } else {
@@ -2113,27 +2056,29 @@ function renderReferralsTable() {
       statusHtml = '<span class="split">' + segs.join('') + parts.join(' · ') + '</span>';
     }
 
-    return '<tr class="ref-row" data-rid="' + r.referral_id + '" onclick="toggleReferralRow(' + r.referral_id + ', this)">' +
-      '<td><span class="ex">▶</span><strong>' + r.tv_username + '</strong></td>' +
-      '<td class="hide-mobile mono">' + (r.first_order_date ? fmtDate(r.first_order_date) : '—') + '</td>' +
-      '<td class="hide-mobile mono">' + (r.total_order_count || 0) + '</td>' +
-      '<td class="mono">' + fmtRp(r.total_commission || 0) + '</td>' +
+    const subRef = t.ref_code ? ' <span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--muted)">' + t.ref_code + '</span>' : '';
+    const inactive = t.status !== 'active' ? ' <span class="badge badge-red" style="font-size:9px;margin-left:4px">' + (t.status || 'inactive') + '</span>' : '';
+
+    return '<tr class="ref-row" data-tid="' + t.team_id + '" onclick="toggleTeamRow(' + t.team_id + ', this)">' +
+      '<td><span class="ex">▶</span><strong>' + (t.name || 'Untitled') + '</strong>' + subRef + inactive + '</td>' +
+      '<td class="hide-mobile mono">' + (t.joined_at ? fmtDate(t.joined_at) : '—') + '</td>' +
+      '<td class="hide-mobile mono">' + (t.sales_count || 0) + '</td>' +
+      '<td class="mono">' + fmtRp(t.my_override || 0) + '</td>' +
       '<td class="hide-mobile">' + statusHtml + '</td>' +
     '</tr>' +
-    '<tr class="expand-wrap" data-rid-expand="' + r.referral_id + '" style="display:none">' +
-      '<td colspan="5"><div class="expand-inner" id="expand-' + r.referral_id + '">' +
+    '<tr class="expand-wrap" data-tid-expand="' + t.team_id + '" style="display:none">' +
+      '<td colspan="5"><div class="expand-inner" id="team-expand-' + t.team_id + '">' +
         '<div class="empty"><span class="spinner"></span> Loading orders...</div>' +
       '</div></td>' +
     '</tr>';
   }).join('');
 }
 
-async function toggleReferralRow(referralId, rowEl) {
-  const expand = document.querySelector('tr[data-rid-expand="' + referralId + '"]');
+async function toggleTeamRow(teamId, rowEl) {
+  const expand = document.querySelector('tr[data-tid-expand="' + teamId + '"]');
   if (!expand) return;
 
-  const isOpen = rowEl.classList.contains('open');
-  if (isOpen) {
+  if (rowEl.classList.contains('open')) {
     rowEl.classList.remove('open');
     expand.style.display = 'none';
     return;
@@ -2141,22 +2086,22 @@ async function toggleReferralRow(referralId, rowEl) {
   rowEl.classList.add('open');
   expand.style.display = '';
 
-  const inner = document.getElementById('expand-' + referralId);
-  if (_referralsOrdersCache[referralId]) {
-    inner.innerHTML = _renderReferralOrders(_referralsOrdersCache[referralId]);
+  const inner = document.getElementById('team-expand-' + teamId);
+  if (_teamsOrdersCache[teamId]) {
+    inner.innerHTML = _renderTeamOrders(_teamsOrdersCache[teamId]);
     return;
   }
   try {
-    const data = await api('GET', '/affiliate/orders?referral_id=' + referralId + '&limit=100');
-    _referralsOrdersCache[referralId] = data.orders || [];
-    inner.innerHTML = _renderReferralOrders(_referralsOrdersCache[referralId]);
+    const data = await api('GET', '/affiliate/orders?team_id=' + teamId + '&limit=100');
+    _teamsOrdersCache[teamId] = data.orders || [];
+    inner.innerHTML = _renderTeamOrders(_teamsOrdersCache[teamId]);
   } catch (e) {
     inner.innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
   }
 }
 
-function _renderReferralOrders(orders) {
-  if (!orders.length) return '<div class="empty">No orders for this referral.</div>';
+function _renderTeamOrders(orders) {
+  if (!orders.length) return '<div class="empty">No upline-override orders for this downline yet.</div>';
   const statusBadge = (s) => {
     if (s === 'paid')                  return '<span class="badge b-muted">Paid</span>';
     if (s === 'available')             return '<span class="badge b-green">Available</span>';
@@ -2166,7 +2111,7 @@ function _renderReferralOrders(orders) {
     return '<span class="badge b-muted">' + s + '</span>';
   };
   return '<table>' +
-    '<thead><tr><th>Date</th><th>Order ID</th><th>Product</th><th>Commission</th><th>Status</th></tr></thead>' +
+    '<thead><tr><th>Date</th><th>Order ID</th><th>Product</th><th>My Override</th><th>Status</th></tr></thead>' +
     '<tbody>' + orders.map(o =>
       '<tr>' +
         '<td class="mono">' + fmtDate(o.created_at) + '</td>' +
@@ -2179,120 +2124,92 @@ function _renderReferralOrders(orders) {
 }
 
 // ── Withdraw ─────────────────────────────────────────────────────
-async function loadWithdrawable() {
-  const container = document.getElementById('withdraw-content');
-  container.innerHTML = '<div class="empty"><span class="spinner"></span> Loading...</div>';
-  selectedWithdrawIds.clear();
+const WITHDRAW_MIN_AMOUNT  = 100000;
+const WITHDRAW_TRANSFER_FEE = 3000;
+let _withdrawAvailableBalance = 0;
+let _payoutsAll = [];
+let _payoutsExpanded = false;
 
+async function loadWithdraw() {
+  // Available balance from the same endpoint Overview uses
   try {
-    const data = await api('GET', '/affiliate/commissions?status=available&limit=100');
-    withdrawableCommissions = data.commissions;
-
-    if (!withdrawableCommissions.length) {
-      container.innerHTML = '<div class="empty">No commissions ready to withdraw yet.</div>';
-      return;
-    }
-
-    let html = '<div class="withdraw-list">';
-    for (const c of withdrawableCommissions) {
-      html += '<div class="withdraw-item" onclick="toggleWithdrawItem(this, ' + c.id + ')">' +
-        '<input type="checkbox" id="wc-' + c.id + '" onclick="event.stopPropagation(); toggleWithdrawItem(this.parentElement, ' + c.id + ')"/>' +
-        '<div class="withdraw-item-info">' +
-          '<div class="withdraw-item-user">' + c.tv_username + '</div>' +
-          '<div class="withdraw-item-meta">' + c.transaction_id + ' · ' + fmtDate(c.created_at) + '</div>' +
-        '</div>' +
-        '<div class="withdraw-item-amount">' + fmtRp(c.commission_amount) + '</div>' +
-      '</div>';
-    }
-    html += '</div>';
-
-    html += '<div style="margin-bottom:12px;text-align:right">' +
-      '<button class="btn btn-ghost btn-sm" onclick="selectAllWithdraw()">Select All</button>' +
-    '</div>';
-
-    html += '<div class="withdraw-footer">' +
-      '<div><div class="withdraw-total-label">Total selected</div>' +
-      '<div class="withdraw-total-value" id="withdraw-total">Rp 0</div></div>' +
-      '<button class="btn btn-green" onclick="requestWithdraw()" id="withdraw-btn" disabled>Request Withdrawal</button>' +
-    '</div>';
-
-    container.innerHTML = html;
+    const data = await api('GET', '/affiliate/me');
+    _withdrawAvailableBalance = parseInt(data.stats?.available_amount || 0);
+    document.getElementById('wd-available').textContent = fmtRp(_withdrawAvailableBalance);
+    // Count how many commission rows are 'available'
+    const cs = await api('GET', '/affiliate/commissions?status=available&limit=100');
+    document.getElementById('wd-available-count').textContent = (cs.commissions?.length || 0);
   } catch (e) {
-    container.innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
+    document.getElementById('wd-available').textContent = '—';
   }
+
+  // Wire amount input listener (idempotent — re-binds on every load)
+  const input = document.getElementById('wd-amount');
+  if (input) {
+    input.oninput = updateWithdrawNet;
+    input.value = '';
+  }
+  updateWithdrawNet();
+  loadPayoutHistory();
 }
 
-function toggleWithdrawItem(el, id) {
-  const cb = el.querySelector('input[type="checkbox"]');
-  if (selectedWithdrawIds.has(id)) {
-    selectedWithdrawIds.delete(id);
-    el.classList.remove('selected');
-    cb.checked = false;
-  } else {
-    selectedWithdrawIds.add(id);
-    el.classList.add('selected');
-    cb.checked = true;
-  }
-  updateWithdrawTotal();
+function _parseRupiahInput(s) {
+  const digits = String(s || '').replace(/\D/g, '');
+  return digits ? parseInt(digits) : 0;
 }
 
-function selectAllWithdraw() {
-  const allSelected = selectedWithdrawIds.size === withdrawableCommissions.length;
-  selectedWithdrawIds.clear();
-  document.querySelectorAll('.withdraw-item').forEach((el, i) => {
-    const c = withdrawableCommissions[i];
-    const cb = el.querySelector('input[type="checkbox"]');
-    if (allSelected) {
-      el.classList.remove('selected');
-      cb.checked = false;
-    } else {
-      selectedWithdrawIds.add(c.id);
-      el.classList.add('selected');
-      cb.checked = true;
-    }
-  });
-  updateWithdrawTotal();
+function setWithdrawAmount(rp) {
+  const cap = Math.min(rp, _withdrawAvailableBalance);
+  document.getElementById('wd-amount').value = cap.toLocaleString('id-ID');
+  updateWithdrawNet();
 }
 
-function updateWithdrawTotal() {
-  let total = 0;
-  for (const c of withdrawableCommissions) {
-    if (selectedWithdrawIds.has(c.id)) total += parseInt(c.commission_amount);
-  }
-  const el = document.getElementById('withdraw-total');
-  if (el) el.textContent = fmtRp(total);
+function setWithdrawMax() {
+  document.getElementById('wd-amount').value = _withdrawAvailableBalance.toLocaleString('id-ID');
+  updateWithdrawNet();
+}
+
+function updateWithdrawNet() {
+  const amt = _parseRupiahInput(document.getElementById('wd-amount').value);
+  const net = Math.max(0, amt - WITHDRAW_TRANSFER_FEE);
+  document.getElementById('wd-net').textContent = fmtRp(net);
+  const hint = document.getElementById('wd-amount-hint');
   const btn = document.getElementById('withdraw-btn');
-  if (btn) btn.disabled = selectedWithdrawIds.size === 0;
+  let disabled = false;
+  if (!amt) {
+    hint.innerHTML = 'You receive: <strong style="color:var(--green)">Rp 0</strong> after Rp 3.000 transfer fee';
+    disabled = true;
+  } else if (amt < WITHDRAW_MIN_AMOUNT) {
+    hint.innerHTML = '<strong style="color:var(--red)">Below minimum</strong> · min Rp ' + WITHDRAW_MIN_AMOUNT.toLocaleString('id-ID');
+    disabled = true;
+  } else if (amt > _withdrawAvailableBalance) {
+    hint.innerHTML = '<strong style="color:var(--red)">Exceeds available balance</strong>';
+    disabled = true;
+  } else {
+    hint.innerHTML = 'You receive: <strong style="color:var(--green)">' + fmtRp(net) + '</strong> after Rp 3.000 transfer fee';
+  }
+  if (btn) btn.disabled = disabled;
 }
 
-function requestWithdraw() {
-  if (selectedWithdrawIds.size === 0) return;
+function openWithdrawModal() {
+  const amt = _parseRupiahInput(document.getElementById('wd-amount').value);
+  if (amt < WITHDRAW_MIN_AMOUNT || amt > _withdrawAvailableBalance) return;
 
-  // Block withdraw if bank account fields aren't all filled in. Without
-  // this, the user clicks Request, the modal opens, they confirm, and
-  // the POST silently lands without bank info — admin gets a payout
-  // request they can't actually transfer to. Reading from the form
-  // (already populated by loadBankAccount on page enter) is enough; the
-  // backend cross-checks anyway.
-  var bankName    = (document.getElementById('bank-name')?.value   || '').trim();
-  var accountNum  = (document.getElementById('bank-number')?.value || '').trim();
-  var accountName = (document.getElementById('bank-holder')?.value || '').trim();
+  // Bank account guard — same as before
+  const bankName    = (document.getElementById('bank-name')?.value   || '').trim();
+  const accountNum  = (document.getElementById('bank-number')?.value || '').trim();
+  const accountName = (document.getElementById('bank-holder')?.value || '').trim();
   if (!bankName || !accountNum || !accountName) {
-    showPageAlert('withdraw-alert',
-      'Please complete and save your bank account before requesting a withdrawal.',
-      'error');
-    // Scroll the bank form into view so the user can see what's missing.
+    showPageAlert('withdraw-alert', 'Please complete and save your bank account before requesting a withdrawal.', 'error');
     document.getElementById('bank-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
-  let total = 0;
-  for (const c of withdrawableCommissions) {
-    if (selectedWithdrawIds.has(c.id)) total += parseInt(c.commission_amount);
-  }
+  const net = amt - WITHDRAW_TRANSFER_FEE;
   document.getElementById('withdraw-confirm-text').textContent =
-    'You are about to request a withdrawal of ' + fmtRp(total) +
-    ' (' + selectedWithdrawIds.size + ' commissions). Funds will be processed within 5 business days after admin confirmation.';
+    'You are about to request a withdrawal of ' + fmtRp(amt) +
+    '. After Rp 3.000 transfer fee, you will receive ' + fmtRp(net) +
+    '. Funds processed within 5 business days after admin confirmation.';
   document.getElementById('withdraw-modal').classList.add('open');
 }
 
@@ -2305,12 +2222,14 @@ async function confirmWithdraw() {
   btn.disabled = true; btn.textContent = 'Processing...';
 
   try {
-    const ids = Array.from(selectedWithdrawIds);
-    const data = await api('POST', '/affiliate/withdraw', { commission_ids: ids });
+    const amount = _parseRupiahInput(document.getElementById('wd-amount').value);
+    const data = await api('POST', '/affiliate/withdraw', { amount });
     closeWithdrawModal();
-    showPageAlert('withdraw-alert', 'Withdrawal successfully submitted! ' + fmtRp(data.total_amount) +
-      ' (' + data.requested_count + ' commissions). Estimated payout: ' + fmtDate(data.disbursable_at), 'success');
-    loadWithdrawable();
+    showPageAlert('withdraw-alert',
+      'Withdrawal submitted! ' + fmtRp(data.requested_amount) +
+      ' (you receive ' + fmtRp(data.net_amount) + ' after fee). Estimated payout: ' + fmtDate(data.disbursable_at),
+      'success');
+    loadWithdraw();
     loadDashboard();
   } catch (e) {
     closeWithdrawModal();
@@ -2318,6 +2237,45 @@ async function confirmWithdraw() {
   } finally {
     btn.disabled = false; btn.textContent = 'Yes, Request Withdrawal';
   }
+}
+
+async function loadPayoutHistory() {
+  const tbody = document.getElementById('payouts-table');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" class="empty"><span class="spinner"></span> Loading...</td></tr>';
+
+  try {
+    const data = await api('GET', '/affiliate/payouts');
+    _payoutsAll = data.payouts || [];
+    _payoutsExpanded = false;
+    document.getElementById('payouts-toggle').textContent = _payoutsAll.length > 5 ? 'View all' : '';
+    renderPayoutHistory();
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">Failed to load: ' + e.message + '</td></tr>';
+  }
+}
+
+function renderPayoutHistory() {
+  const tbody = document.getElementById('payouts-table');
+  if (!tbody) return;
+  if (!_payoutsAll.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">No payout history yet</td></tr>';
+    return;
+  }
+  const rows = _payoutsExpanded ? _payoutsAll : _payoutsAll.slice(0, 5);
+  tbody.innerHTML = rows.map(p => '<tr>' +
+    '<td class="mono">' + fmtDate(p.paid_at) + '</td>' +
+    '<td class="mono"><strong>' + fmtRp(p.total_amount) + '</strong></td>' +
+    '<td class="mono hide-mobile" style="font-size:11px;color:var(--muted2)">' + (p.transfer_ref || '—') + '</td>' +
+    '<td class="hide-mobile" style="font-size:12px;color:var(--muted)">' + (p.note || '—') + '</td>' +
+  '</tr>').join('');
+}
+
+function togglePayoutHistory() {
+  if (_payoutsAll.length <= 5) return;
+  _payoutsExpanded = !_payoutsExpanded;
+  document.getElementById('payouts-toggle').textContent = _payoutsExpanded ? 'Show less' : 'View all';
+  renderPayoutHistory();
 }
 
 // ── Recruit Links ───────────────────────────────────────────────
@@ -2394,203 +2352,6 @@ function copyToClipboard(text, btn) {
   });
 }
 
-// ── Payouts ──────────────────────────────────────────────────────
-async function loadPayouts() {
-  const tbody = document.getElementById('payouts-table');
-  tbody.innerHTML = '<tr><td colspan="4" class="empty"><span class="spinner"></span> Loading...</td></tr>';
-
-  try {
-    const data = await api('GET', '/affiliate/payouts');
-    if (!data.payouts.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty">No payout history yet</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.payouts.map(p => '<tr>' +
-      '<td class="mono">' + fmtDate(p.paid_at) + '</td>' +
-      '<td class="mono" style="font-size:14px"><strong>' + fmtRp(p.total_amount) + '</strong></td>' +
-      '<td class="mono">' + (p.transfer_ref || '—') + '</td>' +
-      '<td style="font-size:12px;color:var(--muted)">' + (p.note || '—') + '</td>' +
-    '</tr>').join('');
-  } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty">Failed to load: ' + e.message + '</td></tr>';
-  }
-}
-
-// ── Traffic Stats ───────────────────────────────────────────────
-// ── Traffic ──────────────────────────────────────────────────────
-let _trafficDays = 30;
-
-function setTrafficRange(days) {
-  _trafficDays = days;
-  document.querySelectorAll('#traffic-range button').forEach(b => {
-    b.classList.toggle('active', parseInt(b.dataset.days) === days);
-  });
-  const labelMap = { 1: 'today', 7: 'last 7 days', 30: 'last 30 days', 90: 'last 90 days', 9999: 'all time' };
-  const trendMap = { 1: 'Trend today', 7: 'Trend 7 days', 30: 'Trend 30 days', 90: 'Trend 90 days', 9999: 'Trend all-time' };
-  document.getElementById('traffic-sub').textContent = 'Your link performance · ' + (labelMap[days] || labelMap[30]);
-  document.getElementById('trend-title').textContent = trendMap[days] || trendMap[30];
-  loadTraffic();
-}
-
-function _trafficFunnelFromTrend(trend) {
-  const sum = (k) => trend.reduce((s, d) => s + (d[k] || 0), 0);
-  return {
-    homepage:  { total: sum('homepage'),  unique: sum('homepage')  },
-    checkout:  { total: sum('checkout'),  unique: sum('checkout')  },
-    form_fill: { total: sum('form_fill'), unique: sum('form_fill') },
-    paid:      { total: sum('paid'),      unique: sum('paid')      },
-  };
-}
-
-async function loadTraffic() {
-  try {
-    const data = await api('GET', '/affiliate/stats/traffic?days=' + _trafficDays);
-
-    // Funnel — sum over trend for the selected window. Trend already
-    // counts unique sessions per day per page, so summing gives a
-    // close-enough total for the funnel (a session that returns on
-    // multiple days will be double-counted, but the shape is
-    // representative for a stat panel).
-    const trend = data.trend || [];
-    const fn = _trafficFunnelFromTrend(trend);
-
-    const setEl = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-    const conv = (a, b) => (!a ? '—' : Math.round((b / a) * 100) + '%');
-
-    setEl('fnl-visits',    (fn.homepage.total  || 0).toLocaleString('id-ID'));
-    setEl('fnl-checkout',  (fn.checkout.total  || 0).toLocaleString('id-ID'));
-    setEl('fnl-form',      (fn.form_fill.total || 0).toLocaleString('id-ID'));
-    setEl('fnl-paid',      (fn.paid.total      || 0).toLocaleString('id-ID'));
-    setEl('fnl-visits-u',  'unique sessions');
-    setEl('fnl-checkout-u','viewed checkout');
-    setEl('fnl-form-u',    'started filling form');
-    setEl('fnl-paid-u',    'conv ' + (fn.homepage.total ? ((fn.paid.total / fn.homepage.total) * 100).toFixed(1) : '0') + '% from visit');
-
-    setEl('fnl-conv-1', '→ ' + conv(fn.homepage.total,  fn.checkout.total));
-    setEl('fnl-conv-2', '→ ' + conv(fn.checkout.total,  fn.form_fill.total));
-    setEl('fnl-conv-3', '→ ' + conv(fn.form_fill.total, fn.paid.total));
-
-    // Trend bars
-    const barsEl = document.getElementById('trend-bars');
-    const xAxisEl = document.getElementById('trend-xaxis');
-    if (!trend.length) {
-      barsEl.innerHTML = '<div class="empty" style="width:100%">No traffic in this window.</div>';
-      xAxisEl.innerHTML = '';
-    } else {
-      const totals = trend.map(d => (d.homepage || 0) + (d.checkout || 0) + (d.form_fill || 0) + (d.paid || 0));
-      const maxT = Math.max(...totals, 1);
-      const hh = (n) => ((n / maxT) * 100) + '%';
-      barsEl.innerHTML = trend.map((d, i) => {
-        const v = d.homepage || 0, c = d.checkout || 0, f = d.form_fill || 0, p = d.paid || 0;
-        const visitOnly = Math.max(0, v - c - f - p);
-        const lbl = new Date(d.date).toLocaleDateString('en-US', { day:'2-digit', month:'short' });
-        return '<div class="b" title="' + lbl + ': ' + v + ' visit / ' + c + ' checkout / ' + f + ' form / ' + p + ' paid">' +
-          '<div class="seg-vis paid"  style="height:' + hh(p) + '"></div>' +
-          '<div class="seg-vis form"  style="height:' + hh(f) + '"></div>' +
-          '<div class="seg-vis ck"    style="height:' + hh(c) + '"></div>' +
-          '<div class="seg-vis visit" style="height:' + hh(visitOnly) + '"></div>' +
-        '</div>';
-      }).join('');
-
-      // Axis ticks: ~5 evenly-spaced labels
-      const fmt = (d) => new Date(d).toLocaleDateString('en-US', { day:'2-digit', month:'short' }).toUpperCase();
-      const ticks = [];
-      const n = trend.length;
-      const tickCount = Math.min(5, n);
-      for (let i = 0; i < tickCount; i++) {
-        const idx = Math.round((i / (tickCount - 1 || 1)) * (n - 1));
-        ticks.push(fmt(trend[idx].date));
-      }
-      xAxisEl.innerHTML = ticks.map(t => '<span>' + t + '</span>').join('');
-    }
-
-    // Your links panel
-    _renderTrafficLinks(data);
-
-    // Per-product panel
-    _renderTrafficProducts(data.products || []);
-  } catch (e) {
-    document.getElementById('traffic-links').innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
-    document.getElementById('traffic-products').innerHTML = '';
-  }
-}
-
-function _renderTrafficLinks(traffic) {
-  const container = document.getElementById('traffic-links');
-  const stored = JSON.parse(localStorage.getItem('affiliate_data') || '{}');
-  const refCode = traffic.ref_code || stored.ref_code || '';
-  const origin = (window.location.hostname === 'trxcqrr.com') ? 'https://trxcqrr.com' : 'https://staging.tradityqrr.pages.dev';
-
-  // Per-link visits: homepage from trend.homepage; per checkout-tier
-  // from products[].views (which counts unique sessions on the
-  // checkout/form_fill page for that product). Share % is each link's
-  // visits divided by the sum across all rows.
-  const trend = traffic.trend || [];
-  const products = traffic.products || [];
-  const homepageVisits = trend.reduce((s, d) => s + (d.homepage || 0), 0);
-  const homepagePaid   = trend.reduce((s, d) => s + (d.paid || 0), 0);
-  const productVisits  = products.reduce((s, p) => s + (p.views || 0), 0);
-  const totalVisits    = homepageVisits + productVisits;
-  const pct = (n) => totalVisits ? Math.round((n / totalVisits) * 100) : 0;
-
-  // Pull just the path off product.checkout_url so the row shows the
-  // current origin (staging when on staging, prod when on prod) — the
-  // affiliate copies this URL to share, so it must match the env they
-  // shared from.
-  function pathFrom(checkoutUrl) {
-    if (!checkoutUrl) return '';
-    try { return new URL(checkoutUrl, origin).pathname; }
-    catch { return checkoutUrl.startsWith('/') ? checkoutUrl : '/' + checkoutUrl; }
-  }
-  const refUrl = (path) => origin + path + '?ref=' + refCode;
-
-  const globeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
-  const cartIcon  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>';
-
-  function row(icon, name, url, share, visits, paid) {
-    return '<div class="src-row">' +
-      '<div class="src-icon">' + icon + '</div>' +
-      '<div>' +
-        '<div class="src-name">' + name + ' <span class="meta">' + url + ' · ' + share + '% share</span></div>' +
-        '<div class="src-bar"><div class="fill" style="width:' + share + '%"></div></div>' +
-      '</div>' +
-      '<div class="mono" style="font-size:13px">' + visits + '</div>' +
-      '<div class="mono" style="font-size:11px;color:var(--green)">' + paid + ' paid</div>' +
-    '</div>';
-  }
-
-  let html = '';
-  html += row(globeIcon, 'Homepage', refUrl('/'), pct(homepageVisits), homepageVisits, homepagePaid);
-  for (const p of products) {
-    html += row(cartIcon, p.product_name, refUrl(pathFrom(p.checkout_url)), pct(p.views || 0), p.views || 0, p.sales || 0);
-  }
-
-  if (!productVisits && !homepageVisits) {
-    html += '<div class="empty" style="padding:14px 0;font-size:11px">No clicks recorded yet in this window.</div>';
-  }
-
-  container.innerHTML = html;
-}
-
-function _renderTrafficProducts(products) {
-  const container = document.getElementById('traffic-products');
-  if (!products.length) {
-    container.innerHTML = '<div class="empty" style="padding:14px 0">No product activity in this window.</div>';
-    return;
-  }
-  container.innerHTML = products.map(p => {
-    const conv = p.views ? ((p.sales / p.views) * 100).toFixed(1) + '%' : '—';
-    const subText = (p.commission_total ? fmtRp(p.commission_total) + ' commission · ' : '') +
-                    p.sales + ' ' + (p.sales === 1 ? 'sale' : 'sales');
-    return '<div class="prod-row">' +
-      '<div class="nm">' + p.product_name + '<span class="meta">' + subText + '</span></div>' +
-      '<div class="stat">' + p.views + ' view</div>' +
-      '<div class="stat" style="color:var(--green)">' + conv + '</div>' +
-      '<div class="stat" style="color:var(--white)">' + p.sales + '</div>' +
-    '</div>';
-  }).join('');
-}
-
 // ── Overview Charts ─────────────────────────────────────────────
 // Stacked bars rendered with Chart.js. The "Pending" bar in the income chart
 // is an *estimate* derived from form_fill click count (no commission row exists
@@ -2618,7 +2379,7 @@ async function loadTrafficChart() {
   const gridColor = 'rgba(255,255,255,0.06)';
   const tickColor = '#888';
   try {
-    const trafficData = await api('GET', '/affiliate/stats/traffic?days=' + trafficPeriod);
+    const trafficData = await api('GET', '/affiliate/stats/traffic?scope=team&days=' + trafficPeriod);
     const trendDays = trafficData.trend || [];
     const tLabels = trendDays.map(d => {
       const dt = new Date(d.date);
@@ -2714,7 +2475,35 @@ async function loadIncomeChart() {
 }
 
 async function loadOverviewCharts() {
-  await Promise.all([loadTrafficChart(), loadIncomeChart()]);
+  await Promise.all([loadTrafficChart(), loadIncomeChart(), loadOverviewFunnel()]);
+}
+
+async function loadOverviewFunnel() {
+  // Funnel scope = me + team per spec ("daily traffic: 3"). Sums over
+  // the 30-day trend so the panel reflects the same window the daily
+  // traffic chart shows.
+  try {
+    const data = await api('GET', '/affiliate/stats/traffic?scope=team&days=30');
+    const trend = data.trend || [];
+    const sum = (k) => trend.reduce((s, d) => s + (d[k] || 0), 0);
+    const visits   = sum('homepage');
+    const checkout = sum('checkout');
+    const form     = sum('form_fill');
+    const paid     = sum('paid');
+    const conv = (a, b) => (!a ? '—' : Math.round((b / a) * 100) + '%');
+    const setEl = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+
+    setEl('ov-fnl-visits',   visits.toLocaleString('id-ID'));
+    setEl('ov-fnl-checkout', checkout.toLocaleString('id-ID'));
+    setEl('ov-fnl-form',     form.toLocaleString('id-ID'));
+    setEl('ov-fnl-paid',     paid.toLocaleString('id-ID'));
+    setEl('ov-fnl-conv-1',   '→ ' + conv(visits, checkout));
+    setEl('ov-fnl-conv-2',   '→ ' + conv(checkout, form));
+    setEl('ov-fnl-conv-3',   '→ ' + conv(form, paid));
+    setEl('ov-fnl-paid-sub', 'conv ' + (visits ? ((paid / visits) * 100).toFixed(1) : '0') + '% from visit');
+  } catch (e) {
+    console.error('loadOverviewFunnel error:', e);
+  }
 }
 
 // ── Period toggle handlers (active = purple #6B5FD4 / white) ──────
