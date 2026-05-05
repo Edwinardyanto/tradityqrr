@@ -1793,7 +1793,7 @@ async function loadCommissions() {
     const optionalCols = _getActiveOptionalCols();
     tbody.innerHTML = data.orders.map(o => {
       const optionalCells = optionalCols.map(c => {
-        if (c.key === 'tv-username') return '<td class="hide-mobile mono" style="font-size:11px;color:var(--cyan2)">@' + (o.tv_username || '—') + '</td>';
+        if (c.key === 'tv-username') return '<td class="hide-mobile mono" style="font-size:11px;color:var(--cyan2)">' + (o.tv_username || '—') + '</td>';
         if (c.key === 'promo')       return '<td class="hide-mobile mono" style="font-size:11px">' + (o.promo_code ? '<span class="badge b-amber">' + o.promo_code + '</span>' : '<span style="color:var(--muted)">—</span>') + '</td>';
         if (c.key === 'type')        return '<td class="hide-mobile">' + typeBadge(o.commission_type) + '</td>';
         if (c.key === 'available')   return '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + fmtDate(o.available_at) + '</td>';
