@@ -1220,6 +1220,7 @@ nav.legacy-nav{display:none !important}
           <thead><tr>
             <th>Date</th>
             <th>Total</th>
+            <th>Status</th>
             <th class="hide-mobile">Reference</th>
             <th class="hide-mobile">Note</th>
           </tr></thead>
@@ -2373,16 +2374,26 @@ function renderPayoutHistory() {
   const tbody = document.getElementById('payouts-table');
   if (!tbody) return;
   if (!_payoutsAll.length) {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty">No payout history yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No payout history yet</td></tr>';
     return;
   }
   const rows = _payoutsExpanded ? _payoutsAll : _payoutsAll.slice(0, 5);
-  tbody.innerHTML = rows.map(p => '<tr>' +
-    '<td class="mono">' + fmtDate(p.paid_at) + '</td>' +
-    '<td class="mono"><strong>' + fmtRp(p.total_amount) + '</strong></td>' +
-    '<td class="mono hide-mobile" style="font-size:11px;color:var(--muted2)">' + (p.transfer_ref || '—') + '</td>' +
-    '<td class="hide-mobile" style="font-size:12px;color:var(--muted)">' + (p.note || '—') + '</td>' +
-  '</tr>').join('');
+  tbody.innerHTML = rows.map(p => {
+    const isPending = p.status === 'pending' || !p.paid_at;
+    const dateStr = isPending
+      ? (p.disbursable_at ? 'requested · est. ' + fmtDate(p.disbursable_at) : 'requested')
+      : fmtDate(p.paid_at);
+    const statusBadge = isPending
+      ? '<span class="badge badge-yellow">Pending</span>'
+      : '<span class="badge badge-green">Paid</span>';
+    return '<tr>' +
+      '<td class="mono" style="font-size:11px">' + dateStr + '</td>' +
+      '<td class="mono"><strong>' + fmtRp(p.total_amount) + '</strong></td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td class="mono hide-mobile" style="font-size:11px;color:var(--muted2)">' + (p.transfer_ref || '—') + '</td>' +
+      '<td class="hide-mobile" style="font-size:12px;color:var(--muted)">' + (p.note || '—') + '</td>' +
+    '</tr>';
+  }).join('');
 }
 
 function togglePayoutHistory() {
