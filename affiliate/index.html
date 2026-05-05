@@ -137,6 +137,29 @@ a{color:inherit;text-decoration:none}
 .period button.active{background:rgba(107,95,212,.18);color:var(--cyan2)}
 
 .filter-tabs{display:flex;gap:2px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:14px;flex-wrap:wrap}
+
+/* Admin-style filter row (mirrors admin/index.html .orders-filters) so
+   the affiliate Orders tab matches admin's UX while still enforcing the
+   privacy rules at the API + render layers. */
+.orders-filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:14px}
+.of-sel,.of-date{font-size:12px;padding:5px 8px;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--white);line-height:1}
+.of-sel{width:auto;max-width:160px}
+.of-date{width:120px;font-family:inherit}
+.of-group{display:inline-flex;align-items:center;gap:4px;padding:0 8px 0 10px;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.of-group .of-date{background:transparent;border:0;padding:0;height:26px;width:108px}
+.of-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.of-sep{font-size:11px;color:var(--muted);padding:0 2px}
+.of-reset{height:28px;padding:0 10px;font-size:11px}
+@media(max-width:700px){
+  .of-sel{max-width:48%;flex:1}
+  .of-group{flex-wrap:wrap;height:auto;padding:4px 8px}
+}
+.col-picker-panel{display:none;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.col-picker-panel.open{display:block}
+.col-picker-title{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.col-picker-grid{display:flex;flex-wrap:wrap;gap:14px}
+.col-picker-grid label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--white);cursor:pointer}
+.col-picker-grid input{accent-color:var(--cyan);width:14px;height:14px}
 .filter-tab{
   padding:6px 12px;border-radius:6px;color:var(--muted);
   font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;cursor:pointer;
@@ -808,43 +831,81 @@ nav.legacy-nav{display:none !important}
     <div class="topbar">
       <div>
         <h1>Orders</h1>
-        <div class="sub">Orders attributed to your ref code · customer PII partially masked</div>
+        <div class="sub">Orders attributed to your ref code · customer PII masked</div>
       </div>
       <div class="actions">
+        <button class="icon-btn" title="Columns" onclick="toggleAffiliateColumnPicker()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2"/><line x1="9.5" y1="5" x2="9.5" y2="19"/><line x1="14.5" y1="5" x2="14.5" y2="19"/></svg>
+        </button>
         <button class="icon-btn" title="Refresh" onclick="loadCommissions()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
         </button>
       </div>
     </div>
 
-    <div class="filter-tabs" id="commission-filters">
-      <div class="filter-tab active" onclick="setCommissionFilter(null,this)">All</div>
-      <div class="filter-tab" onclick="setCommissionFilter('pending',this)">Pending</div>
-      <div class="filter-tab" onclick="setCommissionFilter('available',this)">Available</div>
-      <div class="filter-tab" onclick="setCommissionFilter('withdrawal_requested',this)">Processing</div>
-      <div class="filter-tab" onclick="setCommissionFilter('paid',this)">Paid</div>
-      <div class="filter-tab" onclick="setCommissionFilter('rejected',this)">Rejected</div>
+    <!-- COLUMN PICKER (collapsible) -->
+    <div class="col-picker-panel" id="aff-col-picker">
+      <div class="col-picker-title">Optional columns</div>
+      <div class="col-picker-grid">
+        <label><input type="checkbox" id="aff-col-tv-username" onchange="applyAffiliateColumnPrefs()"/> TV Username</label>
+        <label><input type="checkbox" id="aff-col-promo" onchange="applyAffiliateColumnPrefs()"/> Promo Code</label>
+        <label><input type="checkbox" id="aff-col-type" onchange="applyAffiliateColumnPrefs()"/> Type</label>
+        <label><input type="checkbox" id="aff-col-available" onchange="applyAffiliateColumnPrefs()"/> Available At</label>
+      </div>
     </div>
 
-    <div class="legend-row">
-      <span><span class="badge b-cyan">First</span> &nbsp;<b>First-time</b> · first purchase from a new user</span>
-      <span><span class="badge b-amber">Recurring</span> &nbsp;<b>Recurring</b> · repeat purchase from the same user</span>
-      <span><span class="badge b-muted">Upline</span> &nbsp;<b>Upline</b> · spread from your downlines</span>
+    <!-- FILTERS — mirrors admin .orders-filters minus payment-method + affiliate -->
+    <div class="orders-filters" id="commission-filters">
+      <select id="aff-f-status" onchange="loadCommissions()" class="of-sel">
+        <option value="">Status</option>
+        <option value="pending">Pending</option>
+        <option value="available">Available</option>
+        <option value="withdrawal_requested">Processing</option>
+        <option value="paid">Paid</option>
+        <option value="rejected">Rejected</option>
+      </select>
+
+      <select id="aff-f-product" onchange="loadCommissions()" class="of-sel">
+        <option value="">Product</option>
+      </select>
+
+      <select id="aff-f-type" onchange="loadCommissions()" class="of-sel">
+        <option value="">Type</option>
+        <option value="first">First-time</option>
+        <option value="recurring">Recurring</option>
+        <option value="upline">Upline</option>
+      </select>
+
+      <div class="of-group" title="Order date range">
+        <span class="of-lbl">Created</span>
+        <input type="date" id="aff-f-from" onchange="loadCommissions()" class="of-date">
+        <span class="of-sep">–</span>
+        <input type="date" id="aff-f-to"   onchange="loadCommissions()" class="of-date">
+      </div>
+
+      <button onclick="resetAffiliateOrderFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
     </div>
 
+    <!-- SUMMARY -->
+    <div id="aff-orders-summary" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+
+    <!-- TABLE — order of columns mirrors admin Orders tab -->
     <div class="table-wrap">
       <table>
-        <thead><tr>
-          <th>Date</th>
-          <th class="hide-mobile">Order ID</th>
-          <th>Product</th>
-          <th class="hide-mobile">Customer</th>
-          <th class="hide-mobile">Order Amt</th>
-          <th>Commission</th>
-          <th class="hide-mobile">Type</th>
-          <th>Status</th>
-          <th class="hide-mobile">Promo</th>
-        </tr></thead>
+        <thead>
+          <tr id="aff-orders-thead-row">
+            <th class="hide-mobile" style="font-size:10px">Order ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th class="hide-mobile">Phone</th>
+            <th class="hide-mobile">Product</th>
+            <th>Order Amt</th>
+            <th>Commission</th>
+            <th>Status</th>
+            <th class="hide-mobile">Created At</th>
+            <!-- optional columns appended dynamically -->
+          </tr>
+        </thead>
         <tbody id="commissions-table"></tbody>
       </table>
     </div>
@@ -1606,59 +1667,181 @@ function copyRefCode() {
 // ── Orders (formerly Commissions) ────────────────────────────────
 // Backed by /affiliate/orders which JOINs commissions + orders so the
 // table can show product, promo, and (server-masked) customer info
-// alongside the commission breakdown. Internal naming kept as
-// "commissions" so the existing nav/key/state machinery still works
-// without rewriting showPage(), filter handlers, etc.
+// alongside the commission breakdown. Tab markup mirrors the admin
+// Orders tab (column picker + filter row + summary + sortable table)
+// while privacy rules are enforced at the API + render layers.
+//
+// Internal naming kept as "commissions" so existing showPage() / state
+// machinery still works without rewiring.
+
+// Default optional column visibility — tv_username on by default since
+// it's the customer-chosen identifier the affiliate already knows.
+const _affiliateOptionalCols = {
+  'tv-username': true,
+  'promo':       false,
+  'type':        false,
+  'available':   false,
+};
+const AFF_COL_PREFS_KEY = 'aff_orders_col_prefs';
+try {
+  const saved = JSON.parse(localStorage.getItem(AFF_COL_PREFS_KEY) || '{}');
+  Object.assign(_affiliateOptionalCols, saved);
+} catch (_) {}
+
+function toggleAffiliateColumnPicker() {
+  document.getElementById('aff-col-picker').classList.toggle('open');
+}
+
+function applyAffiliateColumnPrefs() {
+  ['tv-username','promo','type','available'].forEach(key => {
+    const el = document.getElementById('aff-col-' + key);
+    if (el) _affiliateOptionalCols[key] = el.checked;
+  });
+  try { localStorage.setItem(AFF_COL_PREFS_KEY, JSON.stringify(_affiliateOptionalCols)); } catch (_) {}
+  loadCommissions();
+}
+
+function _getActiveOptionalCols() {
+  // Order matters — header + cell order must match.
+  return [
+    { key: 'tv-username', header: 'TV Username' },
+    { key: 'promo',       header: 'Promo' },
+    { key: 'type',        header: 'Type' },
+    { key: 'available',   header: 'Available' },
+  ].filter(c => _affiliateOptionalCols[c.key]);
+}
+
+function _renderAffiliateOptionalHeaders() {
+  const thead = document.getElementById('aff-orders-thead-row');
+  if (!thead) return;
+  // Strip any existing optional <th> (data-optional="1")
+  thead.querySelectorAll('th[data-optional="1"]').forEach(th => th.remove());
+  _getActiveOptionalCols().forEach(c => {
+    const th = document.createElement('th');
+    th.setAttribute('data-optional', '1');
+    th.className = 'hide-mobile';
+    th.textContent = c.header;
+    thead.appendChild(th);
+  });
+  // Sync checkbox state too
+  ['tv-username','promo','type','available'].forEach(key => {
+    const el = document.getElementById('aff-col-' + key);
+    if (el) el.checked = !!_affiliateOptionalCols[key];
+  });
+}
+
+function _affiliateOrderQueryString() {
+  const params = new URLSearchParams();
+  params.set('page', currentCommissionPage);
+  params.set('limit', 20);
+  const status = document.getElementById('aff-f-status')?.value;
+  const product = document.getElementById('aff-f-product')?.value;
+  const type = document.getElementById('aff-f-type')?.value;
+  const from = document.getElementById('aff-f-from')?.value;
+  const to   = document.getElementById('aff-f-to')?.value;
+  if (status)  params.set('status', status);
+  if (product) params.set('product_name', product);
+  if (type)    params.set('type', type);
+  if (from)    params.set('created_from', from);
+  if (to)      params.set('created_to', to);
+  return params.toString();
+}
+
+function _populateAffiliateProductFilter(orders) {
+  const sel = document.getElementById('aff-f-product');
+  if (!sel) return;
+  const current = sel.value;
+  const seen = new Set();
+  orders.forEach(o => { if (o.product_name) seen.add(o.product_name); });
+  // Preserve the placeholder + already-selected option
+  if (current && !seen.has(current)) seen.add(current);
+  const opts = ['<option value="">Product</option>']
+    .concat(Array.from(seen).sort().map(p => `<option value="${p}"${p === current ? ' selected' : ''}>${p}</option>`));
+  sel.innerHTML = opts.join('');
+}
+
 async function loadCommissions() {
+  // Sync column-picker state into the table header before render so
+  // colspan calculations match.
+  _renderAffiliateOptionalHeaders();
+
   const tbody = document.getElementById('commissions-table');
-  const colspan = 9;
+  const fixedCols = 9;  // Order ID · Name · Email · Phone · Product · Order Amt · Commission · Status · Created At
+  const colspan = fixedCols + _getActiveOptionalCols().length;
   tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty"><span class="spinner"></span> Loading...</td></tr>';
 
+  const summary = document.getElementById('aff-orders-summary');
+
   try {
-    let url = '/affiliate/orders?page=' + currentCommissionPage + '&limit=20';
-    if (currentCommissionFilter) url += '&status=' + currentCommissionFilter;
-    const data = await api('GET', url);
+    const data = await api('GET', '/affiliate/orders?' + _affiliateOrderQueryString());
+    _populateAffiliateProductFilter(data.orders);
 
     if (!data.orders.length) {
-      tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty">No orders yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty">No orders match these filters</td></tr>';
       document.getElementById('commissions-pagination').innerHTML = '';
+      if (summary) summary.textContent = `0 of ${data.total} orders`;
       return;
     }
 
-    tbody.innerHTML = data.orders.map(o => '<tr>' +
-      '<td class="mono">' + fmtDate(o.created_at) + '</td>' +
-      '<td class="mono hide-mobile" style="font-size:11px">' + (o.order_id || '—') + '</td>' +
-      '<td>' + (o.product_name || '—') + '</td>' +
-      '<td class="hide-mobile" style="font-size:11px;line-height:1.5">' +
-        '<div><strong>' + (o.customer_name_masked || '—') + '</strong></div>' +
-        '<div style="color:var(--muted)">' + (o.customer_email_masked || '—') + '</div>' +
-        '<div style="color:var(--muted)">' + (o.customer_phone_masked || '—') + '</div>' +
-        '<div style="color:var(--cyan2);font-family:\'JetBrains Mono\',monospace">@' + (o.tv_username || '—') + '</div>' +
-      '</td>' +
-      '<td class="mono hide-mobile">' + fmtRp(o.amount_order) + '</td>' +
-      '<td class="mono">' + fmtRp(o.commission_amount) + '</td>' +
-      '<td class="hide-mobile">' + typeBadge(o.commission_type) + '</td>' +
-      '<td>' + statusBadge(o.commission_status) + '</td>' +
-      '<td class="mono hide-mobile" style="font-size:11px">' +
-        (o.promo_code ? '<span class="badge b-amber">' + o.promo_code + '</span>' : '<span style="color:var(--muted)">—</span>') +
-      '</td>' +
-    '</tr>').join('');
+    const totalCommission = data.orders.reduce((s, o) => s + parseInt(o.commission_amount || 0), 0);
+    const start = (data.page - 1) * data.limit + 1;
+    const end = start + data.orders.length - 1;
+    if (summary) {
+      summary.innerHTML = `Showing <strong>${start}–${end}</strong> of <strong>${data.total}</strong> orders · Commission on this page: <strong style="color:var(--cyan2)">${fmtRp(totalCommission)}</strong>`;
+    }
+
+    const optionalCols = _getActiveOptionalCols();
+    tbody.innerHTML = data.orders.map(o => {
+      const optionalCells = optionalCols.map(c => {
+        if (c.key === 'tv-username') return '<td class="hide-mobile mono" style="font-size:11px;color:var(--cyan2)">@' + (o.tv_username || '—') + '</td>';
+        if (c.key === 'promo')       return '<td class="hide-mobile mono" style="font-size:11px">' + (o.promo_code ? '<span class="badge b-amber">' + o.promo_code + '</span>' : '<span style="color:var(--muted)">—</span>') + '</td>';
+        if (c.key === 'type')        return '<td class="hide-mobile">' + typeBadge(o.commission_type) + '</td>';
+        if (c.key === 'available')   return '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + fmtDate(o.available_at) + '</td>';
+        return '';
+      }).join('');
+
+      return '<tr>' +
+        '<td class="mono hide-mobile" style="font-size:10px">' + (o.order_id || '—') + '</td>' +
+        '<td><strong>' + (o.customer_name_masked || '—') + '</strong></td>' +
+        '<td style="font-size:11px;color:var(--muted)">' + (o.customer_email_masked || '—') + '</td>' +
+        '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + (o.customer_phone_masked || '—') + '</td>' +
+        '<td class="hide-mobile" style="font-size:12px">' + (o.product_name || '—') + '</td>' +
+        '<td class="mono" style="font-size:12px">' + fmtRp(o.amount_order) + '</td>' +
+        '<td class="mono" style="font-size:12px;color:var(--cyan2)"><strong>' + fmtRp(o.commission_amount) + '</strong></td>' +
+        '<td>' + statusBadge(o.commission_status) + '</td>' +
+        '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + (o.created_at ? fmtDate(o.created_at) : '—') + '</td>' +
+        optionalCells +
+      '</tr>';
+    }).join('');
 
     const totalPages = Math.ceil(data.total / data.limit);
     document.getElementById('commissions-pagination').innerHTML =
       totalPages > 1 ? renderPagination(currentCommissionPage, totalPages, 'goCommissionPage') : '';
   } catch (e) {
     tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty">Failed to load: ' + e.message + '</td></tr>';
+    if (summary) summary.textContent = '';
   }
 }
 
-function filterCommissions(status, el) {
-  currentCommissionFilter = status;
+function resetAffiliateOrderFilters() {
+  ['aff-f-status','aff-f-product','aff-f-type','aff-f-from','aff-f-to'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
   currentCommissionPage = 1;
-  document.querySelectorAll('#commission-filters .filter-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
   loadCommissions();
 }
+
+// Legacy filter hook — old pill-style buttons elsewhere in the JS may
+// still call this. Map the status string into the new <select>.
+function setCommissionFilter(status) {
+  const sel = document.getElementById('aff-f-status');
+  if (sel) sel.value = status || '';
+  currentCommissionPage = 1;
+  loadCommissions();
+}
+
+function filterCommissions(status, el) { setCommissionFilter(status); }
 
 function goCommissionPage(p) {
   currentCommissionPage = p;
