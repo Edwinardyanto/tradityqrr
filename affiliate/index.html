@@ -807,8 +807,8 @@ nav.legacy-nav{display:none !important}
   <div class="page" id="page-commissions">
     <div class="topbar">
       <div>
-        <h1>Commissions</h1>
-        <div class="sub">History of all commissions earned via your ref code</div>
+        <h1>Orders</h1>
+        <div class="sub">Orders attributed to your ref code · customer PII partially masked</div>
       </div>
       <div class="actions">
         <button class="icon-btn" title="Refresh" onclick="loadCommissions()">
@@ -836,12 +836,14 @@ nav.legacy-nav{display:none !important}
       <table>
         <thead><tr>
           <th>Date</th>
-          <th class="hide-mobile">TV Username</th>
-          <th class="hide-mobile">Order</th>
+          <th class="hide-mobile">Order ID</th>
+          <th>Product</th>
+          <th class="hide-mobile">Customer</th>
+          <th class="hide-mobile">Order Amt</th>
           <th>Commission</th>
           <th class="hide-mobile">Type</th>
           <th>Status</th>
-          <th class="hide-mobile">Available</th>
+          <th class="hide-mobile">Promo</th>
         </tr></thead>
         <tbody id="commissions-table"></tbody>
       </table>
@@ -1167,7 +1169,7 @@ nav.legacy-nav{display:none !important}
     +   'Overview</a>'
     + '<a class="nav-item" data-key="komisi">'
     +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3z"/><path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7"/></svg>'
-    +   'Commissions</a>'
+    +   'Orders</a>'
     + '<a class="nav-item" data-key="referral">'
     +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>'
     +   'Referrals</a>'
@@ -1417,7 +1419,7 @@ function showScreen(name) {
 function buildNav() {
   const tabs = [
     { id: 'overview', label: 'Overview' },
-    { id: 'commissions', label: 'Commissions' },
+    { id: 'commissions', label: 'Orders' },
     { id: 'referrals', label: 'Referrals' },
     { id: 'recruit', label: 'Recruit' },
     { id: 'traffic', label: 'Traffic' },
@@ -1601,44 +1603,52 @@ function copyRefCode() {
   });
 }
 
-// ── Commissions ──────────────────────────────────────────────────
+// ── Orders (formerly Commissions) ────────────────────────────────
+// Backed by /affiliate/orders which JOINs commissions + orders so the
+// table can show product, promo, and (server-masked) customer info
+// alongside the commission breakdown. Internal naming kept as
+// "commissions" so the existing nav/key/state machinery still works
+// without rewriting showPage(), filter handlers, etc.
 async function loadCommissions() {
   const tbody = document.getElementById('commissions-table');
-  tbody.innerHTML = '<tr><td colspan="7" class="empty"><span class="spinner"></span> Loading...</td></tr>';
+  const colspan = 9;
+  tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty"><span class="spinner"></span> Loading...</td></tr>';
 
   try {
-    let url = '/affiliate/commissions?page=' + currentCommissionPage + '&limit=20';
+    let url = '/affiliate/orders?page=' + currentCommissionPage + '&limit=20';
     if (currentCommissionFilter) url += '&status=' + currentCommissionFilter;
     const data = await api('GET', url);
 
-    if (!data.commissions.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty">No commissions yet</td></tr>';
+    if (!data.orders.length) {
+      tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty">No orders yet</td></tr>';
       document.getElementById('commissions-pagination').innerHTML = '';
       return;
     }
 
-    tbody.innerHTML = data.commissions.map(c => '<tr>' +
-      '<td class="mono">' + fmtDate(c.created_at) + '</td>' +
-      '<td class="mono hide-mobile"><strong>' + c.tv_username + '</strong></td>' +
-      '<td class="mono hide-mobile" style="font-size:11px">' + c.transaction_id + '</td>' +
-      '<td class="mono">' + fmtRp(c.commission_amount) + '</td>' +
-      '<td class="hide-mobile">' + typeBadge(c.type) + '</td>' +
-      '<td>' + statusBadge(c.status) + '</td>' +
-      '<td class="mono hide-mobile">' + fmtDate(c.available_at) + '</td>' +
+    tbody.innerHTML = data.orders.map(o => '<tr>' +
+      '<td class="mono">' + fmtDate(o.created_at) + '</td>' +
+      '<td class="mono hide-mobile" style="font-size:11px">' + (o.order_id || '—') + '</td>' +
+      '<td>' + (o.product_name || '—') + '</td>' +
+      '<td class="hide-mobile" style="font-size:11px;line-height:1.5">' +
+        '<div><strong>' + (o.customer_name_masked || '—') + '</strong></div>' +
+        '<div style="color:var(--muted)">' + (o.customer_email_masked || '—') + '</div>' +
+        '<div style="color:var(--muted)">' + (o.customer_phone_masked || '—') + '</div>' +
+        '<div style="color:var(--cyan2);font-family:\'JetBrains Mono\',monospace">@' + (o.tv_username || '—') + '</div>' +
+      '</td>' +
+      '<td class="mono hide-mobile">' + fmtRp(o.amount_order) + '</td>' +
+      '<td class="mono">' + fmtRp(o.commission_amount) + '</td>' +
+      '<td class="hide-mobile">' + typeBadge(o.commission_type) + '</td>' +
+      '<td>' + statusBadge(o.commission_status) + '</td>' +
+      '<td class="mono hide-mobile" style="font-size:11px">' +
+        (o.promo_code ? '<span class="badge b-amber">' + o.promo_code + '</span>' : '<span style="color:var(--muted)">—</span>') +
+      '</td>' +
     '</tr>').join('');
 
-    // Pagination — windowed view with prev/next + ellipsis. The old
-    // implementation rendered every page button (100 pages = 100 buttons
-    // in the DOM, unusable on mobile). We always show first + last,
-    // surrounding the current page with a 2-on-each-side window, and
-    // collapse the gap with a "…" indicator. Plus prev/next arrows so
-    // the user can step one at a time without hunting for the nearest
-    // numbered button.
     const totalPages = Math.ceil(data.total / data.limit);
     document.getElementById('commissions-pagination').innerHTML =
       totalPages > 1 ? renderPagination(currentCommissionPage, totalPages, 'goCommissionPage') : '';
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty">Failed to load: ' + e.message + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty">Failed to load: ' + e.message + '</td></tr>';
   }
 }
 
