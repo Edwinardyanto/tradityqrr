@@ -423,6 +423,28 @@ nav.legacy-nav{display:none !important}
 .pager .num.active{background:var(--cyan);color:#fff;border-color:var(--cyan)}
 .pager .num:disabled{opacity:.4;cursor:not-allowed}
 
+/* ===== REFERRALS ===== */
+.ref-row{cursor:pointer;transition:background .15s}
+.ref-row td{vertical-align:middle}
+.ref-row .ex{color:var(--muted);font-size:11px;transition:transform .2s;display:inline-block;margin-right:8px}
+.ref-row.open .ex{transform:rotate(90deg);color:var(--cyan2)}
+.ref-row.open{background:rgba(107,95,212,.05)}
+.ref-row:hover{background:rgba(107,95,212,.04)}
+
+.split{display:inline-flex;gap:4px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted2)}
+.split .seg{height:6px;border-radius:1px}
+.split .seg.paid{background:var(--green)}
+.split .seg.pend{background:var(--gold)}
+
+.expand-wrap{background:rgba(107,95,212,.04)}
+.expand-wrap td{padding:0 !important;border-bottom:1px solid var(--border)}
+.expand-inner{padding:14px 24px 18px 64px}
+.expand-inner table{margin:0;background:transparent;width:100%}
+.expand-inner thead{background:transparent}
+.expand-inner th{padding:8px 12px;font-size:9px;color:var(--muted);text-align:left;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase}
+.expand-inner td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
+.expand-inner tr:last-child td{border-bottom:none}
+
 /* ===== REKRUT ===== */
 .split-bar{display:flex;height:48px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin:8px 0 6px}
 .split-bar .seg{display:flex;flex-direction:column;justify-content:center;padding:0 14px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px}
@@ -925,6 +947,26 @@ nav.legacy-nav{display:none !important}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/></svg>
         </button>
       </div>
+    </div>
+
+    <div class="kpi-row" id="referrals-kpis">
+      <div class="kpi"><div class="l">Total referrals</div><div class="v cy" id="kpi-total-refs">—</div><div class="n">unique users all-time</div></div>
+      <div class="kpi"><div class="l">Active 30d</div><div class="v" id="kpi-active-30d">—</div><div class="n">order &lt; 30 days</div></div>
+      <div class="kpi"><div class="l">Repeat buyers</div><div class="v" id="kpi-repeat">—</div><div class="n">≥ 2 purchases</div></div>
+      <div class="kpi"><div class="l">Total commission</div><div class="v green" id="kpi-total-comm">—</div><div class="n" id="kpi-total-comm-sub">from referrals</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="referrals-search" placeholder="Search TV username..." oninput="renderReferralsTable()"/>
+      </div>
+      <div class="period" id="referrals-filter-pills">
+        <button class="active" data-filter="all" onclick="setReferralsFilter('all')">All</button>
+        <button data-filter="active" onclick="setReferralsFilter('active')">Active</button>
+        <button data-filter="repeat" onclick="setReferralsFilter('repeat')">Repeat</button>
+      </div>
+      <div class="count" id="referrals-count"></div>
     </div>
 
     <div class="table-wrap">
@@ -1884,24 +1926,158 @@ function renderPagination(currentPage, totalPages, handlerName) {
 }
 
 // ── Referrals ────────────────────────────────────────────────────
+let _referralsData = [];
+let _referralsFilter = 'all';
+// Cache of drill-down orders keyed by referral_id, so re-opening a row
+// after collapse doesn't refetch.
+let _referralsOrdersCache = {};
+
 async function loadReferrals() {
   const tbody = document.getElementById('referrals-table');
-  tbody.innerHTML = '<tr><td colspan="3" class="empty"><span class="spinner"></span> Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" class="empty"><span class="spinner"></span> Loading...</td></tr>';
+  _referralsOrdersCache = {};
 
   try {
     const data = await api('GET', '/affiliate/referrals');
-    if (!data.referrals.length) {
-      tbody.innerHTML = '<tr><td colspan="3" class="empty">No referrals yet</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.referrals.map(r => '<tr>' +
-      '<td><strong>' + r.tv_username + '</strong></td>' +
-      '<td class="mono hide-mobile">' + fmtDate(r.created_at) + '</td>' +
-      '<td class="mono">' + fmtRp(r.total_commission_earned) + '</td>' +
-    '</tr>').join('');
+    _referralsData = data.referrals || [];
+
+    // KPI tiles
+    const s = data.stats || {};
+    document.getElementById('kpi-total-refs').textContent = s.total_referrals || 0;
+    document.getElementById('kpi-active-30d').textContent = s.active_30d || 0;
+    document.getElementById('kpi-repeat').textContent = s.repeat_buyers || 0;
+    document.getElementById('kpi-total-comm').textContent = fmtRp(s.total_commission_all || 0);
+    document.getElementById('kpi-total-comm-sub').textContent =
+      'from ' + (s.total_referrals || 0) + ' referrals';
+
+    renderReferralsTable();
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="3" class="empty">Failed to load: ' + e.message + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Failed to load: ' + e.message + '</td></tr>';
   }
+}
+
+function setReferralsFilter(f) {
+  _referralsFilter = f;
+  document.querySelectorAll('#referrals-filter-pills button').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === f);
+  });
+  renderReferralsTable();
+}
+
+function renderReferralsTable() {
+  const tbody = document.getElementById('referrals-table');
+  const search = (document.getElementById('referrals-search').value || '').trim().toLowerCase();
+  const now = Date.now();
+  const THIRTY = 30 * 86400000;
+
+  const filtered = _referralsData.filter(r => {
+    if (search && !(r.tv_username || '').toLowerCase().includes(search)) return false;
+    if (_referralsFilter === 'active') {
+      if (!r.last_order_date || (now - new Date(r.last_order_date).getTime()) >= THIRTY) return false;
+    } else if (_referralsFilter === 'repeat') {
+      if ((r.total_order_count || 0) < 2) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('referrals-count').textContent =
+    filtered.length + ' / ' + _referralsData.length + ' referrals';
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No referrals match.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const paid = r.paid_amount || 0;
+    const pend = (r.available_amount || 0) + (r.pending_amount || 0) + (r.requested_amount || 0);
+    const rej  = r.rejected_amount || 0;
+
+    // Bar widths proportional to total commission, capped to 80px max
+    // so the column doesn't blow out on big-amount rows.
+    const total = paid + pend + rej || 1;
+    const MAX = 80;
+    const wPaid = Math.round((paid / total) * MAX);
+    const wPend = Math.round((pend / total) * MAX);
+
+    let statusHtml;
+    if (paid === 0 && pend === 0 && rej === 0) {
+      statusHtml = '<span style="color:var(--muted);font-family:\'JetBrains Mono\',monospace;font-size:11px">No commissions yet</span>';
+    } else if (paid === 0 && pend === 0 && rej > 0) {
+      statusHtml = '<span style="color:var(--red);font-family:\'JetBrains Mono\',monospace;font-size:11px">Rejected</span>';
+    } else {
+      const segs = [];
+      if (wPaid) segs.push('<span class="seg paid" style="width:' + Math.max(wPaid, 4) + 'px"></span>');
+      if (wPend) segs.push('<span class="seg pend" style="width:' + Math.max(wPend, 4) + 'px"></span>');
+      const parts = [];
+      if (paid) parts.push(fmtRp(paid) + ' paid');
+      if (pend) parts.push(fmtRp(pend) + ' pending');
+      statusHtml = '<span class="split">' + segs.join('') + parts.join(' · ') + '</span>';
+    }
+
+    return '<tr class="ref-row" data-rid="' + r.referral_id + '" onclick="toggleReferralRow(' + r.referral_id + ', this)">' +
+      '<td><span class="ex">▶</span><strong>' + r.tv_username + '</strong></td>' +
+      '<td class="hide-mobile mono">' + (r.first_order_date ? fmtDate(r.first_order_date) : '—') + '</td>' +
+      '<td class="hide-mobile mono">' + (r.total_order_count || 0) + '</td>' +
+      '<td class="mono">' + fmtRp(r.total_commission || 0) + '</td>' +
+      '<td class="hide-mobile">' + statusHtml + '</td>' +
+    '</tr>' +
+    '<tr class="expand-wrap" data-rid-expand="' + r.referral_id + '" style="display:none">' +
+      '<td colspan="5"><div class="expand-inner" id="expand-' + r.referral_id + '">' +
+        '<div class="empty"><span class="spinner"></span> Loading orders...</div>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function toggleReferralRow(referralId, rowEl) {
+  const expand = document.querySelector('tr[data-rid-expand="' + referralId + '"]');
+  if (!expand) return;
+
+  const isOpen = rowEl.classList.contains('open');
+  if (isOpen) {
+    rowEl.classList.remove('open');
+    expand.style.display = 'none';
+    return;
+  }
+  rowEl.classList.add('open');
+  expand.style.display = '';
+
+  const inner = document.getElementById('expand-' + referralId);
+  if (_referralsOrdersCache[referralId]) {
+    inner.innerHTML = _renderReferralOrders(_referralsOrdersCache[referralId]);
+    return;
+  }
+  try {
+    const data = await api('GET', '/affiliate/orders?referral_id=' + referralId + '&limit=100');
+    _referralsOrdersCache[referralId] = data.orders || [];
+    inner.innerHTML = _renderReferralOrders(_referralsOrdersCache[referralId]);
+  } catch (e) {
+    inner.innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
+  }
+}
+
+function _renderReferralOrders(orders) {
+  if (!orders.length) return '<div class="empty">No orders for this referral.</div>';
+  const statusBadge = (s) => {
+    if (s === 'paid')                  return '<span class="badge b-muted">Paid</span>';
+    if (s === 'available')             return '<span class="badge b-green">Available</span>';
+    if (s === 'pending')               return '<span class="badge b-gold">Pending</span>';
+    if (s === 'withdrawal_requested')  return '<span class="badge b-cyan">Requested</span>';
+    if (s === 'rejected')              return '<span class="badge b-red">Rejected</span>';
+    return '<span class="badge b-muted">' + s + '</span>';
+  };
+  return '<table>' +
+    '<thead><tr><th>Date</th><th>Order ID</th><th>Product</th><th>Commission</th><th>Status</th></tr></thead>' +
+    '<tbody>' + orders.map(o =>
+      '<tr>' +
+        '<td class="mono">' + fmtDate(o.created_at) + '</td>' +
+        '<td class="mono">' + (o.order_id || '—') + '</td>' +
+        '<td>' + (o.product_name || '—') + '</td>' +
+        '<td class="mono">' + fmtRp(o.commission_amount || 0) + '</td>' +
+        '<td>' + statusBadge(o.commission_status) + '</td>' +
+      '</tr>'
+    ).join('') + '</tbody></table>';
 }
 
 // ── Withdraw ─────────────────────────────────────────────────────
