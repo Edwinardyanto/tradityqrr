@@ -933,7 +933,6 @@ nav.legacy-nav{display:none !important}
         <option value="">Settlement</option>
         <option value="pending">Pending</option>
         <option value="available">Available</option>
-        <option value="rejected">Rejected</option>
       </select>
 
       <select id="aff-f-payment" onchange="loadCommissions()" class="of-sel">
@@ -1526,7 +1525,6 @@ function commissionKindBadge(kind) {
 
 function settlementBadge(s) {
   if (s === 'available') return '<span class="badge badge-green">Available</span>';
-  if (s === 'rejected')  return '<span class="badge badge-red">Rejected</span>';
   return '<span class="badge badge-muted">Pending</span>';
 }
 
