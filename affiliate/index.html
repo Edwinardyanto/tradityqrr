@@ -2444,10 +2444,7 @@ function _trafficFunnelFromTrend(trend) {
 
 async function loadTraffic() {
   try {
-    const [data, linksData] = await Promise.all([
-      api('GET', '/affiliate/stats/traffic?days=' + _trafficDays),
-      api('GET', '/affiliate/recruitment-links').catch(() => ({ links: [] })),
-    ]);
+    const data = await api('GET', '/affiliate/stats/traffic?days=' + _trafficDays);
 
     // Funnel — sum over trend for the selected window. Trend already
     // counts unique sessions per day per page, so summing gives a
@@ -2508,7 +2505,7 @@ async function loadTraffic() {
     }
 
     // Your links panel
-    _renderTrafficLinks(data, linksData.links || []);
+    _renderTrafficLinks(data);
 
     // Per-product panel
     _renderTrafficProducts(data.products || []);
@@ -2518,53 +2515,58 @@ async function loadTraffic() {
   }
 }
 
-function _renderTrafficLinks(traffic, recruitLinks) {
+function _renderTrafficLinks(traffic) {
   const container = document.getElementById('traffic-links');
   const stored = JSON.parse(localStorage.getItem('affiliate_data') || '{}');
   const refCode = traffic.ref_code || stored.ref_code || '';
   const origin = (window.location.hostname === 'trxcqrr.com') ? 'https://trxcqrr.com' : 'https://staging.tradityqrr.pages.dev';
-  const refUrl = origin + '/?ref=' + refCode;
 
-  // Sum traffic across the trend window for the main ref bar
+  // Per-link visits: homepage from trend.homepage; per checkout-tier
+  // from products[].views (which counts unique sessions on the
+  // checkout/form_fill page for that product). Share % is each link's
+  // visits divided by the sum across all rows.
   const trend = traffic.trend || [];
-  const totalVisits = trend.reduce((s, d) => s + (d.homepage || 0), 0);
-  const totalPaid   = trend.reduce((s, d) => s + (d.paid || 0), 0);
+  const products = traffic.products || [];
+  const homepageVisits = trend.reduce((s, d) => s + (d.homepage || 0), 0);
+  const homepagePaid   = trend.reduce((s, d) => s + (d.paid || 0), 0);
+  const productVisits  = products.reduce((s, p) => s + (p.views || 0), 0);
+  const totalVisits    = homepageVisits + productVisits;
+  const pct = (n) => totalVisits ? Math.round((n / totalVisits) * 100) : 0;
 
-  // Recruit links share denominator = total signups across all links
-  const totalSignups = recruitLinks.reduce((s, l) => s + (l.used_count || 0), 0);
+  // Pull just the path off product.checkout_url so the row shows the
+  // current origin (staging when on staging, prod when on prod) — the
+  // affiliate copies this URL to share, so it must match the env they
+  // shared from.
+  function pathFrom(checkoutUrl) {
+    if (!checkoutUrl) return '';
+    try { return new URL(checkoutUrl, origin).pathname; }
+    catch { return checkoutUrl.startsWith('/') ? checkoutUrl : '/' + checkoutUrl; }
+  }
+  const refUrl = (path) => origin + path + '?ref=' + refCode;
 
   const globeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
-  const userPlusIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>';
+  const cartIcon  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>';
+
+  function row(icon, name, url, share, visits, paid) {
+    return '<div class="src-row">' +
+      '<div class="src-icon">' + icon + '</div>' +
+      '<div>' +
+        '<div class="src-name">' + name + ' <span class="meta">' + url + ' · ' + share + '% share</span></div>' +
+        '<div class="src-bar"><div class="fill" style="width:' + share + '%"></div></div>' +
+      '</div>' +
+      '<div class="mono" style="font-size:13px">' + visits + '</div>' +
+      '<div class="mono" style="font-size:11px;color:var(--green)">' + paid + ' paid</div>' +
+    '</div>';
+  }
 
   let html = '';
+  html += row(globeIcon, 'Homepage', refUrl('/'), pct(homepageVisits), homepageVisits, homepagePaid);
+  for (const p of products) {
+    html += row(cartIcon, p.product_name, refUrl(pathFrom(p.checkout_url)), pct(p.views || 0), p.views || 0, p.sales || 0);
+  }
 
-  // Main referral row
-  html += '<div class="src-row">' +
-    '<div class="src-icon">' + globeIcon + '</div>' +
-    '<div>' +
-      '<div class="src-name">Main referral <span class="meta">' + refUrl + '</span></div>' +
-      '<div class="src-bar"><div class="fill" style="width:100%"></div></div>' +
-    '</div>' +
-    '<div class="mono" style="font-size:13px">' + totalVisits + '</div>' +
-    '<div class="mono" style="font-size:11px;color:var(--green)">' + totalPaid + ' paid</div>' +
-  '</div>';
-
-  if (!recruitLinks.length) {
-    html += '<div class="empty" style="padding:14px 0;font-size:11px">No recruitment links yet · create one in <a onclick="showPage(\'recruit\')" style="color:var(--cyan2);cursor:pointer;text-decoration:underline">Recruit</a></div>';
-  } else {
-    for (const lk of recruitLinks) {
-      const share = totalSignups ? Math.round(((lk.used_count || 0) / totalSignups) * 100) : 0;
-      const joinUrl = origin + '/affiliate/?join=' + lk.token;
-      html += '<div class="src-row">' +
-        '<div class="src-icon">' + userPlusIcon + '</div>' +
-        '<div>' +
-          '<div class="src-name">' + (lk.label || 'Recruit link') + ' <span class="meta">' + joinUrl + ' · ' + share + '% share</span></div>' +
-          '<div class="src-bar"><div class="fill" style="width:' + share + '%"></div></div>' +
-        '</div>' +
-        '<div class="mono" style="font-size:13px">' + (lk.used_count || 0) + '</div>' +
-        '<div class="mono" style="font-size:11px;color:' + (lk.is_active ? 'var(--muted)' : 'var(--red)') + '">' + (lk.is_active ? 'signups' : 'inactive') + '</div>' +
-      '</div>';
-    }
+  if (!productVisits && !homepageVisits) {
+    html += '<div class="empty" style="padding:14px 0;font-size:11px">No clicks recorded yet in this window.</div>';
   }
 
   container.innerHTML = html;
