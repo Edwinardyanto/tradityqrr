@@ -537,14 +537,11 @@ nav.legacy-nav{display:none !important}
 .wd-split{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-bottom:6px}
 @media (max-width:780px){.wd-split{grid-template-columns:1fr}}
 
-/* Bank accounts list rows */
-.bank-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
-.bank-row .bk-info{flex:1;min-width:0}
-.bank-row .bk-name{font-size:13px;font-weight:600}
-.bank-row .bk-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px}
-.bank-row .bk-del{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:6px;border-radius:6px;display:flex;align-items:center}
-.bank-row .bk-del:hover{color:var(--red);background:rgba(232,99,122,.08)}
-.bank-empty{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;padding:14px 0;text-align:center}
+/* Bank dropdown + delete trash icon — flex row so the trash sits flush to the right of the select */
+.wd-bank-row{display:flex;align-items:stretch;gap:6px}
+.wd-bank-row select{flex:1;min-width:0}
+.wd-bank-del{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:0 10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wd-bank-del:hover{color:var(--red);border-color:rgba(232,99,122,.45);background:rgba(232,99,122,.08)}
 
 .witem,.withdraw-item{
   display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
@@ -1175,10 +1172,15 @@ nav.legacy-nav{display:none !important}
           <div>
             <div class="form-group">
               <label>Transfer to</label>
-              <select id="wd-bank-account" class="input" onchange="updateWithdrawNet()">
-                <option value="">— choose saved account —</option>
-              </select>
-              <div class="hint" id="wd-bank-hint" style="color:var(--muted)">Saved bank accounts appear here</div>
+              <div class="wd-bank-row">
+                <select id="wd-bank-account" class="input" onchange="onWithdrawBankChange()">
+                  <option value="">— choose saved account —</option>
+                </select>
+                <button type="button" class="wd-bank-del" id="wd-bank-del" onclick="deleteSelectedBankAccount()" title="Delete this account" style="display:none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
+              </div>
+              <div class="hint" id="wd-bank-hint" style="color:var(--muted)">Add a new account in the panel on the right</div>
             </div>
           </div>
         </div>
@@ -1187,52 +1189,46 @@ nav.legacy-nav{display:none !important}
         <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px">processed in ≤ 5 business days</div>
       </div>
 
-      <!-- Bank accounts: list + add -->
+      <!-- Add new bank account (always-expanded form) -->
       <div class="panel" id="bank-form-section">
         <div class="panel-head">
           <div>
-            <div class="panel-title">Bank accounts</div>
-            <div class="panel-sub">Add multiple · pick one when withdrawing</div>
+            <div class="panel-title">Add new bank account</div>
+            <div class="panel-sub">After save, it appears in the dropdown on the left</div>
           </div>
         </div>
         <div class="alert" id="bank-alert"></div>
-
-        <div id="bank-accounts-list" style="margin-bottom:14px"></div>
-
-        <details style="border-top:1px solid var(--border);padding-top:12px">
-          <summary style="cursor:pointer;font-size:12px;color:var(--cyan2);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;margin-bottom:10px">+ Add new account</summary>
-          <div class="form-group">
-            <label>Bank</label>
-            <select id="bank-name" class="input">
-              <option value="">Select bank...</option>
-              <option value="BCA">BCA</option>
-              <option value="Mandiri">Mandiri</option>
-              <option value="BNI">BNI</option>
-              <option value="BRI">BRI</option>
-              <option value="CIMB Niaga">CIMB Niaga</option>
-              <option value="Permata">Permata</option>
-              <option value="Danamon">Danamon</option>
-              <option value="BTN">BTN</option>
-              <option value="OCBC NISP">OCBC NISP</option>
-              <option value="Maybank">Maybank</option>
-              <option value="Bank Mega">Bank Mega</option>
-              <option value="Bank Jago">Bank Jago</option>
-              <option value="Seabank">Seabank</option>
-              <option value="Allo Bank">Allo Bank</option>
-              <option value="Blu BCA">Blu BCA</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Account number</label>
-            <input class="input mono" type="text" id="bank-number" placeholder="1234567890"/>
-          </div>
-          <div class="form-group">
-            <label>Account holder</label>
-            <input class="input" type="text" id="bank-holder" placeholder="As on bankbook"/>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="saveBankAccount()" style="width:100%;justify-content:center">Add account</button>
-        </details>
+        <div class="form-group">
+          <label>Bank</label>
+          <select id="bank-name" class="input">
+            <option value="">Select bank...</option>
+            <option value="BCA">BCA</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BNI">BNI</option>
+            <option value="BRI">BRI</option>
+            <option value="CIMB Niaga">CIMB Niaga</option>
+            <option value="Permata">Permata</option>
+            <option value="Danamon">Danamon</option>
+            <option value="BTN">BTN</option>
+            <option value="OCBC NISP">OCBC NISP</option>
+            <option value="Maybank">Maybank</option>
+            <option value="Bank Mega">Bank Mega</option>
+            <option value="Bank Jago">Bank Jago</option>
+            <option value="Seabank">Seabank</option>
+            <option value="Allo Bank">Allo Bank</option>
+            <option value="Blu BCA">Blu BCA</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Account number</label>
+          <input class="input mono" type="text" id="bank-number" placeholder="1234567890"/>
+        </div>
+        <div class="form-group">
+          <label>Account holder</label>
+          <input class="input" type="text" id="bank-holder" placeholder="As on bankbook"/>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveBankAccount()" style="width:100%;justify-content:center">Save account</button>
       </div>
     </div>
 
@@ -2306,27 +2302,7 @@ async function loadBankAccounts() {
   } catch (e) {
     _bankAccounts = [];
   }
-  renderBankAccountsList();
   renderBankAccountsDropdown();
-}
-
-function renderBankAccountsList() {
-  const container = document.getElementById('bank-accounts-list');
-  if (!container) return;
-  if (!_bankAccounts.length) {
-    container.innerHTML = '<div class="bank-empty">No accounts yet — add one below</div>';
-    return;
-  }
-  const trash = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
-  container.innerHTML = _bankAccounts.map(b =>
-    '<div class="bank-row">' +
-      '<div class="bk-info">' +
-        '<div class="bk-name">' + b.bank_name + '</div>' +
-        '<div class="bk-meta">' + b.account_number + ' · ' + b.account_holder + '</div>' +
-      '</div>' +
-      '<button class="bk-del" title="Delete account" onclick="deleteBankAccount(' + b.id + ', \'' + (b.bank_name + ' · ' + b.account_number).replace(/'/g, "\\'") + '\')">' + trash + '</button>' +
-    '</div>'
-  ).join('');
 }
 
 function renderBankAccountsDropdown() {
@@ -2337,7 +2313,7 @@ function renderBankAccountsDropdown() {
   if (!_bankAccounts.length) {
     sel.innerHTML = '<option value="">— no accounts saved —</option>';
     sel.disabled = true;
-    if (hint) hint.innerHTML = '<strong style="color:var(--amber)">Add a bank account first</strong>';
+    if (hint) hint.innerHTML = '<strong style="color:var(--amber)">Add a bank account on the right →</strong>';
   } else {
     sel.disabled = false;
     sel.innerHTML = '<option value="">— choose saved account —</option>' +
@@ -2349,9 +2325,25 @@ function renderBankAccountsDropdown() {
     else if (prev) sel.value = prev;
     if (hint) hint.innerHTML = 'Account that admin will transfer to';
   }
+  onWithdrawBankChange();
 }
 
-async function deleteBankAccount(id, label) {
+// Triggered when the user picks an account in the dropdown — toggles
+// the trash icon visibility (only meaningful when a real account is
+// selected) and re-runs the amount/button validation.
+function onWithdrawBankChange() {
+  const sel = document.getElementById('wd-bank-account');
+  const del = document.getElementById('wd-bank-del');
+  if (del) del.style.display = sel && sel.value ? '' : 'none';
+  updateWithdrawNet();
+}
+
+async function deleteSelectedBankAccount() {
+  const sel = document.getElementById('wd-bank-account');
+  if (!sel || !sel.value) return;
+  const id = sel.value;
+  const bank = _bankAccounts.find(b => String(b.id) === String(id));
+  const label = bank ? (bank.bank_name + ' · ' + bank.account_number) : 'this account';
   if (!confirm('Delete bank account: ' + label + '?\n\nPast payouts referencing this account will keep their record.')) return;
   try {
     await api('DELETE', '/affiliate/bank-accounts/' + id);
@@ -2773,13 +2765,22 @@ async function saveBankAccount() {
   }
 
   try {
-    await api('POST', '/affiliate/bank-accounts', { bank_name, account_number, account_holder });
+    const resp = await api('POST', '/affiliate/bank-accounts', { bank_name, account_number, account_holder });
     showAuthAlert('bank-alert', 'Bank account added', 'success');
-    // Clear the form and refresh the list/dropdown
+    // Clear the form
     document.getElementById('bank-name').value   = '';
     document.getElementById('bank-number').value = '';
     document.getElementById('bank-holder').value = '';
-    loadBankAccounts();
+    // Refresh dropdown then auto-select the freshly added account so
+    // the affiliate can request a withdrawal immediately without
+    // having to re-pick.
+    await loadBankAccounts();
+    const newId = resp?.bank_account?.id;
+    const sel = document.getElementById('wd-bank-account');
+    if (newId && sel) {
+      sel.value = String(newId);
+      onWithdrawBankChange();
+    }
   } catch (e) {
     showAuthAlert('bank-alert', 'Failed to save: ' + e.message, 'error');
   }
