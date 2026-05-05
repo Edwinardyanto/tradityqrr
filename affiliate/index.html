@@ -1154,6 +1154,50 @@ nav.legacy-nav{display:none !important}
     <div id="recruit-downline-content" style="margin-top:14px"></div>
   </div>
 
+  <!-- ============ PROMO ============ -->
+  <div class="page" id="page-promo">
+    <div class="topbar">
+      <div>
+        <h1>Promo Codes</h1>
+        <div class="sub">Bikin promo code untuk push penjualan via link kamu — diskon dipotong dari komisi kamu (dan upline-mu kalau ada, proporsional)</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="loadAffPromos()">↻ Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openAffPromoModal()">+ Create Promo</button>
+      </div>
+    </div>
+
+    <div class="alert" id="aff-promo-alert"></div>
+
+    <!-- Info card -->
+    <div class="panel" style="margin-bottom:14px;background:rgba(107,95,212,.06);border-color:rgba(107,95,212,.25)">
+      <div style="font-size:13px;color:var(--muted2);line-height:1.7">
+        Komisi kamu: <strong style="color:var(--cyan2)" id="aff-promo-info-comm">—</strong> ·
+        Max diskon promo yang boleh kamu buat: <strong style="color:var(--green)" id="aff-promo-info-max">—</strong>
+        <span style="color:var(--muted)">(commission − 10% buffer)</span>
+        <br/>
+        Promo hanya valid kalau customer pakai link ref kamu sendiri. Diskon dipotong dari komisi kamu plus upline-mu (proporsional).
+      </div>
+    </div>
+
+    <!-- Promo list table -->
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Code</th>
+          <th>Discount</th>
+          <th>Used</th>
+          <th class="hide-mobile">Valid Until</th>
+          <th>Status</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="aff-promo-table">
+          <tr><td colspan="6" class="empty"><span class="spinner"></span> Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- ============ WITHDRAW ============ -->
   <div class="page" id="page-withdraw">
     <div class="topbar">
@@ -1382,6 +1426,7 @@ nav.legacy-nav{display:none !important}
   <div class="bottom-nav-item" data-page="commissions"></div>
   <div class="bottom-nav-item" data-page="teams"></div>
   <div class="bottom-nav-item" data-page="recruit"></div>
+  <div class="bottom-nav-item" data-page="promo"></div>
   <div class="bottom-nav-item" data-page="withdraw"></div>
   <div class="bottom-nav-item" data-page="settings"></div>
 </div>
@@ -1405,6 +1450,10 @@ nav.legacy-nav{display:none !important}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M12 7v4M12 13h-6v4M12 13h6v4"/><circle cx="6" cy="19" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="18" cy="19" r="2"/></svg>
     Recruit
   </div>
+  <div class="aff-bottom-nav-item" data-page="promo" onclick="showPage('promo')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+    Promo
+  </div>
   <div class="aff-bottom-nav-item" data-page="withdraw" onclick="showPage('withdraw')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
     Withdraw
@@ -1427,13 +1476,42 @@ nav.legacy-nav{display:none !important}
   </div>
 </div>
 
+<!-- ===== PROMO CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="aff-promo-modal">
+  <div class="modal" style="max-width:480px">
+    <h3 id="aff-promo-modal-title">Create Promo Code</h3>
+    <div class="form-group">
+      <label>Code</label>
+      <input id="aff-promo-code" class="input mono" type="text" placeholder="MYDEAL20" maxlength="40" style="text-transform:uppercase"/>
+      <div class="hint">Hanya huruf, angka, dash. Akan otomatis di-uppercase.</div>
+    </div>
+    <div class="form-group">
+      <label>Discount % <span style="color:var(--muted);font-weight:400">(max <strong id="aff-promo-max-display">—</strong>%)</span></label>
+      <input id="aff-promo-disc" class="input mono" type="number" min="1" step="1" placeholder="20"/>
+    </div>
+    <div class="form-group">
+      <label>Max Uses <span style="color:var(--muted);font-weight:400">(opsional, kosongkan untuk unlimited)</span></label>
+      <input id="aff-promo-max-uses" class="input mono" type="number" min="1" step="1" placeholder="100"/>
+    </div>
+    <div class="form-group">
+      <label>Valid Until <span style="color:var(--muted);font-weight:400">(opsional)</span></label>
+      <input id="aff-promo-valid-until" class="input" type="date"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAffPromoModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAffPromo()" id="aff-promo-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Sidebar injection (runs before main script so showPage() can find sidebar items) ===== -->
 <script>
 (function(){
   // Map sidebar data-key → showPage(name)
   var keyToPage = {
     overview: 'overview', komisi: 'commissions', teams: 'teams',
-    rekrut: 'recruit', withdraw: 'withdraw', settings: 'settings'
+    rekrut: 'recruit', promo: 'promo',
+    withdraw: 'withdraw', settings: 'settings'
   };
   var html = ''
     + '<div class="brand">'
@@ -1457,6 +1535,9 @@ nav.legacy-nav{display:none !important}
     + '<a class="nav-item" data-key="rekrut">'
     +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M12 7v4M12 13h-6v4M12 13h6v4"/><circle cx="6" cy="19" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="18" cy="19" r="2"/></svg>'
     +   'Recruit</a>'
+    + '<a class="nav-item" data-key="promo">'
+    +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>'
+    +   'Promo</a>'
     + '<div class="nav-section">Cash</div>'
     + '<a class="nav-item" data-key="withdraw">'
     +   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>'
@@ -1490,7 +1571,7 @@ nav.legacy-nav{display:none !important}
   // on the legacy #nav-tabs to copy active state by index.
   function syncActiveFromLegacy(){
     var tabs = document.querySelectorAll('#nav-tabs .nav-tab');
-    var keys = ['overview','komisi','teams','rekrut','withdraw','settings'];
+    var keys = ['overview','komisi','teams','rekrut','promo','withdraw','settings'];
     el.querySelectorAll('.nav-item[data-key]').forEach(function(n){ n.classList.remove('active'); });
     tabs.forEach(function(t, i){
       if (t.classList.contains('active')) {
@@ -1709,6 +1790,7 @@ function buildNav() {
     { id: 'commissions', label: 'Orders' },
     { id: 'teams', label: 'Teams' },
     { id: 'recruit', label: 'Recruit' },
+    { id: 'promo', label: 'Promo' },
     { id: 'withdraw', label: 'Withdraw' },
     { id: 'settings', label: 'Settings' },
   ];
@@ -1736,6 +1818,7 @@ function showPage(name) {
     loadDownline();
   }
   if (name === 'overview') loadOverviewCharts();
+  if (name === 'promo') loadAffPromos();
   if (name === 'withdraw') { loadWithdraw(); loadBankAccount(); }
   if (name === 'settings') loadPixelSettings();
 
@@ -2560,6 +2643,136 @@ function togglePayoutHistory() {
   _payoutsExpanded = !_payoutsExpanded;
   document.getElementById('payouts-toggle').textContent = _payoutsExpanded ? 'Show less' : 'View all';
   renderPayoutHistory();
+}
+
+// ── Promo Codes ──────────────────────────────────────────────────
+// Affiliate-owned promo codes (Scenario B). Discount cost is split
+// proportionally across the creator + their upline chain at order
+// time — see server `services/affiliate.js`.
+
+let _affPromos = [];
+let _affPromoMaxDisc = 0;
+let _affPromoEditingId = null;
+
+async function loadAffPromos() {
+  const tbody = document.getElementById('aff-promo-table');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span> Loading...</td></tr>';
+  try {
+    const data = await api('GET', '/affiliate/promo-codes');
+    _affPromos = data.promo_codes || [];
+    _affPromoMaxDisc = parseFloat(data.max_disc_percent || 0);
+
+    // Update info card
+    const stored = JSON.parse(localStorage.getItem('affiliate_data') || '{}');
+    const commEl = document.getElementById('aff-promo-info-comm');
+    const maxEl = document.getElementById('aff-promo-info-max');
+    if (commEl) commEl.textContent = stored.commission_value ? parseFloat(stored.commission_value) + '%' : '—';
+    if (maxEl)  maxEl.textContent  = _affPromoMaxDisc + '%';
+
+    renderAffPromos();
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Failed: ' + e.message + '</td></tr>';
+  }
+}
+
+function renderAffPromos() {
+  const tbody = document.getElementById('aff-promo-table');
+  if (!_affPromos.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Belum ada promo code. Klik <strong>+ Create Promo</strong> di kanan atas untuk bikin yang pertama.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = _affPromos.map(p => {
+    const expired   = p.valid_until && new Date(p.valid_until) < new Date();
+    const exhausted = p.max_uses && p.used_count >= p.max_uses;
+    const status = !p.is_active   ? '<span class="badge badge-red">Inactive</span>'
+                 : expired         ? '<span class="badge badge-red">Expired</span>'
+                 : exhausted       ? '<span class="badge badge-yellow">Max Reached</span>'
+                                   : '<span class="badge badge-green">Active</span>';
+    const usedTxt = p.used_count + ' / ' + (p.max_uses || '∞');
+    const validTxt = p.valid_until ? fmtDate(p.valid_until) : '<span style="color:var(--muted)">no expiry</span>';
+    return '<tr>' +
+      '<td><strong class="mono" style="font-size:13px;color:var(--cyan2)">' + p.code + '</strong></td>' +
+      '<td class="mono">' + parseFloat(p.discount_value) + '%</td>' +
+      '<td class="mono" style="font-size:11px">' + usedTxt + '</td>' +
+      '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted2)">' + validTxt + '</td>' +
+      '<td>' + status + '</td>' +
+      '<td>' +
+        (p.is_active
+          ? '<button class="btn btn-ghost btn-sm" onclick="deleteAffPromo(' + p.id + ')" style="color:var(--red);font-size:11px">Delete</button>'
+          : '<span style="color:var(--muted);font-size:11px">—</span>') +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function openAffPromoModal(promo) {
+  _affPromoEditingId = promo ? promo.id : null;
+  document.getElementById('aff-promo-modal-title').textContent =
+    promo ? 'Edit Promo Code' : 'Create Promo Code';
+  document.getElementById('aff-promo-code').value = promo ? promo.code : '';
+  document.getElementById('aff-promo-code').disabled = !!promo;  // can't change code on edit
+  document.getElementById('aff-promo-disc').value = promo ? parseFloat(promo.discount_value) : '';
+  document.getElementById('aff-promo-disc').max = _affPromoMaxDisc;
+  document.getElementById('aff-promo-max-uses').value = promo && promo.max_uses ? promo.max_uses : '';
+  document.getElementById('aff-promo-valid-until').value = promo && promo.valid_until ? promo.valid_until.slice(0, 10) : '';
+  document.getElementById('aff-promo-max-display').textContent = _affPromoMaxDisc;
+  document.getElementById('aff-promo-modal').classList.add('open');
+}
+
+function closeAffPromoModal() {
+  document.getElementById('aff-promo-modal').classList.remove('open');
+  _affPromoEditingId = null;
+}
+
+async function saveAffPromo() {
+  const code = document.getElementById('aff-promo-code').value.trim().toUpperCase();
+  const dv = parseFloat(document.getElementById('aff-promo-disc').value);
+  const maxUsesRaw = document.getElementById('aff-promo-max-uses').value.trim();
+  const validUntil = document.getElementById('aff-promo-valid-until').value;
+
+  if (!code) return showPageAlert('aff-promo-alert', 'Code wajib diisi', 'error');
+  if (!dv || dv <= 0) return showPageAlert('aff-promo-alert', 'Discount % wajib diisi (> 0)', 'error');
+  if (dv > _affPromoMaxDisc) return showPageAlert('aff-promo-alert',
+    'Max diskon kamu adalah ' + _affPromoMaxDisc + '%', 'error');
+
+  const btn = document.getElementById('aff-promo-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  const body = {
+    discount_value: dv,
+    max_uses: maxUsesRaw ? parseInt(maxUsesRaw) : null,
+    valid_until: validUntil || null,
+  };
+
+  try {
+    if (_affPromoEditingId) {
+      await api('PATCH', '/affiliate/promo-codes/' + _affPromoEditingId, body);
+    } else {
+      body.code = code;
+      await api('POST', '/affiliate/promo-codes', body);
+    }
+    closeAffPromoModal();
+    showPageAlert('aff-promo-alert', 'Promo saved', 'success');
+    loadAffPromos();
+  } catch (e) {
+    showPageAlert('aff-promo-alert', 'Failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save';
+  }
+}
+
+async function deleteAffPromo(id) {
+  const promo = _affPromos.find(p => p.id === id);
+  if (!promo) return;
+  if (!confirm('Delete promo ' + promo.code + '?\n\nOrder yang sudah pakai code ini tetap aman — cuma di-soft-delete (ga bisa dipakai lagi).')) return;
+  try {
+    await api('DELETE', '/affiliate/promo-codes/' + id);
+    showPageAlert('aff-promo-alert', 'Promo deleted', 'success');
+    loadAffPromos();
+  } catch (e) {
+    showPageAlert('aff-promo-alert', 'Delete failed: ' + e.message, 'error');
+  }
 }
 
 // ── Recruit Links ───────────────────────────────────────────────
