@@ -2282,9 +2282,13 @@ function setWithdrawMax() {
 function updateWithdrawNet() {
   const amt = _parseRupiahInput(document.getElementById('wd-amount').value);
   const net = Math.max(0, amt - WITHDRAW_TRANSFER_FEE);
-  document.getElementById('wd-net').textContent = fmtRp(net);
+  // The original `<strong id="wd-net">` lives inside #wd-amount-hint
+  // and gets replaced every time we rewrite hint.innerHTML below — so
+  // looking it up separately and setting textContent throws null on
+  // every subsequent call. The hint's innerHTML already encodes the
+  // net amount; that's the single source of truth.
   const hint = document.getElementById('wd-amount-hint');
-  const btn = document.getElementById('withdraw-btn');
+  const btn  = document.getElementById('withdraw-btn');
   let disabled = false;
   if (!amt) {
     hint.innerHTML = 'You receive: <strong style="color:var(--green)">Rp 0</strong> after Rp 3.000 transfer fee';
