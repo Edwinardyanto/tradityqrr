@@ -445,6 +445,44 @@ nav.legacy-nav{display:none !important}
 .expand-inner td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
 .expand-inner tr:last-child td{border-bottom:none}
 
+/* ===== TRAFFIC ===== */
+.range{display:flex;gap:6px;background:var(--card);border:1px solid var(--border);padding:3px;border-radius:8px}
+.range button{padding:6px 12px;border-radius:6px;background:transparent;color:var(--muted2);border:none;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:.5px}
+.range button.active{background:var(--cyan);color:#fff}
+
+.funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.fstep{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative}
+.fstep .l{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px}
+.fstep .v{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;line-height:1}
+.fstep .vu{font-size:11px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.fstep .conv{position:absolute;right:-7px;top:50%;transform:translateY(-50%);background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan2);z-index:1;letter-spacing:.5px}
+.fstep:last-child .conv{display:none}
+.fstep .v.cy{color:var(--cyan2)}.fstep .v.amber{color:var(--amber)}.fstep .v.green{color:var(--green)}
+
+.bar-vis{display:flex;align-items:flex-end;gap:3px;height:120px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:8px}
+.bar-vis .b{flex:1;display:flex;flex-direction:column;gap:1px;justify-content:flex-end;cursor:default;border-radius:2px;transition:opacity .15s;min-width:4px}
+.bar-vis .b:hover{opacity:.75}
+.bar-vis .b .seg-vis{width:100%}
+.bar-vis .visit{background:#7F77DD}
+.bar-vis .ck{background:#1D9E75}
+.bar-vis .form{background:#EF9F27}
+.bar-vis .paid{background:#D85A30}
+.x-axis{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:8px}
+
+.src-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.src-row:last-child{border-bottom:none}
+.src-icon{width:32px;height:32px;border-radius:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;color:var(--cyan2);flex-shrink:0}
+.src-name{font-size:13px}
+.src-name .meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;display:block;word-break:break-all}
+.src-bar{height:4px;background:var(--card2);border-radius:2px;overflow:hidden;margin-top:6px;width:100%;max-width:160px}
+.src-bar .fill{height:100%;background:var(--cyan2)}
+
+.prod-row{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.prod-row:last-child{border-bottom:none}
+.prod-row .nm{font-size:13px}
+.prod-row .nm .meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;display:block}
+.prod-row .stat{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted2);text-align:right;min-width:50px}
+
 /* ===== REKRUT ===== */
 .split-bar{display:flex;height:48px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin:8px 0 6px}
 .split-bar .seg{display:flex;flex-direction:column;justify-content:center;padding:0 14px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px}
@@ -1023,11 +1061,71 @@ nav.legacy-nav{display:none !important}
     <div class="topbar">
       <div>
         <h1>Traffic</h1>
-        <div class="sub">Your link performance, source and product breakdown</div>
+        <div class="sub" id="traffic-sub">Your link performance · last 30 days</div>
+      </div>
+      <div class="actions">
+        <div class="range" id="traffic-range">
+          <button data-days="1"    onclick="setTrafficRange(1)">Today</button>
+          <button data-days="7"    onclick="setTrafficRange(7)">7D</button>
+          <button data-days="30"   class="active" onclick="setTrafficRange(30)">30D</button>
+          <button data-days="90"   onclick="setTrafficRange(90)">90D</button>
+          <button data-days="9999" onclick="setTrafficRange(9999)">All</button>
+        </div>
       </div>
     </div>
 
-    <div id="traffic-content"></div>
+    <!-- Funnel -->
+    <div class="funnel" id="traffic-funnel">
+      <div class="fstep"><div class="l">Visits</div><div class="v cy" id="fnl-visits">—</div><div class="vu" id="fnl-visits-u">— unique</div><div class="conv" id="fnl-conv-1">→ —</div></div>
+      <div class="fstep"><div class="l">Checkout view</div><div class="v cy" id="fnl-checkout">—</div><div class="vu" id="fnl-checkout-u">— unique</div><div class="conv" id="fnl-conv-2">→ —</div></div>
+      <div class="fstep"><div class="l">Form filled</div><div class="v amber" id="fnl-form">—</div><div class="vu" id="fnl-form-u">— unique</div><div class="conv" id="fnl-conv-3">→ —</div></div>
+      <div class="fstep"><div class="l">Paid</div><div class="v green" id="fnl-paid">—</div><div class="vu" id="fnl-paid-u">conv — from unique</div></div>
+    </div>
+
+    <!-- Trend chart full width -->
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title" id="trend-title">Trend 30 days</div>
+          <div class="panel-sub">Stacked: visits → checkout → form → paid</div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">
+          <span><span style="display:inline-block;width:8px;height:8px;background:#7F77DD;margin-right:4px;border-radius:2px;"></span>Visit</span>
+          <span><span style="display:inline-block;width:8px;height:8px;background:#1D9E75;margin-right:4px;border-radius:2px;"></span>Checkout</span>
+          <span><span style="display:inline-block;width:8px;height:8px;background:#EF9F27;margin-right:4px;border-radius:2px;"></span>Form</span>
+          <span><span style="display:inline-block;width:8px;height:8px;background:#D85A30;margin-right:4px;border-radius:2px;"></span>Paid</span>
+        </div>
+      </div>
+      <div class="bar-vis" id="trend-bars"></div>
+      <div class="x-axis" id="trend-xaxis"></div>
+    </div>
+
+    <!-- Your links + Per-product side by side -->
+    <div class="row-1-1">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Your links</div>
+            <div class="panel-sub">Main referral + recruitment links you've shared</div>
+          </div>
+        </div>
+        <div id="traffic-links">
+          <div class="empty"><span class="spinner"></span> Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Per-product conversion</div>
+            <div class="panel-sub">What your referrals are buying</div>
+          </div>
+        </div>
+        <div id="traffic-products">
+          <div class="empty"><span class="spinner"></span> Loading...</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ============ WITHDRAW ============ -->
@@ -2319,83 +2417,176 @@ async function loadPayouts() {
 }
 
 // ── Traffic Stats ───────────────────────────────────────────────
+// ── Traffic ──────────────────────────────────────────────────────
+let _trafficDays = 30;
+
+function setTrafficRange(days) {
+  _trafficDays = days;
+  document.querySelectorAll('#traffic-range button').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.days) === days);
+  });
+  const labelMap = { 1: 'today', 7: 'last 7 days', 30: 'last 30 days', 90: 'last 90 days', 9999: 'all time' };
+  const trendMap = { 1: 'Trend today', 7: 'Trend 7 days', 30: 'Trend 30 days', 90: 'Trend 90 days', 9999: 'Trend all-time' };
+  document.getElementById('traffic-sub').textContent = 'Your link performance · ' + (labelMap[days] || labelMap[30]);
+  document.getElementById('trend-title').textContent = trendMap[days] || trendMap[30];
+  loadTraffic();
+}
+
+function _trafficFunnelFromTrend(trend) {
+  const sum = (k) => trend.reduce((s, d) => s + (d[k] || 0), 0);
+  return {
+    homepage:  { total: sum('homepage'),  unique: sum('homepage')  },
+    checkout:  { total: sum('checkout'),  unique: sum('checkout')  },
+    form_fill: { total: sum('form_fill'), unique: sum('form_fill') },
+    paid:      { total: sum('paid'),      unique: sum('paid')      },
+  };
+}
+
 async function loadTraffic() {
-  const container = document.getElementById('traffic-content');
-  container.innerHTML = '<div class="empty"><span class="spinner"></span> Loading...</div>';
   try {
-    const data = await api('GET', '/affiliate/stats/traffic');
+    const [data, linksData] = await Promise.all([
+      api('GET', '/affiliate/stats/traffic?days=' + _trafficDays),
+      api('GET', '/affiliate/recruitment-links').catch(() => ({ links: [] })),
+    ]);
 
-    function conv(visits, paid) {
-      if (!visits) return '0%';
-      return (paid / visits * 100).toFixed(1) + '%';
-    }
+    // Funnel — sum over trend for the selected window. Trend already
+    // counts unique sessions per day per page, so summing gives a
+    // close-enough total for the funnel (a session that returns on
+    // multiple days will be double-counted, but the shape is
+    // representative for a stat panel).
+    const trend = data.trend || [];
+    const fn = _trafficFunnelFromTrend(trend);
 
-    const periodCard = (label, d) => {
-      const ff = d.form_fill || { total: 0, unique: 0 };
-      return `
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
-          font-family:'JetBrains Mono',monospace;margin-bottom:16px;">${label}</div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
-          <div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Visits</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--cyan);">${d.homepage.unique}</div>
-            <div style="font-size:11px;color:var(--muted);">${d.homepage.total} total hits</div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Checkout</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);">${d.checkout.unique}</div>
-            <div style="font-size:11px;color:var(--muted);">${d.checkout.total} total hits</div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Form Fill</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#C9A84C;">${ff.total}</div>
-            <div style="font-size:11px;color:var(--muted);">orders created</div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Paid</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--green);">${d.paid.total}</div>
-            <div style="font-size:11px;color:var(--muted);">conversions</div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Conversion</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--white);">${conv(d.homepage.unique, d.paid.total)}</div>
-            <div style="font-size:11px;color:var(--muted);">visit → paid</div>
-          </div>
-        </div>
-      </div>`;
-    };
+    const setEl = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    const conv = (a, b) => (!a ? '—' : Math.round((b / a) * 100) + '%');
 
-    let html = periodCard('Today', data.today);
-    html += periodCard('Last 7 Days', data.last_7_days);
-    html += periodCard('All Time', data.all_time);
+    setEl('fnl-visits',    (fn.homepage.total  || 0).toLocaleString('id-ID'));
+    setEl('fnl-checkout',  (fn.checkout.total  || 0).toLocaleString('id-ID'));
+    setEl('fnl-form',      (fn.form_fill.total || 0).toLocaleString('id-ID'));
+    setEl('fnl-paid',      (fn.paid.total      || 0).toLocaleString('id-ID'));
+    setEl('fnl-visits-u',  'unique sessions');
+    setEl('fnl-checkout-u','viewed checkout');
+    setEl('fnl-form-u',    'started filling form');
+    setEl('fnl-paid-u',    'conv ' + (fn.homepage.total ? ((fn.paid.total / fn.homepage.total) * 100).toFixed(1) : '0') + '% from visit');
 
-    if (data.trend && data.trend.length) {
-      const maxV = Math.max(...data.trend.map(d => d.unique_visits), 1);
-      html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;
-          font-family:'JetBrains Mono',monospace;margin-bottom:16px;">30-Day Trend (Unique Visitors)</div>
-        <div style="display:flex;align-items:flex-end;gap:4px;height:80px;">`;
-      for (const d of data.trend) {
-        const h = Math.max(4, Math.round((d.unique_visits / maxV) * 80));
-        const dateLabel = new Date(d.date).toLocaleDateString('en-US', { day:'2-digit', month:'short' });
-        html += `<div title="${dateLabel}: ${d.unique_visits} unique, ${d.visits} total"
-          style="flex:1;background:var(--cyan2);border-radius:2px 2px 0 0;height:${h}px;
-          opacity:.8;transition:opacity .2s;cursor:default;"
-          onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=.8"></div>`;
+    setEl('fnl-conv-1', '→ ' + conv(fn.homepage.total,  fn.checkout.total));
+    setEl('fnl-conv-2', '→ ' + conv(fn.checkout.total,  fn.form_fill.total));
+    setEl('fnl-conv-3', '→ ' + conv(fn.form_fill.total, fn.paid.total));
+
+    // Trend bars
+    const barsEl = document.getElementById('trend-bars');
+    const xAxisEl = document.getElementById('trend-xaxis');
+    if (!trend.length) {
+      barsEl.innerHTML = '<div class="empty" style="width:100%">No traffic in this window.</div>';
+      xAxisEl.innerHTML = '';
+    } else {
+      const totals = trend.map(d => (d.homepage || 0) + (d.checkout || 0) + (d.form_fill || 0) + (d.paid || 0));
+      const maxT = Math.max(...totals, 1);
+      const hh = (n) => ((n / maxT) * 100) + '%';
+      barsEl.innerHTML = trend.map((d, i) => {
+        const v = d.homepage || 0, c = d.checkout || 0, f = d.form_fill || 0, p = d.paid || 0;
+        const visitOnly = Math.max(0, v - c - f - p);
+        const lbl = new Date(d.date).toLocaleDateString('en-US', { day:'2-digit', month:'short' });
+        return '<div class="b" title="' + lbl + ': ' + v + ' visit / ' + c + ' checkout / ' + f + ' form / ' + p + ' paid">' +
+          '<div class="seg-vis paid"  style="height:' + hh(p) + '"></div>' +
+          '<div class="seg-vis form"  style="height:' + hh(f) + '"></div>' +
+          '<div class="seg-vis ck"    style="height:' + hh(c) + '"></div>' +
+          '<div class="seg-vis visit" style="height:' + hh(visitOnly) + '"></div>' +
+        '</div>';
+      }).join('');
+
+      // Axis ticks: ~5 evenly-spaced labels
+      const fmt = (d) => new Date(d).toLocaleDateString('en-US', { day:'2-digit', month:'short' }).toUpperCase();
+      const ticks = [];
+      const n = trend.length;
+      const tickCount = Math.min(5, n);
+      for (let i = 0; i < tickCount; i++) {
+        const idx = Math.round((i / (tickCount - 1 || 1)) * (n - 1));
+        ticks.push(fmt(trend[idx].date));
       }
-      html += `</div>
-        <div style="display:flex;justify-content:space-between;margin-top:6px;">
-          <span style="font-size:10px;color:var(--muted);">${new Date(data.trend[0].date).toLocaleDateString('en-US',{day:'2-digit',month:'short'})}</span>
-          <span style="font-size:10px;color:var(--muted);">${new Date(data.trend[data.trend.length-1].date).toLocaleDateString('en-US',{day:'2-digit',month:'short'})}</span>
-        </div>
-      </div>`;
+      xAxisEl.innerHTML = ticks.map(t => '<span>' + t + '</span>').join('');
     }
 
-    container.innerHTML = html;
-  } catch(e) {
-    container.innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
+    // Your links panel
+    _renderTrafficLinks(data, linksData.links || []);
+
+    // Per-product panel
+    _renderTrafficProducts(data.products || []);
+  } catch (e) {
+    document.getElementById('traffic-links').innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
+    document.getElementById('traffic-products').innerHTML = '';
   }
+}
+
+function _renderTrafficLinks(traffic, recruitLinks) {
+  const container = document.getElementById('traffic-links');
+  const stored = JSON.parse(localStorage.getItem('affiliate_data') || '{}');
+  const refCode = traffic.ref_code || stored.ref_code || '';
+  const origin = (window.location.hostname === 'trxcqrr.com') ? 'https://trxcqrr.com' : 'https://staging.tradityqrr.pages.dev';
+  const refUrl = origin + '/?ref=' + refCode;
+
+  // Sum traffic across the trend window for the main ref bar
+  const trend = traffic.trend || [];
+  const totalVisits = trend.reduce((s, d) => s + (d.homepage || 0), 0);
+  const totalPaid   = trend.reduce((s, d) => s + (d.paid || 0), 0);
+
+  // Recruit links share denominator = total signups across all links
+  const totalSignups = recruitLinks.reduce((s, l) => s + (l.used_count || 0), 0);
+
+  const globeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+  const userPlusIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>';
+
+  let html = '';
+
+  // Main referral row
+  html += '<div class="src-row">' +
+    '<div class="src-icon">' + globeIcon + '</div>' +
+    '<div>' +
+      '<div class="src-name">Main referral <span class="meta">' + refUrl + '</span></div>' +
+      '<div class="src-bar"><div class="fill" style="width:100%"></div></div>' +
+    '</div>' +
+    '<div class="mono" style="font-size:13px">' + totalVisits + '</div>' +
+    '<div class="mono" style="font-size:11px;color:var(--green)">' + totalPaid + ' paid</div>' +
+  '</div>';
+
+  if (!recruitLinks.length) {
+    html += '<div class="empty" style="padding:14px 0;font-size:11px">No recruitment links yet · create one in <a onclick="showPage(\'recruit\')" style="color:var(--cyan2);cursor:pointer;text-decoration:underline">Recruit</a></div>';
+  } else {
+    for (const lk of recruitLinks) {
+      const share = totalSignups ? Math.round(((lk.used_count || 0) / totalSignups) * 100) : 0;
+      const joinUrl = origin + '/affiliate/?join=' + lk.token;
+      html += '<div class="src-row">' +
+        '<div class="src-icon">' + userPlusIcon + '</div>' +
+        '<div>' +
+          '<div class="src-name">' + (lk.label || 'Recruit link') + ' <span class="meta">' + joinUrl + ' · ' + share + '% share</span></div>' +
+          '<div class="src-bar"><div class="fill" style="width:' + share + '%"></div></div>' +
+        '</div>' +
+        '<div class="mono" style="font-size:13px">' + (lk.used_count || 0) + '</div>' +
+        '<div class="mono" style="font-size:11px;color:' + (lk.is_active ? 'var(--muted)' : 'var(--red)') + '">' + (lk.is_active ? 'signups' : 'inactive') + '</div>' +
+      '</div>';
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+function _renderTrafficProducts(products) {
+  const container = document.getElementById('traffic-products');
+  if (!products.length) {
+    container.innerHTML = '<div class="empty" style="padding:14px 0">No product activity in this window.</div>';
+    return;
+  }
+  container.innerHTML = products.map(p => {
+    const conv = p.views ? ((p.sales / p.views) * 100).toFixed(1) + '%' : '—';
+    const subText = (p.commission_total ? fmtRp(p.commission_total) + ' commission · ' : '') +
+                    p.sales + ' ' + (p.sales === 1 ? 'sale' : 'sales');
+    return '<div class="prod-row">' +
+      '<div class="nm">' + p.product_name + '<span class="meta">' + subText + '</span></div>' +
+      '<div class="stat">' + p.views + ' view</div>' +
+      '<div class="stat" style="color:var(--green)">' + conv + '</div>' +
+      '<div class="stat" style="color:var(--white)">' + p.sales + '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ── Overview Charts ─────────────────────────────────────────────
