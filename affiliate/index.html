@@ -784,7 +784,7 @@ nav.legacy-nav{display:none !important}
         </div>
         <div>
           <div class="act-head">TEAMS</div>
-          <p>Direct downlines you've recruited and the upline overrides they've earned for you.</p>
+          <p>Direct teams you've recruited and the upline overrides they've earned for you.</p>
           <span class="act-cta" onclick="showPage('teams')">View teams →</span>
         </div>
       </div>
@@ -919,23 +919,27 @@ nav.legacy-nav{display:none !important}
     <div class="col-picker-panel" id="aff-col-picker">
       <div class="col-picker-title">Optional columns</div>
       <div class="col-picker-grid">
+        <label><input type="checkbox" id="aff-col-email" onchange="applyAffiliateColumnPrefs()"/> Email</label>
+        <label><input type="checkbox" id="aff-col-phone" onchange="applyAffiliateColumnPrefs()"/> Phone</label>
         <label><input type="checkbox" id="aff-col-tv-username" onchange="applyAffiliateColumnPrefs()"/> TV Username</label>
         <label><input type="checkbox" id="aff-col-promo" onchange="applyAffiliateColumnPrefs()"/> Promo Code</label>
-        <label><input type="checkbox" id="aff-col-type" onchange="applyAffiliateColumnPrefs()"/> Type</label>
-        <label><input type="checkbox" id="aff-col-ref-code" onchange="applyAffiliateColumnPrefs()"/> Ref Code</label>
         <label><input type="checkbox" id="aff-col-available" onchange="applyAffiliateColumnPrefs()"/> Available At</label>
       </div>
     </div>
 
-    <!-- FILTERS — mirrors admin .orders-filters minus payment-method + affiliate -->
+    <!-- FILTERS -->
     <div class="orders-filters" id="commission-filters">
-      <select id="aff-f-status" onchange="loadCommissions()" class="of-sel">
-        <option value="">Status</option>
+      <select id="aff-f-settlement" onchange="loadCommissions()" class="of-sel">
+        <option value="">Settlement</option>
         <option value="pending">Pending</option>
         <option value="available">Available</option>
-        <option value="withdrawal_requested">Processing</option>
-        <option value="paid">Paid</option>
         <option value="rejected">Rejected</option>
+      </select>
+
+      <select id="aff-f-payment" onchange="loadCommissions()" class="of-sel">
+        <option value="">Payment</option>
+        <option value="pending">Pending</option>
+        <option value="paid">Paid</option>
       </select>
 
       <select id="aff-f-product" onchange="loadCommissions()" class="of-sel">
@@ -958,34 +962,23 @@ nav.legacy-nav{display:none !important}
       <button onclick="resetAffiliateOrderFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
     </div>
 
-    <!-- STATUS LEGEND (collapsible) -->
-    <details class="status-legend" style="margin-bottom:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px">
-      <summary style="cursor:pointer;font-size:12px;color:var(--muted2);font-family:'JetBrains Mono',monospace;letter-spacing:.5px">What do these statuses mean?</summary>
-      <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin-top:10px;font-size:12px;color:var(--muted2);line-height:1.5">
-        <span class="badge b-gold">Pending</span><span>Order paid, but commission still in 5-business-day hold (refund-protection window). Cannot be withdrawn yet.</span>
-        <span class="badge b-green">Available</span><span>Hold cleared. Commission ready to withdraw.</span>
-        <span class="badge b-cyan">Processing</span><span>You requested a withdrawal — commission locked, waiting for admin to transfer.</span>
-        <span class="badge b-muted">Paid</span><span>Admin has transferred the funds to your bank account.</span>
-        <span class="badge b-red">Rejected</span><span>Order was refunded or cancelled, so this commission won't be paid.</span>
-      </div>
-    </details>
-
     <!-- SUMMARY -->
     <div id="aff-orders-summary" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
 
-    <!-- TABLE — order of columns mirrors admin Orders tab -->
+    <!-- TABLE — required column order: Order ID · Name · Type · Ref Code · Product · Amount · Commission · Payment · Settlement · Created At -->
     <div class="table-wrap">
       <table>
         <thead>
           <tr id="aff-orders-thead-row">
             <th class="hide-mobile" style="font-size:10px">Order ID</th>
             <th>Name</th>
-            <th>Email</th>
-            <th class="hide-mobile">Phone</th>
+            <th>Type</th>
+            <th class="hide-mobile">Ref Code</th>
             <th class="hide-mobile">Product</th>
-            <th>Order Amt</th>
+            <th>Amount</th>
             <th>Commission</th>
-            <th>Status</th>
+            <th>Payment</th>
+            <th>Settlement</th>
             <th class="hide-mobile">Created At</th>
             <!-- optional columns appended dynamically -->
           </tr>
@@ -1094,7 +1087,7 @@ nav.legacy-nav{display:none !important}
     <div class="topbar">
       <div>
         <h1>Recruit Affiliates</h1>
-        <div class="sub">Create permanent recruitment links, manage your downlines</div>
+        <div class="sub">Create permanent recruitment links, manage your team</div>
       </div>
     </div>
 
@@ -1531,6 +1524,17 @@ function commissionKindBadge(kind) {
   return '<span class="badge badge-cyan">Direct</span>';
 }
 
+function settlementBadge(s) {
+  if (s === 'available') return '<span class="badge badge-green">Available</span>';
+  if (s === 'rejected')  return '<span class="badge badge-red">Rejected</span>';
+  return '<span class="badge badge-muted">Pending</span>';
+}
+
+function paymentBadge(p) {
+  if (p === 'paid') return '<span class="badge badge-cyan">Paid</span>';
+  return '<span class="badge badge-muted">Pending</span>';
+}
+
 // ── API ──────────────────────────────────────────────────────────
 async function api(method, path, body) {
   const token = localStorage.getItem('affiliate_token');
@@ -1811,17 +1815,17 @@ function copyRefCode() {
 // Internal naming kept as "commissions" so existing showPage() / state
 // machinery still works without rewiring.
 
-// Default optional column visibility — tv_username + type on by default
-// since they're the most useful for an affiliator's mental model
-// ("which of my links sold this", "is this direct or team").
+// Default optional column visibility — all off; the required 10
+// columns already cover the common use cases. PII (email/phone/tv)
+// stays opt-in.
 const _affiliateOptionalCols = {
-  'tv-username': true,
+  'email':       false,
+  'phone':       false,
+  'tv-username': false,
   'promo':       false,
-  'type':        true,
-  'ref-code':    true,
   'available':   false,
 };
-const AFF_COL_PREFS_KEY = 'aff_orders_col_prefs_v2';
+const AFF_COL_PREFS_KEY = 'aff_orders_col_prefs_v3';
 try {
   const saved = JSON.parse(localStorage.getItem(AFF_COL_PREFS_KEY) || '{}');
   Object.assign(_affiliateOptionalCols, saved);
@@ -1831,7 +1835,7 @@ function toggleAffiliateColumnPicker() {
   document.getElementById('aff-col-picker').classList.toggle('open');
 }
 
-const AFF_OPTIONAL_KEYS = ['tv-username','promo','type','ref-code','available'];
+const AFF_OPTIONAL_KEYS = ['email','phone','tv-username','promo','available'];
 
 function applyAffiliateColumnPrefs() {
   AFF_OPTIONAL_KEYS.forEach(key => {
@@ -1845,10 +1849,10 @@ function applyAffiliateColumnPrefs() {
 function _getActiveOptionalCols() {
   // Order matters — header + cell order must match.
   return [
+    { key: 'email',       header: 'Email' },
+    { key: 'phone',       header: 'Phone' },
     { key: 'tv-username', header: 'TV Username' },
     { key: 'promo',       header: 'Promo' },
-    { key: 'type',        header: 'Type' },
-    { key: 'ref-code',    header: 'Ref Code' },
     { key: 'available',   header: 'Available' },
   ].filter(c => _affiliateOptionalCols[c.key]);
 }
@@ -1876,16 +1880,18 @@ function _affiliateOrderQueryString() {
   const params = new URLSearchParams();
   params.set('page', currentCommissionPage);
   params.set('limit', 20);
-  const status = document.getElementById('aff-f-status')?.value;
-  const product = document.getElementById('aff-f-product')?.value;
-  const type = document.getElementById('aff-f-type')?.value;
-  const from = document.getElementById('aff-f-from')?.value;
-  const to   = document.getElementById('aff-f-to')?.value;
-  if (status)  params.set('status', status);
-  if (product) params.set('product_name', product);
-  if (type)    params.set('type', type);
-  if (from)    params.set('created_from', from);
-  if (to)      params.set('created_to', to);
+  const settlement = document.getElementById('aff-f-settlement')?.value;
+  const payment    = document.getElementById('aff-f-payment')?.value;
+  const product    = document.getElementById('aff-f-product')?.value;
+  const type       = document.getElementById('aff-f-type')?.value;
+  const from       = document.getElementById('aff-f-from')?.value;
+  const to         = document.getElementById('aff-f-to')?.value;
+  if (settlement) params.set('settlement', settlement);
+  if (payment)    params.set('payment', payment);
+  if (product)    params.set('product_name', product);
+  if (type)       params.set('type', type);
+  if (from)       params.set('created_from', from);
+  if (to)         params.set('created_to', to);
   return params.toString();
 }
 
@@ -1908,7 +1914,7 @@ async function loadCommissions() {
   _renderAffiliateOptionalHeaders();
 
   const tbody = document.getElementById('commissions-table');
-  const fixedCols = 9;  // Order ID · Name · Email · Phone · Product · Order Amt · Commission · Status · Created At
+  const fixedCols = 10;  // Order ID · Name · Type · Ref Code · Product · Amount · Commission · Payment · Settlement · Created At
   const colspan = fixedCols + _getActiveOptionalCols().length;
   tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty"><span class="spinner"></span> Loading...</td></tr>';
 
@@ -1935,10 +1941,10 @@ async function loadCommissions() {
     const optionalCols = _getActiveOptionalCols();
     tbody.innerHTML = data.orders.map(o => {
       const optionalCells = optionalCols.map(c => {
+        if (c.key === 'email')       return '<td class="hide-mobile" style="font-size:11px;color:var(--muted)">' + (o.customer_email_masked || '—') + '</td>';
+        if (c.key === 'phone')       return '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + (o.customer_phone_masked || '—') + '</td>';
         if (c.key === 'tv-username') return '<td class="hide-mobile mono" style="font-size:11px;color:var(--cyan2)">' + (o.tv_username || '—') + '</td>';
         if (c.key === 'promo')       return '<td class="hide-mobile mono" style="font-size:11px">' + (o.promo_code ? '<span class="badge b-amber">' + o.promo_code + '</span>' : '<span style="color:var(--muted)">—</span>') + '</td>';
-        if (c.key === 'type')        return '<td class="hide-mobile">' + commissionKindBadge(o.commission_kind) + '</td>';
-        if (c.key === 'ref-code')    return '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted2)">' + (o.ref_code || '—') + '</td>';
         if (c.key === 'available')   return '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + fmtDate(o.available_at) + '</td>';
         return '';
       }).join('');
@@ -1946,12 +1952,13 @@ async function loadCommissions() {
       return '<tr>' +
         '<td class="mono hide-mobile" style="font-size:10px">' + (o.order_id || '—') + '</td>' +
         '<td><strong>' + (o.customer_name_masked || '—') + '</strong></td>' +
-        '<td style="font-size:11px;color:var(--muted)">' + (o.customer_email_masked || '—') + '</td>' +
-        '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + (o.customer_phone_masked || '—') + '</td>' +
+        '<td>' + commissionKindBadge(o.commission_kind) + '</td>' +
+        '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted2)">' + (o.ref_code || '—') + '</td>' +
         '<td class="hide-mobile" style="font-size:12px">' + (o.product_name || '—') + '</td>' +
         '<td class="mono" style="font-size:12px">' + fmtRp(o.amount_order) + '</td>' +
         '<td class="mono" style="font-size:12px;color:var(--cyan2)"><strong>' + fmtRp(o.commission_amount) + '</strong></td>' +
-        '<td>' + statusBadge(o.commission_status) + '</td>' +
+        '<td>' + paymentBadge(o.payment) + '</td>' +
+        '<td>' + settlementBadge(o.settlement) + '</td>' +
         '<td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">' + (o.created_at ? fmtDate(o.created_at) : '—') + '</td>' +
         optionalCells +
       '</tr>';
@@ -1967,7 +1974,7 @@ async function loadCommissions() {
 }
 
 function resetAffiliateOrderFilters() {
-  ['aff-f-status','aff-f-product','aff-f-type','aff-f-from','aff-f-to'].forEach(id => {
+  ['aff-f-settlement','aff-f-payment','aff-f-product','aff-f-type','aff-f-from','aff-f-to'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1975,11 +1982,11 @@ function resetAffiliateOrderFilters() {
   loadCommissions();
 }
 
-// Legacy filter hook — old pill-style buttons elsewhere in the JS may
-// still call this. Map the status string into the new <select>.
-function setCommissionFilter(status) {
-  const sel = document.getElementById('aff-f-status');
-  if (sel) sel.value = status || '';
+// Legacy filter hooks — old pill-style buttons elsewhere in the JS
+// (e.g. the dashboard quick-jump tiles) may still call these.
+function setCommissionFilter(settlement) {
+  const sel = document.getElementById('aff-f-settlement');
+  if (sel) sel.value = settlement || '';
   currentCommissionPage = 1;
   loadCommissions();
 }
@@ -2396,7 +2403,7 @@ async function loadRecruitLinks() {
     }
 
     const baseUrl = window.location.origin + '/affiliate/?join=';
-    let html = '<div class="table-wrap"><table><thead><tr><th>Label</th><th>Downline Commission</th><th>Link</th><th>Used</th><th>Created</th><th>Status</th><th></th></tr></thead><tbody>';
+    let html = '<div class="table-wrap"><table><thead><tr><th>Label</th><th>Team Commission</th><th>Link</th><th>Used</th><th>Created</th><th>Status</th><th></th></tr></thead><tbody>';
     for (const link of data.links) {
       const url = baseUrl + link.token;
       const isActive = link.is_active;
@@ -2827,7 +2834,7 @@ async function loadDownline() {
 
 function renderDownlineTree(downlines) {
   if (!downlines || !downlines.length) {
-    return '<div class="empty">No downlines yet. Create a recruitment link and share it!</div>';
+    return '<div class="empty">No team members yet. Create a recruitment link and share it!</div>';
   }
 
   let html = '<div style="display:flex;flex-direction:column;gap:12px;">';
@@ -2894,14 +2901,14 @@ function updateRecruitInfoCard(affiliate) {
   if (maxGiveaway < minGiveaway) {
     el.innerHTML =
       'Your current commission: <strong style="color:var(--cyan);">' + myComm + '%</strong><br/>' +
-      '<span style="color:var(--red);">Your commission is too small to recruit downlines. ' +
-      'You need at least 20% commission (so you can give 10% to a downline).</span>';
+      '<span style="color:var(--red);">Your commission is too small to recruit team members. ' +
+      'You need at least 20% commission (so you can give 10% to a team member).</span>';
     return;
   }
 
   el.innerHTML =
     'Your commission: <strong style="color:var(--cyan);">' + myComm + '%</strong><br/>' +
-    'Commission range you can give to downlines: <strong style="color:var(--green);">' +
+    'Commission range you can give to team members: <strong style="color:var(--green);">' +
     minGiveaway + '% – ' + maxGiveaway + '%</strong><br/>' +
     'Commission spread you keep: <strong style="color:var(--white);">' +
     (myComm - maxGiveaway) + '% – ' + (myComm - minGiveaway) + '%</strong><br/>' +
@@ -2982,7 +2989,7 @@ function renderCreateLinkForm(affiliate) {
         '<div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
             '<label style="font-size:11px;color:var(--muted);">' +
-              'Commission for downline <span style="color:var(--red)">*</span></label>' +
+              'Commission for team member <span style="color:var(--red)">*</span></label>' +
             '<span id="rl-commission-display" ' +
               'style="font-size:14px;font-weight:700;color:var(--cyan);font-family:\'JetBrains Mono\',monospace;">' +
               minGive + '%</span>' +
@@ -3002,7 +3009,7 @@ function renderCreateLinkForm(affiliate) {
 
           '<div style="margin-top:10px;background:var(--card2);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--muted);">' +
             'Your spread: <strong style="color:var(--white);" id="rl-spread-display">' + (maxComm - minGive) + '%</strong>' +
-            ' &nbsp;·&nbsp; Downline gets: <strong style="color:var(--cyan);" id="rl-downline-display">' + minGive + '%</strong>' +
+            ' &nbsp;·&nbsp; Team gets: <strong style="color:var(--cyan);" id="rl-downline-display">' + minGive + '%</strong>' +
           '</div>' +
         '</div>' +
 
