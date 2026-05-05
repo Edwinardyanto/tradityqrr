@@ -902,6 +902,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
     <div class="nav-tab" onclick="showPage('grant')">Manual Grant</div>
     <div class="nav-tab" onclick="showPage('affiliates')">Affiliates</div>
     <div class="nav-tab" onclick="showPage('promo')">Promo</div>
+    <div class="nav-tab" onclick="showPage('payouts')">Payouts</div>
   </div>
 </nav>
 
@@ -954,6 +955,10 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
     <div class="nav-item sidebar-item" data-page="affiliates" onclick="showPage('affiliates')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Affiliates
+    </div>
+    <div class="nav-item sidebar-item" data-page="payouts" onclick="showPage('payouts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+      Payouts
     </div>
 
     <div class="nav-section">Customers</div>
@@ -1632,6 +1637,45 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
   </div>
 
   <!-- ───── (Traffic page removed — funnel chart moved to Dashboard, affiliate table moved to Affiliates) ───── -->
+
+  <!-- PAYOUTS -->
+  <div class="page" id="page-payouts">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Payouts</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="payout-filter" onchange="loadAdminPayouts()" style="font-size:12px;padding:6px 10px">
+            <option value="pending" selected>Pending</option>
+            <option value="paid">Paid</option>
+            <option value="">All</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadAdminPayouts()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="alert" id="payout-alert"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Affiliate</th>
+              <th>Amount</th>
+              <th class="hide-mobile">Bank Account</th>
+              <th>Status</th>
+              <th class="hide-mobile">Reference</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="payouts-table">
+            <tr><td colspan="7" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- PROMO CODES -->
   <div class="page" id="page-promo">
     <div class="section">
@@ -1863,6 +1907,27 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
   </div>
 </div>
 
+<!-- MARK PAID MODAL -->
+<div class="modal-overlay" id="mark-paid-modal">
+  <div class="modal" style="max-width:480px">
+    <h3>Mark Payout as Paid</h3>
+    <div id="mark-paid-summary" style="font-size:13px;color:var(--muted2);margin-bottom:14px;line-height:1.6"></div>
+    <div class="form-group">
+      <label>Transfer reference</label>
+      <input id="mark-paid-ref" type="text" placeholder="e.g., BCA-3411-198322" style="font-family:'JetBrains Mono',monospace"/>
+      <div class="hint">Bank transfer ID or proof number for the affiliate to verify.</div>
+    </div>
+    <div class="form-group">
+      <label>Note (optional)</label>
+      <input id="mark-paid-note" type="text" placeholder="e.g., Paid from BCA business account"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeMarkPaidModal()">Cancel</button>
+      <button class="btn btn-green" id="mark-paid-confirm-btn" onclick="confirmMarkPaid()">✓ Mark as Paid</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 let SERVER = '';
@@ -2058,6 +2123,7 @@ function showPage(name) {
   if (name === 'transactions') loadTransactions();
   if (name === 'orders') { populateOrderProductFilter(); loadOrders(); }
   if (name === 'affiliates')   { loadAffiliates(); loadAffiliateTrafficTable(); }
+  if (name === 'payouts')      loadAdminPayouts();
   if (name === 'promo')        loadPromos();
 
   // Sync admin bottom nav
@@ -2839,6 +2905,114 @@ async function deleteProduct(id) {
     loadProducts();
     showAlert('products', 'Produk dihapus', 'success');
   } catch(e) { showAlert('products', e.message, 'error'); }
+}
+
+// ── Admin Payouts ───────────────────────────────────────────────
+// List of pending withdrawal requests from affiliates. Admin processes
+// each by clicking "Mark Paid" → enters bank transfer reference →
+// commission rows flip to status='paid', payout row gets paid_at.
+
+let _adminPayouts = [];
+
+async function loadAdminPayouts() {
+  const tbody = document.getElementById('payouts-table');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" class="empty">Loading...</td></tr>';
+  const filterEl = document.getElementById('payout-filter');
+  const filter = filterEl ? filterEl.value : 'pending';
+
+  try {
+    const url = '/admin/payouts' + (filter ? '?status=' + filter : '');
+    const data = await api('GET', url);
+    _adminPayouts = data.payouts || [];
+    _renderAdminPayouts();
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Failed: ' + (e.message || e) + '</td></tr>';
+  }
+}
+
+function _renderAdminPayouts() {
+  const tbody = document.getElementById('payouts-table');
+  if (!_adminPayouts.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No payouts in this view.</td></tr>';
+    return;
+  }
+  const rp = (n) => 'Rp ' + (parseInt(n) || 0).toLocaleString('id-ID');
+  tbody.innerHTML = _adminPayouts.map(p => {
+    const isPending = p.status === 'pending' || !p.paid_at;
+    const dateCell = isPending
+      ? '<span style="color:var(--muted)">requested</span><br/><span style="font-size:10px;color:var(--muted)">est. ' + (p.disbursable_at ? fmtDate(p.disbursable_at) : '—') + '</span>'
+      : fmtDate(p.paid_at);
+    const statusBadge = isPending
+      ? '<span class="badge badge-yellow">Pending</span>'
+      : '<span class="badge badge-green">Paid</span>';
+    const bankCell = p.bank_name
+      ? '<div style="font-size:12px;font-weight:600">' + p.bank_name + '</div>' +
+        '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--muted)">' +
+        (p.account_number || '') + (p.account_holder ? ' · ' + p.account_holder : '') + '</div>'
+      : '<span style="color:var(--muted)">—</span>';
+    const action = isPending
+      ? '<button class="btn btn-green btn-sm" onclick="openMarkPaid(' + p.id + ')">Mark Paid</button>'
+      : '<span style="color:var(--muted);font-size:11px">—</span>';
+    return '<tr>' +
+      '<td class="mono" style="font-size:11px">' + dateCell + '</td>' +
+      '<td><strong>' + (p.affiliate_name || '—') + '</strong>' +
+        (p.affiliate_ref_code ? ' <span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--muted)">· ' + p.affiliate_ref_code + '</span>' : '') + '</td>' +
+      '<td class="mono"><strong>' + rp(p.total_amount) + '</strong></td>' +
+      '<td class="hide-mobile">' + bankCell + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td class="mono hide-mobile" style="font-size:11px;color:var(--muted2)">' + (p.transfer_ref || '—') + '</td>' +
+      '<td>' + action + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function openMarkPaid(id) {
+  const p = _adminPayouts.find(x => x.id === id);
+  if (!p) return;
+  const rp = (n) => 'Rp ' + (parseInt(n) || 0).toLocaleString('id-ID');
+  const summary =
+    '<div>Affiliate: <strong style="color:var(--white)">' + p.affiliate_name + '</strong> (' + p.affiliate_ref_code + ')</div>' +
+    '<div style="margin-top:6px">Amount: <strong style="color:var(--green);font-family:\'JetBrains Mono\',monospace">' + rp(p.total_amount) + '</strong> ' +
+      '<span style="color:var(--muted);font-size:11px">(after Rp 3.000 transfer fee = ' + rp(p.total_amount - 3000) + ' net to affiliate)</span></div>' +
+    '<div style="margin-top:6px">Bank: <strong>' + (p.bank_name || '—') + '</strong> · ' +
+      '<span style="font-family:\'JetBrains Mono\',monospace">' + (p.account_number || '—') + '</span> · ' +
+      (p.account_holder || '—') + '</div>' +
+    '<div style="margin-top:8px;font-size:11px;color:var(--muted)">Marking as paid will flip the underlying ' +
+      (p.commission_ids ? p.commission_ids.length : '?') + ' commission rows to status=paid.</div>';
+  document.getElementById('mark-paid-summary').innerHTML = summary;
+  document.getElementById('mark-paid-ref').value = '';
+  document.getElementById('mark-paid-note').value = '';
+  const btn = document.getElementById('mark-paid-confirm-btn');
+  btn.dataset.payoutId = id;
+  btn.disabled = false;
+  btn.textContent = '✓ Mark as Paid';
+  document.getElementById('mark-paid-modal').classList.add('open');
+  document.getElementById('mark-paid-ref').focus();
+}
+
+function closeMarkPaidModal() {
+  document.getElementById('mark-paid-modal').classList.remove('open');
+}
+
+async function confirmMarkPaid() {
+  const btn = document.getElementById('mark-paid-confirm-btn');
+  const id = parseInt(btn.dataset.payoutId);
+  const transfer_ref = document.getElementById('mark-paid-ref').value.trim();
+  const note         = document.getElementById('mark-paid-note').value.trim();
+  if (!transfer_ref) {
+    return showAlert('payout-alert', 'Transfer reference is required so the affiliate has proof.', 'error');
+  }
+  btn.disabled = true; btn.textContent = 'Processing...';
+  try {
+    await api('PATCH', '/admin/payouts/' + id + '/mark-paid', { transfer_ref, note });
+    closeMarkPaidModal();
+    showAlert('payout-alert', 'Payout #' + id + ' marked as paid.', 'success');
+    loadAdminPayouts();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = '✓ Mark as Paid';
+    showAlert('payout-alert', 'Failed: ' + (e.message || e), 'error');
+  }
 }
 
 // ── Promo Codes ──────────────────────────────────────────────────
