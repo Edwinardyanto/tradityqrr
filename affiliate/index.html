@@ -280,14 +280,26 @@ label.form-label{
 
 /* ===== HIDE MOBILE ===== */
 @media (max-width:760px){
-  .sidebar{position:static;width:100%;height:auto;flex-direction:row;flex-wrap:wrap;padding:12px}
-  .main{margin-left:0;padding:18px}
-  .hero-grid{grid-template-columns:1fr 1fr;gap:18px}
+  /* Stack sidebar above main, otherwise sidebar (width:100%) and
+     main (flex:1) compete for the same row and both end up squished. */
+  .stage{flex-direction:column}
+  .sidebar{position:static;width:100%;height:auto;flex-direction:row;flex-wrap:wrap;padding:10px 12px;gap:6px}
+  .sidebar .brand{padding:4px 8px 8px;width:100%}
+  .nav-item{padding:6px 10px;font-size:12px;flex:0 0 auto}
+  .nav-item svg{width:14px;height:14px}
+  .main{margin-left:0;padding:18px;width:100%;max-width:100%}
+  .hero-grid{grid-template-columns:1fr 1fr;gap:14px}
   .hide-mobile{display:none}
   .row-2-1,.row-1-1,.row-3{grid-template-columns:1fr}
   .actions-row{grid-template-columns:1fr !important}
-  .nav-item{padding:6px 8px;font-size:12px}
   .nav-section,.brand-sub,.sf{display:none}
+  /* Tables overflow horizontally with their own scroll instead of
+     blowing the page layout out. */
+  .table-wrap{overflow-x:auto}
+  /* KPI rows shrink from 4 columns to 2 */
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .funnel{grid-template-columns:1fr 1fr}
+  .fstep .conv{display:none}
 }
 
 /* ===== AUTH ===== */
@@ -2127,7 +2139,13 @@ function renderTeamsTable() {
   });
 
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">No teams match.</td></tr>';
+    // Distinguish "search returned nothing" from "actually no teams yet"
+    // — the latter gets a CTA to the Recruit tab.
+    const searchActive = (document.getElementById('teams-search').value || '').trim();
+    const msg = _teamsData.length === 0
+      ? 'No team members yet — share a recruitment link from the <a onclick="showPage(\'recruit\')" style="color:var(--cyan2);cursor:pointer;text-decoration:underline">Recruit</a> tab to invite affiliates.'
+      : (searchActive ? 'No teams match your search.' : 'No teams match.');
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">' + msg + '</td></tr>';
     return;
   }
 
@@ -2635,7 +2653,7 @@ async function loadTrafficChart() {
         },
         scales: {
           x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 }, grid: { color: gridColor } },
-          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
+          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, precision: 0 }, grid: { color: gridColor }, beginAtZero: true, suggestedMax: 10 }
         }
       }
     });
@@ -2688,7 +2706,7 @@ async function loadIncomeChart() {
         },
         scales: {
           x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 }, grid: { color: gridColor } },
-          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, callback: v => _fmtRpShort(v) }, grid: { color: gridColor }, beginAtZero: true }
+          y: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, callback: v => _fmtRpShort(v) }, grid: { color: gridColor }, beginAtZero: true, suggestedMax: 100000 }
         }
       }
     });
