@@ -309,6 +309,22 @@ nav.legacy-nav { display: none !important; }
   letter-spacing: -.01em;
 }
 
+/* ─── SUB-TABS (within a page) ────────────────────────────────── */
+.subpage-tabs {
+  display: flex; gap: 6px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.subpage-tab {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  padding: 10px 16px; font-size: 13px; font-weight: 600;
+  color: var(--muted); cursor: pointer; transition: color .15s, border-color .15s;
+  margin-bottom: -1px;
+}
+.subpage-tab:hover { color: var(--ink); }
+.subpage-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+.subpage { display: none; }
+.subpage.active { display: block; }
+
 /* ─── TABLES ───────────────────────────────────────────────── */
 .table-wrap {
   background: var(--card); border: 1px solid var(--border);
@@ -1290,38 +1306,6 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       </div>
     </div>
 
-    <!-- ── WAITLIST VIEWER ── -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Waitlist</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="waitlist-status-filter" onchange="loadWaitlist()" class="of-sel">
-            <option value="waiting">Waiting</option>
-            <option value="promoted">Promoted</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="">Semua</option>
-          </select>
-          <button class="btn btn-ghost btn-sm" onclick="loadWaitlist()">↻ Refresh</button>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>#</th>
-            <th>Email</th>
-            <th class="hide-mobile">Nama</th>
-            <th class="hide-mobile">Phone</th>
-            <th class="hide-mobile">TV Username</th>
-            <th class="hide-mobile">Plan</th>
-            <th class="hide-mobile">Joined</th>
-            <th class="hide-mobile">Promoted</th>
-            <th>Status</th>
-          </tr></thead>
-          <tbody id="waitlist-table"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- ── PRODUCT TABLE ── -->
     <div class="section">
       <div class="section-header">
@@ -1349,58 +1333,100 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 
   <!-- SUBSCRIBERS -->
   <div class="page" id="page-subscribers">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Subscribers</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadSubscribers()">↻ Refresh</button>
+    <div class="subpage-tabs" role="tablist">
+      <button class="subpage-tab active" data-subpage="subscribers" onclick="showSubscribersTab('subscribers')" role="tab">Subscribers</button>
+      <button class="subpage-tab" data-subpage="waitlist" onclick="showSubscribersTab('waitlist')" role="tab">Waitlist</button>
+    </div>
+
+    <!-- SUB-PAGE: Subscribers (default) -->
+    <div id="subpage-subscribers" class="subpage active">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Subscribers</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadSubscribers()">↻ Refresh</button>
+        </div>
+        <!-- FILTERS -->
+        <div class="orders-filters">
+          <input type="text" id="sub-search" placeholder="Cari nama / username / email / phone..." class="of-sel" style="max-width:240px" oninput="filterSubscribers()"/>
+
+          <select id="f-sub-status" onchange="filterSubscribers()" class="of-sel">
+            <option value="">Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          <select id="f-sub-tv" onchange="filterSubscribers()" class="of-sel">
+            <option value="">TV Status</option>
+            <option value="granted">Granted</option>
+            <option value="failed">Failed</option>
+          </select>
+
+          <select id="f-sub-telegram" onchange="filterSubscribers()" class="of-sel">
+            <option value="">Telegram</option>
+            <option value="joined">Joined</option>
+            <option value="not_joined">Not joined</option>
+          </select>
+
+          <select id="f-sub-plan" onchange="filterSubscribers()" class="of-sel">
+            <option value="">Plan</option>
+          </select>
+
+          <button onclick="resetSubFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Nama</th>
+              <th class="hide-mobile">Email</th>
+              <th class="hide-mobile">No. HP</th>
+              <th>Status</th>
+              <th class="hide-mobile">Plan</th>
+              <th class="hide-mobile">Joined</th>
+              <th class="hide-mobile">Expires</th>
+              <th class="hide-mobile">TV Username</th>
+              <th>TV</th>
+              <th>Telegram</th>
+              <th>Aksi</th>
+            </tr></thead>
+            <tbody id="subscribers-table"><tr><td colspan="11" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="subscribers-pagination"></div>
       </div>
-      <!-- FILTERS -->
-      <div class="orders-filters">
-        <input type="text" id="sub-search" placeholder="Cari nama / username / email / phone..." class="of-sel" style="max-width:240px" oninput="filterSubscribers()"/>
+    </div>
 
-        <select id="f-sub-status" onchange="filterSubscribers()" class="of-sel">
-          <option value="">Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-
-        <select id="f-sub-tv" onchange="filterSubscribers()" class="of-sel">
-          <option value="">TV Status</option>
-          <option value="granted">Granted</option>
-          <option value="failed">Failed</option>
-        </select>
-
-        <select id="f-sub-telegram" onchange="filterSubscribers()" class="of-sel">
-          <option value="">Telegram</option>
-          <option value="joined">Joined</option>
-          <option value="not_joined">Not joined</option>
-        </select>
-
-        <select id="f-sub-plan" onchange="filterSubscribers()" class="of-sel">
-          <option value="">Plan</option>
-        </select>
-
-        <button onclick="resetSubFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
+    <!-- SUB-PAGE: Waitlist (moved from Products tab) -->
+    <div id="subpage-waitlist" class="subpage">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Waitlist</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="waitlist-status-filter" onchange="loadWaitlist()" class="of-sel">
+              <option value="waiting">Waiting</option>
+              <option value="promoted">Promoted</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="">Semua</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadWaitlist()">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th>
+              <th>Email</th>
+              <th class="hide-mobile">Nama</th>
+              <th class="hide-mobile">Phone</th>
+              <th class="hide-mobile">TV Username</th>
+              <th class="hide-mobile">Plan</th>
+              <th class="hide-mobile">Joined</th>
+              <th class="hide-mobile">Promoted</th>
+              <th>Status</th>
+            </tr></thead>
+            <tbody id="waitlist-table"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>Nama</th>
-            <th class="hide-mobile">Email</th>
-            <th class="hide-mobile">No. HP</th>
-            <th>Status</th>
-            <th class="hide-mobile">Plan</th>
-            <th class="hide-mobile">Joined</th>
-            <th class="hide-mobile">Expires</th>
-            <th class="hide-mobile">TV Username</th>
-            <th>TV</th>
-            <th>Telegram</th>
-            <th>Aksi</th>
-          </tr></thead>
-          <tbody id="subscribers-table"><tr><td colspan="11" class="empty">Loading...</td></tr></tbody>
-        </table>
-      </div>
-      <div id="subscribers-pagination"></div>
     </div>
   </div>
 
@@ -2852,9 +2878,9 @@ async function loadWaitlist() {
 
 // ── Products ──────────────────────────────────────────────────────
 async function loadProducts() {
-  // Load cap config + waitlist alongside products since they share the tab.
+  // Cap config still lives here (it picks WHICH products are capped);
+  // the Waitlist viewer moved to the Subscribers tab.
   loadCapConfig();
-  loadWaitlist();
   try {
     const { products } = await api('GET', '/admin/products');
     document.getElementById('products-table').innerHTML = products.length
@@ -3221,6 +3247,23 @@ async function loadSubscribers() {
     populateSubPlanFilter(subscribers);
     renderSubscribers(getFilteredSubscribers());
   } catch(e) { console.error(e); }
+}
+
+// Sub-tab switcher for the Subscribers page (Subscribers vs Waitlist).
+// Lazy-loads the waitlist on first switch so we don't pay for a fetch
+// the operator may never look at.
+let _waitlistLoaded = false;
+function showSubscribersTab(name) {
+  document.querySelectorAll('#page-subscribers .subpage-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.subpage === name);
+  });
+  document.querySelectorAll('#page-subscribers .subpage').forEach(p => {
+    p.classList.toggle('active', p.id === 'subpage-' + name);
+  });
+  if (name === 'waitlist' && !_waitlistLoaded) {
+    loadWaitlist();
+    _waitlistLoaded = true;
+  }
 }
 
 // Populate the Plan dropdown from whatever product_name values are
