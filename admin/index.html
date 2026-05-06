@@ -2667,7 +2667,7 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero, waitlist) 
       waitlistEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px;">Belum ada order di waitlist</div>';
     } else {
       let waitTotal = 0;
-      const waitRows = waitlist.slice(0, 6).map((w, i) => {
+      const waitRows = waitlist.slice(0, 5).map((w, i) => {
         const amt = parseInt(w.amount || 0);
         waitTotal += amt;
         const pos = i + 1;
@@ -2688,9 +2688,9 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero, waitlist) 
       // Sum across the FULL waitlist, not just the visible 6, so the
       // "deferred revenue" footer is honest.
       const fullTotal = waitlist.reduce((s, w) => s + parseInt(w.amount || 0), 0);
-      const footerHtml = waitlist.length > 6
+      const footerHtml = waitlist.length > 5
         ? `<div style="font-size:12px;color:var(--muted);padding:10px 0 0;border-top:1px solid var(--border);margin-top:8px;display:flex;justify-content:space-between;">
-             <span>+${waitlist.length - 6} order lagi di waitlist</span>
+             <span>+${waitlist.length - 5} order lagi di waitlist</span>
              <span>Deferred: <strong style="color:var(--ink);">${fmtRp(fullTotal)}</strong></span>
            </div>`
         : `<div style="font-size:12px;color:var(--muted);padding:10px 0 0;border-top:1px solid var(--border);margin-top:8px;text-align:right;">
