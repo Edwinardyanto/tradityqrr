@@ -1375,6 +1375,12 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
             <option value="">Plan</option>
           </select>
 
+          <select id="f-sub-source" onchange="filterSubscribers()" class="of-sel">
+            <option value="">Source</option>
+            <option value="paid">Paid</option>
+            <option value="manual">Manual Grant</option>
+          </select>
+
           <button onclick="resetSubFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
         </div>
         <div class="table-wrap">
@@ -1544,20 +1550,40 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
     <div class="section">
       <div class="section-title" style="margin-bottom:20px">Manual Grant Access</div>
       <div id="alert-grant" class="alert"></div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;max-width:480px">
-        <div class="form-row">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;max-width:560px">
+        <p style="font-size:13px;color:var(--muted);margin:0 0 18px;line-height:1.6;">
+          Berikan akses TRXC QRR Indikator secara manual ke seseorang tanpa melalui order. Subscriber yang dibuat lewat sini akan tertanda <b>source: Manual</b> di list subscribers, dan <b>tidak masuk Revenue Harian</b>.
+        </p>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group">
-            <label>TV Username</label>
-            <input type="text" id="grant-username" placeholder="mahiralgo"/>
+            <label>Nama *</label>
+            <input type="text" id="grant-name" placeholder="Nama lengkap"/>
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="grant-email" placeholder="email@example.com"/>
+          </div>
+        </div>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label>No HP *</label>
+            <input type="text" id="grant-phone" placeholder="+62812..."/>
+          </div>
+          <div class="form-group">
+            <label>TV Username *</label>
+            <input type="text" id="grant-username" placeholder="tradingview_username" style="font-family:'JetBrains Mono',monospace"/>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Durasi (bulan) — kosongkan untuk Lifetime</label>
-            <input type="number" id="grant-months" placeholder="1" min="1"/>
+            <label>Product *</label>
+            <select id="grant-product" style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;">
+              <option value="">— pilih produk —</option>
+            </select>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;">Durasi otomatis dari produk yang dipilih (lifetime kalau produk lifetime).</div>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="manualGrant()">Grant Access</button>
+        <button class="btn btn-primary" onclick="manualGrant()" style="margin-top:8px">Grant Access</button>
       </div>
     </div>
   </div>
@@ -1821,6 +1847,65 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closePromoModal()">Cancel</button>
       <button class="btn btn-primary" onclick="savePromo()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Edit Subscriber -->
+<div class="modal-overlay" id="edit-sub-modal">
+  <div class="modal">
+    <h3 id="edit-sub-title">EDIT SUBSCRIBER</h3>
+    <p id="edit-sub-subtitle" style="color:var(--muted);font-size:13px;margin-bottom:12px;">Update data subscriber. Email & TV username harus unique.</p>
+    <div id="edit-sub-source-banner" style="display:none;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#9B7A1F;">
+      ⚠️ Subscriber ini berasal dari <b>Manual Grant</b>. Lengkapi data yang masih kosong.
+    </div>
+    <input type="hidden" id="edit-sub-id"/>
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>Nama *</label>
+        <input type="text" id="edit-sub-name" placeholder="Nama lengkap"/>
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="edit-sub-email" placeholder="email@example.com"/>
+      </div>
+    </div>
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>No HP</label>
+        <input type="text" id="edit-sub-phone" placeholder="+62812..."/>
+      </div>
+      <div class="form-group">
+        <label>TV Username *</label>
+        <input type="text" id="edit-sub-tv" placeholder="tradingview_username" style="font-family:'JetBrains Mono',monospace"/>
+      </div>
+    </div>
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>Product</label>
+        <select id="edit-sub-product" style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;">
+          <option value="">— pilih produk —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Berlaku Hingga</label>
+        <input type="datetime-local" id="edit-sub-expires"/>
+      </div>
+    </div>
+    <div style="margin:12px 0 16px;display:flex;gap:18px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--white);">
+        <input id="edit-sub-lifetime" type="checkbox" style="width:16px;height:16px;accent-color:#C9A84C;" onchange="onEditSubLifetimeChange()"/>
+        Lifetime
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--white);">
+        <input id="edit-sub-active" type="checkbox" checked style="width:16px;height:16px;accent-color:#059669;"/>
+        Active
+      </label>
+    </div>
+    <div id="edit-sub-error" class="alert alert-error" style="display:none;margin-bottom:12px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditSubscriberModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditSubscriber()">Save</button>
     </div>
   </div>
 </div>
@@ -2163,6 +2248,7 @@ function showPage(name) {
   if (name === 'subscribers')  loadSubscribers();
   if (name === 'transactions') loadTransactions();
   if (name === 'orders') { populateOrderProductFilter(); loadOrders(); }
+  if (name === 'grant')        populateGrantProductFilter();
   if (name === 'affiliates')   { loadAffiliates(); loadAffiliateTrafficTable(); }
   if (name === 'payouts')      loadAdminPayouts();
   if (name === 'promo')        loadPromos();
@@ -3336,6 +3422,7 @@ function getFilteredSubscribers() {
   const fTv     = document.getElementById('f-sub-tv')?.value       || '';
   const fTg     = document.getElementById('f-sub-telegram')?.value || '';
   const fPlan   = document.getElementById('f-sub-plan')?.value     || '';
+  const fSource = document.getElementById('f-sub-source')?.value   || '';
   const now = new Date();
   return allSubscribers.filter(s => {
     if (q) {
@@ -3360,6 +3447,7 @@ function getFilteredSubscribers() {
       if (fTg === 'not_joined' &&  tgJoined) return false;
     }
     if (fPlan && s.product_name !== fPlan) return false;
+    if (fSource && (s.source || 'paid') !== fSource) return false;
     return true;
   });
 }
@@ -3370,7 +3458,7 @@ function filterSubscribers() {
 }
 
 function resetSubFilters() {
-  ['sub-search','f-sub-status','f-sub-tv','f-sub-telegram','f-sub-plan'].forEach(id => {
+  ['sub-search','f-sub-status','f-sub-tv','f-sub-telegram','f-sub-plan','f-sub-source'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -3404,8 +3492,15 @@ function renderSubscribers(list) {
           ? '<span class="badge badge-green">Joined</span>'
           : '<span class="badge badge-red">Not joined</span>';
         const planLabel = s.is_lifetime ? 'Lifetime' : (s.product_name || '—');
-        return `<tr>
-          <td><strong>${s.customer_name || s.tv_username || '—'}</strong></td>
+        const isManual = s.source === 'manual';
+        // Manual-grant rows missing customer_name OR email need data
+        // completion — the Edit modal opens as the natural path.
+        const needsData = isManual && (!s.email || !s.customer_name);
+        const sourceBadge = isManual
+          ? `<span class="badge badge-yellow" style="margin-left:6px;font-size:10px;">Manual${needsData ? ' · perlu data' : ''}</span>`
+          : '';
+        return `<tr${needsData ? ' style="background:rgba(201,168,76,0.04);"' : ''}>
+          <td><strong>${s.customer_name || s.tv_username || '—'}</strong>${sourceBadge}</td>
           <td class="hide-mobile" style="font-size:12px;color:var(--muted)">${s.email || '—'}</td>
           <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${s.phone || '—'}</td>
           <td>${statusBadge}</td>
@@ -3415,7 +3510,10 @@ function renderSubscribers(list) {
           <td class="hide-mobile mono" style="font-size:12px">${s.tv_username || '—'}</td>
           <td>${tvBadge}</td>
           <td>${tgBadge}</td>
-          <td><button class="btn btn-ghost btn-sm" onclick="viewSubscriber('${s.tv_username}')">Detail</button></td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn btn-ghost btn-sm" onclick="viewSubscriber('${s.tv_username}')">Detail</button>
+            <button class="btn btn-ghost btn-sm" onclick="openEditSubscriberModal(${s.id})" title="Edit"${needsData ? ' style="color:var(--gold);font-weight:700;"' : ''}>✎</button>
+          </td>
         </tr>`;
       }).join('')
     : '<tr><td colspan="11" class="empty">Belum ada subscriber</td></tr>';
@@ -3457,6 +3555,115 @@ async function viewSubscriber(username) {
     const info = `TV: ${s.tv_username}\nEmail: ${s.email || '-'}\nExpires: ${s.is_lifetime ? 'Lifetime' : (s.expires_at ? new Date(s.expires_at).toLocaleDateString('id-ID') : '-')}\nTotal: Rp ${parseInt(s.total_transaction||0).toLocaleString('id-ID')}\nTransaksi: ${transactions.length}x`;
     alert(info);
   } catch(e) { alert(e.message); }
+}
+
+// ── Edit Subscriber modal ─────────────────────────────────────────
+function openEditSubscriberModal(id) {
+  const sub = allSubscribers.find(x => x.id === id);
+  if (!sub) return alert('Subscriber tidak ditemukan');
+
+  document.getElementById('edit-sub-id').value         = sub.id;
+  document.getElementById('edit-sub-name').value       = sub.customer_name || '';
+  document.getElementById('edit-sub-email').value      = sub.email         || '';
+  document.getElementById('edit-sub-phone').value      = sub.phone         || '';
+  document.getElementById('edit-sub-tv').value         = sub.tv_username   || '';
+  document.getElementById('edit-sub-lifetime').checked = !!sub.is_lifetime;
+  document.getElementById('edit-sub-active').checked   = sub.is_active !== false;
+
+  // expires_at: convert to local datetime-local input format (YYYY-MM-DDTHH:mm)
+  const exp = sub.expires_at ? new Date(sub.expires_at) : null;
+  document.getElementById('edit-sub-expires').value = exp
+    ? new Date(exp.getTime() - exp.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+    : '';
+  // Lifetime gates the expires field
+  onEditSubLifetimeChange();
+
+  // Populate product select from the distinct values currently in subscribers
+  // (matches what the list filter shows). Also include the current value so
+  // a row with an unusual / outdated product still selects correctly.
+  const sel = document.getElementById('edit-sub-product');
+  const products = [...new Set(allSubscribers.map(s => s.product_name).filter(Boolean))];
+  if (sub.product_name && !products.includes(sub.product_name)) products.unshift(sub.product_name);
+  sel.innerHTML = '<option value="">— pilih produk —</option>' +
+    products.map(p => `<option value="${p}"${p === sub.product_name ? ' selected' : ''}>${p}</option>`).join('');
+
+  // Banner if this is a manual-grant row (data may be incomplete)
+  const banner = document.getElementById('edit-sub-source-banner');
+  banner.style.display = sub.source === 'manual' ? '' : 'none';
+
+  document.getElementById('edit-sub-error').style.display = 'none';
+  document.getElementById('edit-sub-modal').classList.add('open');
+}
+
+function closeEditSubscriberModal() {
+  document.getElementById('edit-sub-modal').classList.remove('open');
+}
+
+function onEditSubLifetimeChange() {
+  const lt = document.getElementById('edit-sub-lifetime').checked;
+  const exp = document.getElementById('edit-sub-expires');
+  exp.disabled = lt;
+  exp.style.opacity = lt ? '0.4' : '1';
+  if (lt) exp.value = '';
+}
+
+async function saveEditSubscriber() {
+  const errEl = document.getElementById('edit-sub-error');
+  errEl.style.display = 'none';
+
+  const id        = parseInt(document.getElementById('edit-sub-id').value, 10);
+  const name      = document.getElementById('edit-sub-name').value.trim();
+  const email     = document.getElementById('edit-sub-email').value.trim();
+  const phone     = document.getElementById('edit-sub-phone').value.trim();
+  const tv        = document.getElementById('edit-sub-tv').value.trim();
+  const product   = document.getElementById('edit-sub-product').value;
+  const isLifetime= document.getElementById('edit-sub-lifetime').checked;
+  const isActive  = document.getElementById('edit-sub-active').checked;
+  const expRaw    = document.getElementById('edit-sub-expires').value;
+
+  // Edit modal: phone is allowed empty (legacy data accommodation —
+  // some manual-grant subscribers from before this rework don't have
+  // phone). Manual Grant form (the entry point for new rows) still
+  // requires it.
+  const missing = [];
+  if (!name)    missing.push('Nama');
+  if (!email)   missing.push('Email');
+  if (!tv)      missing.push('TV Username');
+  if (!product) missing.push('Product');
+  if (missing.length) {
+    errEl.textContent = 'Field wajib belum diisi: ' + missing.join(', ');
+    errEl.style.display = '';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Format email tidak valid';
+    errEl.style.display = '';
+    return;
+  }
+
+  const body = {
+    customer_name: name,
+    email,
+    phone,
+    tv_username:   tv,
+    product_name:  product,
+    is_lifetime:   isLifetime,
+    is_active:     isActive,
+    expires_at:    isLifetime ? null : (expRaw ? new Date(expRaw).toISOString() : null),
+  };
+
+  try {
+    await api('PATCH', `/admin/subscribers/${id}`, body);
+    closeEditSubscriberModal();
+    loadSubscribers();
+  } catch (e) {
+    console.error('saveEditSubscriber error:', e);
+    errEl.textContent = e.message || 'Gagal menyimpan';
+    errEl.style.display = '';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 // ── Transactions ──────────────────────────────────────────────────
@@ -3778,15 +3985,61 @@ async function populateOrderProductFilter() {
 }
 
 // ── Manual Grant ──────────────────────────────────────────────────
-async function manualGrant() {
-  const username = document.getElementById('grant-username').value.trim();
-  const months   = document.getElementById('grant-months').value;
-  if (!username) return showAlert('grant', 'TV Username wajib diisi', 'error');
+// Loads the product list once when the Grant page is shown so the
+// dropdown is populated. Idempotent — repeat calls just refresh.
+async function populateGrantProductFilter() {
   try {
-    const r = await api('POST', '/admin/grant', { tv_username: username, months: months || null });
-    showAlert('grant', `✅ Access granted: ${r.tv_username} — expires: ${r.expiration}`, 'success');
-    document.getElementById('grant-username').value = '';
-    document.getElementById('grant-months').value   = '';
+    const { products } = await api('GET', '/admin/products');
+    const sel = document.getElementById('grant-product');
+    if (sel && products) {
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">— pilih produk —</option>' +
+        products
+          .filter(p => p.is_active)
+          .map(p => `<option value="${p.product_name}">${p.product_name}</option>`)
+          .join('');
+      if (cur) sel.value = cur;
+    }
+  } catch (e) { /* non-fatal */ }
+}
+
+async function manualGrant() {
+  const name     = document.getElementById('grant-name').value.trim();
+  const email    = document.getElementById('grant-email').value.trim();
+  const phone    = document.getElementById('grant-phone').value.trim();
+  const username = document.getElementById('grant-username').value.trim();
+  const product  = document.getElementById('grant-product').value;
+
+  const missing = [];
+  if (!name)     missing.push('Nama');
+  if (!email)    missing.push('Email');
+  if (!phone)    missing.push('No HP');
+  if (!username) missing.push('TV Username');
+  if (!product)  missing.push('Product');
+  if (missing.length) return showAlert('grant', 'Field wajib: ' + missing.join(', '), 'error');
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return showAlert('grant', 'Format email tidak valid', 'error');
+  }
+
+  try {
+    // Backend looks up product.months when months is omitted, so the
+    // duration follows whatever the product is configured for (1 month,
+    // 12 months, lifetime). No manual override from the form.
+    const r = await api('POST', '/admin/grant', {
+      customer_name: name,
+      email,
+      phone,
+      tv_username:   username,
+      product_name:  product,
+    });
+    if (r.tv_access_status === 'granted') {
+      showAlert('grant', `✅ Access granted: ${r.tv_username} — expires: ${r.expiration === 'LIFETIME' ? 'Lifetime' : new Date(r.expiration).toLocaleDateString('id-ID')}`, 'success');
+    } else {
+      showAlert('grant', `⚠️ Subscriber created tapi TV grant gagal: ${r.tv_error || 'unknown'}. Cek TV username & retry dari Subscribers tab.`, 'error');
+    }
+    ['grant-name','grant-email','grant-phone','grant-username','grant-product']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   } catch(e) { showAlert('grant', e.message, 'error'); }
 }
 
