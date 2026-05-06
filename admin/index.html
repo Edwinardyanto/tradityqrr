@@ -1550,20 +1550,43 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
     <div class="section">
       <div class="section-title" style="margin-bottom:20px">Manual Grant Access</div>
       <div id="alert-grant" class="alert"></div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;max-width:480px">
-        <div class="form-row">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;max-width:560px">
+        <p style="font-size:13px;color:var(--muted);margin:0 0 18px;line-height:1.6;">
+          Berikan akses TRXC QRR Indikator secara manual ke seseorang tanpa melalui order. Subscriber yang dibuat lewat sini akan tertanda <b>source: Manual</b> di list subscribers, dan <b>tidak masuk Revenue Harian</b>.
+        </p>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group">
-            <label>TV Username</label>
-            <input type="text" id="grant-username" placeholder="mahiralgo"/>
+            <label>Nama *</label>
+            <input type="text" id="grant-name" placeholder="Nama lengkap"/>
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="grant-email" placeholder="email@example.com"/>
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group">
-            <label>Durasi (bulan) — kosongkan untuk Lifetime</label>
-            <input type="number" id="grant-months" placeholder="1" min="1"/>
+            <label>No HP *</label>
+            <input type="text" id="grant-phone" placeholder="+62812..."/>
+          </div>
+          <div class="form-group">
+            <label>TV Username *</label>
+            <input type="text" id="grant-username" placeholder="tradingview_username" style="font-family:'JetBrains Mono',monospace"/>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="manualGrant()">Grant Access</button>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label>Product *</label>
+            <select id="grant-product" style="width:100%;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:13px;">
+              <option value="">— pilih produk —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Durasi (bulan)</label>
+            <input type="number" id="grant-months" placeholder="Kosongkan = Lifetime" min="1"/>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="manualGrant()" style="margin-top:8px">Grant Access</button>
       </div>
     </div>
   </div>
@@ -2228,6 +2251,7 @@ function showPage(name) {
   if (name === 'subscribers')  loadSubscribers();
   if (name === 'transactions') loadTransactions();
   if (name === 'orders') { populateOrderProductFilter(); loadOrders(); }
+  if (name === 'grant')        populateGrantProductFilter();
   if (name === 'affiliates')   { loadAffiliates(); loadAffiliateTrafficTable(); }
   if (name === 'payouts')      loadAdminPayouts();
   if (name === 'promo')        loadPromos();
@@ -3959,15 +3983,61 @@ async function populateOrderProductFilter() {
 }
 
 // ── Manual Grant ──────────────────────────────────────────────────
-async function manualGrant() {
-  const username = document.getElementById('grant-username').value.trim();
-  const months   = document.getElementById('grant-months').value;
-  if (!username) return showAlert('grant', 'TV Username wajib diisi', 'error');
+// Loads the product list once when the Grant page is shown so the
+// dropdown is populated. Idempotent — repeat calls just refresh.
+async function populateGrantProductFilter() {
   try {
-    const r = await api('POST', '/admin/grant', { tv_username: username, months: months || null });
-    showAlert('grant', `✅ Access granted: ${r.tv_username} — expires: ${r.expiration}`, 'success');
-    document.getElementById('grant-username').value = '';
-    document.getElementById('grant-months').value   = '';
+    const { products } = await api('GET', '/admin/products');
+    const sel = document.getElementById('grant-product');
+    if (sel && products) {
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">— pilih produk —</option>' +
+        products
+          .filter(p => p.is_active)
+          .map(p => `<option value="${p.product_name}">${p.product_name}</option>`)
+          .join('');
+      if (cur) sel.value = cur;
+    }
+  } catch (e) { /* non-fatal */ }
+}
+
+async function manualGrant() {
+  const name     = document.getElementById('grant-name').value.trim();
+  const email    = document.getElementById('grant-email').value.trim();
+  const phone    = document.getElementById('grant-phone').value.trim();
+  const username = document.getElementById('grant-username').value.trim();
+  const product  = document.getElementById('grant-product').value;
+  const months   = document.getElementById('grant-months').value;
+
+  const missing = [];
+  if (!name)     missing.push('Nama');
+  if (!email)    missing.push('Email');
+  if (!phone)    missing.push('No HP');
+  if (!username) missing.push('TV Username');
+  if (!product)  missing.push('Product');
+  if (missing.length) return showAlert('grant', 'Field wajib: ' + missing.join(', '), 'error');
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return showAlert('grant', 'Format email tidak valid', 'error');
+  }
+
+  try {
+    const r = await api('POST', '/admin/grant', {
+      customer_name: name,
+      email,
+      phone,
+      tv_username:   username,
+      product_name:  product,
+      months:        months || null,
+    });
+    if (r.tv_access_status === 'granted') {
+      showAlert('grant', `✅ Access granted: ${r.tv_username} — expires: ${r.expiration === 'LIFETIME' ? 'Lifetime' : new Date(r.expiration).toLocaleDateString('id-ID')}`, 'success');
+    } else {
+      showAlert('grant', `⚠️ Subscriber created tapi TV grant gagal: ${r.tv_error || 'unknown'}. Cek TV username & retry dari Subscribers tab.`, 'error');
+    }
+    // Clear form on success-or-partial — subscriber row was created either way
+    ['grant-name','grant-email','grant-phone','grant-username','grant-product','grant-months']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   } catch(e) { showAlert('grant', e.message, 'error'); }
 }
 
