@@ -309,6 +309,22 @@ nav.legacy-nav { display: none !important; }
   letter-spacing: -.01em;
 }
 
+/* ─── SUB-TABS (within a page) ────────────────────────────────── */
+.subpage-tabs {
+  display: flex; gap: 6px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.subpage-tab {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  padding: 10px 16px; font-size: 13px; font-weight: 600;
+  color: var(--muted); cursor: pointer; transition: color .15s, border-color .15s;
+  margin-bottom: -1px;
+}
+.subpage-tab:hover { color: var(--ink); }
+.subpage-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+.subpage { display: none; }
+.subpage.active { display: block; }
+
 /* ─── TABLES ───────────────────────────────────────────────── */
 .table-wrap {
   background: var(--card); border: 1px solid var(--border);
@@ -760,6 +776,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 .cc-panel {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 12px; padding: 18px;
+  display: flex; flex-direction: column;
 }
 .cc-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
 .cc-panel-title { font-size: 13px; font-weight: 600; color: var(--ink); }
@@ -812,9 +829,13 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 .cc-status-granted    { background: #D1FAE5; color: #064E3B; }
 .cc-status-processing { background: #FEF3C7; color: #78350F; }
 .cc-status-failed     { background: #FEE2E2; color: #7F1D1D; }
+.cc-status-waiting    { background: #FEF6E0; color: #78350F; border: 1px solid #F5D78A; }
 :root[data-theme="dark"] .cc-status-granted    { background: rgba(5,150,105,.2);  color: #A7F3D0; }
 :root[data-theme="dark"] .cc-status-processing { background: rgba(217,119,6,.2);  color: #FDE68A; }
 :root[data-theme="dark"] .cc-status-failed     { background: rgba(220,38,38,.2);  color: #FECACA; }
+:root[data-theme="dark"] .cc-status-waiting    { background: rgba(201,168,76,.18); color: #FDE68A; border-color: rgba(201,168,76,.4); }
+.cc-order-avatar-wait { background: #FEF6E0; color: #9B7A1F; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+:root[data-theme="dark"] .cc-order-avatar-wait { background: rgba(201,168,76,.2); color: #FDE68A; }
 
 .cc-aff-rank { width: 24px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); font-weight: 700; text-align: center; }
 .cc-aff-name { font-size: 13px; font-weight: 500; color: var(--ink); }
@@ -1128,7 +1149,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
             <button class="period-btn active" onclick="setAdminRange(30,0,'Last 30 days',this)">30D</button>
           </div>
         </div>
-        <div style="position:relative;width:100%;height:200px;">
+        <div style="position:relative;width:100%;flex:1;min-height:200px;">
           <canvas id="admin-chart-income" role="img" aria-label="Revenue harian"></canvas>
         </div>
         <div class="cc-legend">
@@ -1151,7 +1172,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       </div>
     </div>
 
-    <!-- FUNNEL TRAFFIC + RESERVED PLACEHOLDER -->
+    <!-- FUNNEL TRAFFIC + ORDER TERBARU -->
     <div class="cc-row cc-row-1-1">
       <div class="cc-panel">
         <div class="cc-panel-head">
@@ -1160,7 +1181,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
             <div class="cc-panel-sub" id="cc-funnel-sub">Last 30 days · Kunjungan → Checkout → Form Diisi → Paid</div>
           </div>
         </div>
-        <div style="position:relative;width:100%;height:240px;">
+        <div style="position:relative;width:100%;flex:1;min-height:240px;">
           <canvas id="admin-chart-funnel" role="img" aria-label="Funnel Traffic"></canvas>
         </div>
         <div class="cc-legend" style="flex-wrap:wrap;">
@@ -1171,13 +1192,6 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
         </div>
       </div>
 
-      <div class="cc-panel cc-panel-empty" id="cc-reserved-panel">
-        Coming soon
-      </div>
-    </div>
-
-    <!-- ORDERS + AFFILIATES -->
-    <div class="cc-row cc-row-13-1">
       <div class="cc-panel">
         <div class="cc-panel-head">
           <div>
@@ -1187,6 +1201,19 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
           <div class="cc-live" id="cc-live-indicator"><span class="cc-live-dot"></span>Live</div>
         </div>
         <div id="cc-orders-list"></div>
+      </div>
+    </div>
+
+    <!-- WAITLISTING + TOP AFFILIATES -->
+    <div class="cc-row cc-row-13-1">
+      <div class="cc-panel">
+        <div class="cc-panel-head">
+          <div>
+            <div class="cc-panel-title">Waitlisting</div>
+            <div class="cc-panel-sub">Order menunggu slot terbuka — belum diakui sebagai revenue</div>
+          </div>
+        </div>
+        <div id="cc-waitlist-list"></div>
       </div>
 
       <div class="cc-panel">
@@ -1279,38 +1306,6 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       </div>
     </div>
 
-    <!-- ── WAITLIST VIEWER ── -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Waitlist</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="waitlist-status-filter" onchange="loadWaitlist()" class="of-sel">
-            <option value="waiting">Waiting</option>
-            <option value="promoted">Promoted</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="">Semua</option>
-          </select>
-          <button class="btn btn-ghost btn-sm" onclick="loadWaitlist()">↻ Refresh</button>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>#</th>
-            <th>Email</th>
-            <th class="hide-mobile">Nama</th>
-            <th class="hide-mobile">Phone</th>
-            <th class="hide-mobile">TV Username</th>
-            <th class="hide-mobile">Plan</th>
-            <th class="hide-mobile">Joined</th>
-            <th class="hide-mobile">Promoted</th>
-            <th>Status</th>
-          </tr></thead>
-          <tbody id="waitlist-table"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- ── PRODUCT TABLE ── -->
     <div class="section">
       <div class="section-header">
@@ -1338,58 +1333,100 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 
   <!-- SUBSCRIBERS -->
   <div class="page" id="page-subscribers">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Subscribers</div>
-        <button class="btn btn-ghost btn-sm" onclick="loadSubscribers()">↻ Refresh</button>
+    <div class="subpage-tabs" role="tablist">
+      <button class="subpage-tab active" data-subpage="subscribers" onclick="showSubscribersTab('subscribers')" role="tab">Subscribers</button>
+      <button class="subpage-tab" data-subpage="waitlist" onclick="showSubscribersTab('waitlist')" role="tab">Waitlist</button>
+    </div>
+
+    <!-- SUB-PAGE: Subscribers (default) -->
+    <div id="subpage-subscribers" class="subpage active">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Subscribers</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadSubscribers()">↻ Refresh</button>
+        </div>
+        <!-- FILTERS -->
+        <div class="orders-filters">
+          <input type="text" id="sub-search" placeholder="Cari nama / username / email / phone..." class="of-sel" style="max-width:240px" oninput="filterSubscribers()"/>
+
+          <select id="f-sub-status" onchange="filterSubscribers()" class="of-sel">
+            <option value="">Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          <select id="f-sub-tv" onchange="filterSubscribers()" class="of-sel">
+            <option value="">TV Status</option>
+            <option value="granted">Granted</option>
+            <option value="failed">Failed</option>
+          </select>
+
+          <select id="f-sub-telegram" onchange="filterSubscribers()" class="of-sel">
+            <option value="">Telegram</option>
+            <option value="joined">Joined</option>
+            <option value="not_joined">Not joined</option>
+          </select>
+
+          <select id="f-sub-plan" onchange="filterSubscribers()" class="of-sel">
+            <option value="">Plan</option>
+          </select>
+
+          <button onclick="resetSubFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Nama</th>
+              <th class="hide-mobile">Email</th>
+              <th class="hide-mobile">No. HP</th>
+              <th>Status</th>
+              <th class="hide-mobile">Plan</th>
+              <th class="hide-mobile">Joined</th>
+              <th class="hide-mobile">Expires</th>
+              <th class="hide-mobile">TV Username</th>
+              <th>TV</th>
+              <th>Telegram</th>
+              <th>Aksi</th>
+            </tr></thead>
+            <tbody id="subscribers-table"><tr><td colspan="11" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="subscribers-pagination"></div>
       </div>
-      <!-- FILTERS -->
-      <div class="orders-filters">
-        <input type="text" id="sub-search" placeholder="Cari nama / username / email / phone..." class="of-sel" style="max-width:240px" oninput="filterSubscribers()"/>
+    </div>
 
-        <select id="f-sub-status" onchange="filterSubscribers()" class="of-sel">
-          <option value="">Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-
-        <select id="f-sub-tv" onchange="filterSubscribers()" class="of-sel">
-          <option value="">TV Status</option>
-          <option value="granted">Granted</option>
-          <option value="failed">Failed</option>
-        </select>
-
-        <select id="f-sub-telegram" onchange="filterSubscribers()" class="of-sel">
-          <option value="">Telegram</option>
-          <option value="joined">Joined</option>
-          <option value="not_joined">Not joined</option>
-        </select>
-
-        <select id="f-sub-plan" onchange="filterSubscribers()" class="of-sel">
-          <option value="">Plan</option>
-        </select>
-
-        <button onclick="resetSubFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
+    <!-- SUB-PAGE: Waitlist (moved from Products tab) -->
+    <div id="subpage-waitlist" class="subpage">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Waitlist</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="waitlist-status-filter" onchange="loadWaitlist()" class="of-sel">
+              <option value="waiting">Waiting</option>
+              <option value="promoted">Promoted</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="">Semua</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadWaitlist()">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th>
+              <th>Email</th>
+              <th class="hide-mobile">Nama</th>
+              <th class="hide-mobile">Phone</th>
+              <th class="hide-mobile">TV Username</th>
+              <th class="hide-mobile">Plan</th>
+              <th class="hide-mobile">Joined</th>
+              <th class="hide-mobile">Promoted</th>
+              <th>Status</th>
+            </tr></thead>
+            <tbody id="waitlist-table"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>Nama</th>
-            <th class="hide-mobile">Email</th>
-            <th class="hide-mobile">No. HP</th>
-            <th>Status</th>
-            <th class="hide-mobile">Plan</th>
-            <th class="hide-mobile">Joined</th>
-            <th class="hide-mobile">Expires</th>
-            <th class="hide-mobile">TV Username</th>
-            <th>TV</th>
-            <th>Telegram</th>
-            <th>Aksi</th>
-          </tr></thead>
-          <tbody id="subscribers-table"><tr><td colspan="11" class="empty">Loading...</td></tr></tbody>
-        </table>
-      </div>
-      <div id="subscribers-pagination"></div>
     </div>
   </div>
 
@@ -2442,10 +2479,11 @@ function renderSoldProductsDonut() {
 // ── Dashboard ─────────────────────────────────────────────────────
 async function loadDashboard() {
   try {
-    const [subs, txs, hero] = await Promise.all([
+    const [subs, txs, hero, waitlist] = await Promise.all([
       api('GET', '/admin/subscribers'),
       api('GET', '/admin/transactions'),
       api('GET', '/admin/stats/hero'),
+      api('GET', '/admin/waitlist?status=waiting'),
     ]);
 
     const now = new Date();
@@ -2467,7 +2505,7 @@ async function loadDashboard() {
       : '';
 
     // ── Populate Command Center dashboard ──
-    renderCCDashboard(subs.subscribers, txs.transactions, totalRev, hero);
+    renderCCDashboard(subs.subscribers, txs.transactions, totalRev, hero, waitlist?.waitlist || []);
 
     loadAdminCharts();
 
@@ -2492,7 +2530,8 @@ async function loadDashboard() {
 }
 
 // ── Command Center dashboard renderer ─────────────────────────────
-function renderCCDashboard(subscribers, transactions, totalRev, hero) {
+function renderCCDashboard(subscribers, transactions, totalRev, hero, waitlist) {
+  waitlist = waitlist || [];
   hero = hero || {};
   const fmtRp = (n) => {
     if (!n) return 'Rp 0';
@@ -2620,20 +2659,16 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero) {
   const _legendPaid = document.getElementById('cc-legend-paid');
   if (_legendPaid) _legendPaid.textContent = fmtRp(heroRevenue);
 
-  // ORDER list (6 most recent)
+  // ORDER list (6 most recent) — avatars removed; product name in the
+  // meta line already conveys the tier, so the colored initials block was
+  // redundant noise.
   const ordersList = transactions.slice(0,6).map(t => {
-    const prodKey = (t.product_name||'').toLowerCase();
-    let avatarCls = 'cc-order-avatar-base';
-    if (prodKey.includes('life')) avatarCls = 'cc-order-avatar-lt';
-    else if (prodKey.includes('6') || prodKey.includes('12') || prodKey.includes('gold')) avatarCls = 'cc-order-avatar-gold';
-    const initials = (t.product_name || 'OR').replace(/^TRXC QRR\s*/,'').slice(0,2).toUpperCase();
     const status = t.tv_access_status;
     let statusHtml = '';
     if (status === 'success' || status === 'granted') statusHtml = '<span class="cc-order-status cc-status-granted">Granted</span>';
     else if (status === 'processing') statusHtml = '<span class="cc-order-status cc-status-processing">Processing</span>';
     else statusHtml = '<span class="cc-order-status cc-status-failed">Failed</span>';
     return `<div class="cc-order-row">
-      <div class="cc-order-avatar ${avatarCls}">${initials}</div>
       <div style="flex:1;min-width:0;">
         <div class="cc-order-user">${t.tv_username}</div>
         <div class="cc-order-meta">#${t.scalev_order_id} · ${(t.product_name||'').replace(/^TRXC QRR\s*/,'')}</div>
@@ -2646,6 +2681,50 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero) {
     </div>`;
   }).join('');
   document.getElementById('cc-orders-list').innerHTML = ordersList || '<div style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px;">Belum ada order</div>';
+
+  // WAITLIST — orders parked because the membership cap was full at
+  // payment time. Listed FIFO (joined_at ASC); position is the row index.
+  // These are NOT yet revenue (deferred until promoted by the cron); the
+  // panel sub-title flags that explicitly so the operator can't confuse
+  // it with the "Order terbaru" feed above.
+  const waitlistEl = document.getElementById('cc-waitlist-list');
+  if (waitlistEl) {
+    if (!waitlist.length) {
+      waitlistEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px;">Belum ada order di waitlist</div>';
+    } else {
+      let waitTotal = 0;
+      const waitRows = waitlist.slice(0, 5).map((w, i) => {
+        const amt = parseInt(w.amount || 0);
+        waitTotal += amt;
+        const pos = i + 1;
+        const name = w.customer_name || w.tv_username || w.email || '—';
+        return `<div class="cc-order-row">
+          <div class="cc-order-avatar cc-order-avatar-wait">#${pos}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="cc-order-user">${name}</div>
+            <div class="cc-order-meta">@${w.tv_username || '—'} · ${(w.product_name||'').replace(/^TRXC QRR\s*/,'')}</div>
+          </div>
+          <div>
+            <div class="cc-order-amt">${fmtRp(amt)}</div>
+            <div class="cc-order-time">menunggu ${timeAgo(w.joined_at)}</div>
+          </div>
+          <span class="cc-order-status cc-status-waiting">Waiting</span>
+        </div>`;
+      }).join('');
+      // Sum across the FULL waitlist, not just the visible 6, so the
+      // "deferred revenue" footer is honest.
+      const fullTotal = waitlist.reduce((s, w) => s + parseInt(w.amount || 0), 0);
+      const footerHtml = waitlist.length > 5
+        ? `<div style="font-size:12px;color:var(--muted);padding:10px 0 0;border-top:1px solid var(--border);margin-top:8px;display:flex;justify-content:space-between;">
+             <span>+${waitlist.length - 5} order lagi di waitlist</span>
+             <span>Deferred: <strong style="color:var(--ink);">${fmtRp(fullTotal)}</strong></span>
+           </div>`
+        : `<div style="font-size:12px;color:var(--muted);padding:10px 0 0;border-top:1px solid var(--border);margin-top:8px;text-align:right;">
+             Deferred: <strong style="color:var(--ink);">${fmtRp(fullTotal)}</strong>
+           </div>`;
+      waitlistEl.innerHTML = waitRows + footerHtml;
+    }
+  }
 
   // TOP AFFILIATES — real data from /admin/stats/hero, last 30d
   const topAffs = hero.top_affiliates || [];
@@ -2799,9 +2878,9 @@ async function loadWaitlist() {
 
 // ── Products ──────────────────────────────────────────────────────
 async function loadProducts() {
-  // Load cap config + waitlist alongside products since they share the tab.
+  // Cap config still lives here (it picks WHICH products are capped);
+  // the Waitlist viewer moved to the Subscribers tab.
   loadCapConfig();
-  loadWaitlist();
   try {
     const { products } = await api('GET', '/admin/products');
     document.getElementById('products-table').innerHTML = products.length
@@ -3168,6 +3247,23 @@ async function loadSubscribers() {
     populateSubPlanFilter(subscribers);
     renderSubscribers(getFilteredSubscribers());
   } catch(e) { console.error(e); }
+}
+
+// Sub-tab switcher for the Subscribers page (Subscribers vs Waitlist).
+// Lazy-loads the waitlist on first switch so we don't pay for a fetch
+// the operator may never look at.
+let _waitlistLoaded = false;
+function showSubscribersTab(name) {
+  document.querySelectorAll('#page-subscribers .subpage-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.subpage === name);
+  });
+  document.querySelectorAll('#page-subscribers .subpage').forEach(p => {
+    p.classList.toggle('active', p.id === 'subpage-' + name);
+  });
+  if (name === 'waitlist' && !_waitlistLoaded) {
+    loadWaitlist();
+    _waitlistLoaded = true;
+  }
 }
 
 // Populate the Plan dropdown from whatever product_name values are
