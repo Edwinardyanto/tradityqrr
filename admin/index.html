@@ -1076,6 +1076,9 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
             <span class="cc-pill-ok" id="cc-rev-delta">↑ —</span>
             <span class="cc-hero-note" id="cc-rev-target">target bulan ini —% tercapai</span>
           </div>
+          <div id="cc-rev-waitlist-note" style="display:none;font-size:11px;color:#C9A84C;margin-top:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.3px;">
+            ⏳ termasuk Rp <span id="cc-rev-waitlist-amt">0</span> di waitlist (deferred)
+          </div>
         </div>
         <div>
           <div class="cc-hero-label cc-hero-label-dim">Transaksi</div>
@@ -1152,8 +1155,9 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
         <div style="position:relative;width:100%;flex:1;min-height:200px;">
           <canvas id="admin-chart-income" role="img" aria-label="Revenue harian"></canvas>
         </div>
-        <div class="cc-legend">
-          <div><span class="cc-sw" style="background:#059669"></span>Paid · <span id="cc-legend-paid">Rp —</span></div>
+        <div class="cc-legend" style="flex-wrap:wrap;">
+          <div><span class="cc-sw" style="background:#059669"></span>Realized · <span id="cc-legend-paid">Rp —</span></div>
+          <div id="cc-legend-waitlist-wrap" style="display:none"><span class="cc-sw" style="background:#C9A84C"></span>Waitlist · <span id="cc-legend-waitlist">Rp —</span></div>
           <div><span class="cc-sw" style="background:#C9A84C;border-radius:50%"></span>Transaksi · <span id="cc-legend-txcount">— order</span></div>
         </div>
       </div>
@@ -2304,29 +2308,55 @@ async function loadAdminIncomeChart() {
     if (incomeSubEl && data.total_income_count !== undefined)
       incomeSubEl.textContent = (data.total_income_count || 0) + ' transaksi paid';
 
-    // Legend totals — Revenue sum + transaction count for the visible window.
-    const totalRev = days.reduce((a, d) => a + (d.income   || 0), 0);
-    const totalTx  = days.reduce((a, d) => a + (d.tx_count || 0), 0);
-    const legendPaid = document.getElementById('cc-legend-paid');
-    const legendTx   = document.getElementById('cc-legend-txcount');
-    if (legendPaid) legendPaid.textContent = _adminFmtRpFull(totalRev);
+    // Legend totals — split realized vs waitlist for the visible window.
+    const totalRev      = days.reduce((a, d) => a + (d.income          || 0), 0);
+    const totalWaitlist = days.reduce((a, d) => a + (d.income_waitlist || 0), 0);
+    const totalRealized = Math.max(0, totalRev - totalWaitlist);
+    const totalTx       = days.reduce((a, d) => a + (d.tx_count        || 0), 0);
+    const legendPaid     = document.getElementById('cc-legend-paid');
+    const legendWaitWrap = document.getElementById('cc-legend-waitlist-wrap');
+    const legendWaitAmt  = document.getElementById('cc-legend-waitlist');
+    const legendTx       = document.getElementById('cc-legend-txcount');
+    if (legendPaid) legendPaid.textContent = _adminFmtRpFull(totalRealized);
+    if (legendWaitWrap && legendWaitAmt) {
+      if (totalWaitlist > 0) {
+        legendWaitAmt.textContent  = _adminFmtRpFull(totalWaitlist);
+        legendWaitWrap.style.display = '';
+      } else {
+        legendWaitWrap.style.display = 'none';
+      }
+    }
     if (legendTx)   legendTx.textContent   = totalTx.toLocaleString('id-ID') + ' order';
 
     if (adminChartIncome) adminChartIncome.destroy();
     const ctx = document.getElementById('admin-chart-income');
     if (!ctx) return;
+    // Bar is stacked: realized (green) + waitlist deferred (amber).
+    // Total height per day = gross daily revenue.
     adminChartIncome = new Chart(ctx, {
       type: 'bar',
       data: {
         labels,
         datasets: [
           {
-            // Left axis — Revenue bar (Rp)
-            label: 'Revenue',
-            data: days.map(d => d.income || 0),
+            // Realized = gross − waitlist. Bottom layer.
+            label: 'Realized',
+            data: days.map(d => Math.max(0, (d.income || 0) - (d.income_waitlist || 0))),
             backgroundColor: '#1D9E75',
+            borderRadius: 0,
+            borderSkipped: false,
+            stack: 'rev',
+            yAxisID: 'y',
+            order: 3,
+          },
+          {
+            // Waitlist deferred = top layer. Rounded top corners only.
+            label: 'Waitlist',
+            data: days.map(d => d.income_waitlist || 0),
+            backgroundColor: '#C9A84C',
             borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
             borderSkipped: false,
+            stack: 'rev',
             yAxisID: 'y',
             order: 2,
           },
@@ -2356,22 +2386,26 @@ async function loadAdminIncomeChart() {
             mode: 'index',
             callbacks: {
               title: c => c[0].label,
-              label: c => c.dataset.yAxisID === 'y'
-                ? '  Revenue: '   + _adminFmtRpFull(c.parsed.y)
-                : '  Transaksi: ' + c.parsed.y + ' order',
+              label: c => {
+                if (c.dataset.yAxisID === 'y1') return '  Transaksi: ' + c.parsed.y + ' order';
+                if (c.dataset.label === 'Waitlist') return '  Waitlist: ' + _adminFmtRpFull(c.parsed.y) + ' (deferred)';
+                return '  Realized: ' + _adminFmtRpFull(c.parsed.y);
+              },
             }
           }
         },
         scales: {
           x: {
             ticks: { color: tickColor, font: { size: 10 }, maxTicksLimit: 30, autoSkip: true, maxRotation: 0 },
-            grid:  { color: gridColor }
+            grid:  { color: gridColor },
+            stacked: true,
           },
           y: {
             position: 'left',
             ticks: { color: tickColor, font: { size: 10 }, callback: v => _adminFmtRpShort(v) },
             grid:  { color: gridColor },
             beginAtZero: true,
+            stacked: true,
           },
           y1: {
             position: 'right',
@@ -2556,13 +2590,27 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero, waitlist) 
   document.getElementById('cc-sub').textContent = `${hari}, ${now.getDate()} ${bulan} ${now.getFullYear()} · sinkron baru saja`;
 
   // ── HERO metrics — all from /admin/stats/hero (real, 30-day scoped) ──
-  const heroRevenue   = parseInt(hero.revenue       || 0);
-  const heroTxCount   = parseInt(hero.tx_count      || 0);
-  const heroPendingC  = parseInt(hero.pending_count || 0);
-  const heroPendingA  = parseInt(hero.pending_amt   || 0);
+  const heroRevenue         = parseInt(hero.revenue          || 0);
+  const heroRevenueWaitlist = parseInt(hero.revenue_waitlist || 0);
+  const heroTxCount         = parseInt(hero.tx_count         || 0);
+  const heroPendingC        = parseInt(hero.pending_count    || 0);
+  const heroPendingA        = parseInt(hero.pending_amt      || 0);
 
-  // Revenue
+  // Revenue (gross — includes waitlist; the deferred slice surfaces below)
   document.getElementById('cc-rev').textContent = fmtFull(heroRevenue);
+
+  // Waitlist deferred caveat — only render when there's a non-zero slice
+  // so the note disappears entirely once everything's promoted/cancelled.
+  const waitNote = document.getElementById('cc-rev-waitlist-note');
+  const waitAmt  = document.getElementById('cc-rev-waitlist-amt');
+  if (waitNote && waitAmt) {
+    if (heroRevenueWaitlist > 0) {
+      waitAmt.textContent  = (heroRevenueWaitlist).toLocaleString('id-ID');
+      waitNote.style.display = '';
+    } else {
+      waitNote.style.display = 'none';
+    }
+  }
 
   // MoM delta badge
   const momDeltaEl = document.getElementById('cc-rev-delta');
