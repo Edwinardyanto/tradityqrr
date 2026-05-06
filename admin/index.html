@@ -748,7 +748,7 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
 .cc-act-cta-emerald { color: #059669; }
 
 /* PANELS */
-.cc-row { display: grid; gap: 14px; margin-bottom: 14px; }
+.cc-row { display: grid; gap: 14px; margin-bottom: 14px; align-items: start; }
 .cc-row-2-1  { grid-template-columns: 2fr 1fr; }
 .cc-row-13-1 { grid-template-columns: 1.3fr 1fr; }
 .cc-row-1-1  { grid-template-columns: 1fr 1fr; }
@@ -2632,20 +2632,16 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero, waitlist) 
   const _legendPaid = document.getElementById('cc-legend-paid');
   if (_legendPaid) _legendPaid.textContent = fmtRp(heroRevenue);
 
-  // ORDER list (6 most recent)
+  // ORDER list (6 most recent) — avatars removed; product name in the
+  // meta line already conveys the tier, so the colored initials block was
+  // redundant noise.
   const ordersList = transactions.slice(0,6).map(t => {
-    const prodKey = (t.product_name||'').toLowerCase();
-    let avatarCls = 'cc-order-avatar-base';
-    if (prodKey.includes('life')) avatarCls = 'cc-order-avatar-lt';
-    else if (prodKey.includes('6') || prodKey.includes('12') || prodKey.includes('gold')) avatarCls = 'cc-order-avatar-gold';
-    const initials = (t.product_name || 'OR').replace(/^TRXC QRR\s*/,'').slice(0,2).toUpperCase();
     const status = t.tv_access_status;
     let statusHtml = '';
     if (status === 'success' || status === 'granted') statusHtml = '<span class="cc-order-status cc-status-granted">Granted</span>';
     else if (status === 'processing') statusHtml = '<span class="cc-order-status cc-status-processing">Processing</span>';
     else statusHtml = '<span class="cc-order-status cc-status-failed">Failed</span>';
     return `<div class="cc-order-row">
-      <div class="cc-order-avatar ${avatarCls}">${initials}</div>
       <div style="flex:1;min-width:0;">
         <div class="cc-order-user">${t.tv_username}</div>
         <div class="cc-order-meta">#${t.scalev_order_id} · ${(t.product_name||'').replace(/^TRXC QRR\s*/,'')}</div>
