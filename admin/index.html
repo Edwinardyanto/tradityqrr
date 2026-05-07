@@ -1430,10 +1430,11 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
               <th class="hide-mobile">TV Username</th>
               <th class="hide-mobile">Plan</th>
               <th class="hide-mobile">Joined</th>
+              <th class="hide-mobile">Est. Promoted</th>
               <th class="hide-mobile">Promoted</th>
               <th>Status</th>
             </tr></thead>
-            <tbody id="waitlist-table"><tr><td colspan="9" class="empty">Loading…</td></tr></tbody>
+            <tbody id="waitlist-table"><tr><td colspan="10" class="empty">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -2992,6 +2993,13 @@ async function loadWaitlist() {
                       : w.status === 'withdraw_requested' ? '<span class="badge badge-red">Withdraw</span>'
                       : w.status === 'refunded'  ? '<span class="badge badge-muted">Refunded</span>'
                       : '<span class="badge badge-yellow">Waiting</span>';
+          // Est. Promoted hanya muncul untuk status='waiting'.
+          // Once promoted/cancelled/refunded, the slot estimate becomes
+          // historical noise — the actual promoted_at column tells the
+          // real story.
+          const eta = w.status === 'waiting' && w.estimated_entry
+            ? fmtDate(w.estimated_entry)
+            : '—';
           return `<tr>
             <td><strong>${i + 1}</strong></td>
             <td style="font-size:12px">${w.email}</td>
@@ -3000,14 +3008,15 @@ async function loadWaitlist() {
             <td class="hide-mobile mono" style="font-size:12px">${w.tv_username || '—'}</td>
             <td class="hide-mobile" style="font-size:12px">${w.product_name || '—'}</td>
             <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.joined_at ? fmtDateTime(w.joined_at) : '—'}</td>
+            <td class="hide-mobile mono" style="font-size:11px;color:${w.status === 'waiting' && w.estimated_entry ? '#C9A84C' : 'var(--muted)'}">${eta}</td>
             <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.promoted_at ? fmtDateTime(w.promoted_at) : '—'}</td>
             <td>${badge}</td>
           </tr>`;
         }).join('')
-      : '<tr><td colspan="9" class="empty">Tidak ada entry di waitlist.</td></tr>';
+      : '<tr><td colspan="10" class="empty">Tidak ada entry di waitlist.</td></tr>';
   } catch (e) {
     document.getElementById('waitlist-table').innerHTML =
-      `<tr><td colspan="9" class="empty">Error: ${e.message}</td></tr>`;
+      `<tr><td colspan="10" class="empty">Error: ${e.message}</td></tr>`;
   }
 }
 
