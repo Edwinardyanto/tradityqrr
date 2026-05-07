@@ -2801,6 +2801,7 @@ function renderCCDashboard(subscribers, transactions, totalRev, hero, waitlist) 
     let statusHtml = '';
     if (status === 'success' || status === 'granted') statusHtml = '<span class="cc-order-status cc-status-granted">Granted</span>';
     else if (status === 'processing') statusHtml = '<span class="cc-order-status cc-status-processing">Processing</span>';
+    else if (status === 'waitlist')   statusHtml = '<span class="cc-order-status cc-status-waiting">Waitlist</span>';
     else statusHtml = '<span class="cc-order-status cc-status-failed">Failed</span>';
     return `<div class="cc-order-row">
       <div style="flex:1;min-width:0;">
@@ -4048,6 +4049,7 @@ function statusBadge(status) {
   const map = {
     granted:              '<span class="badge badge-green">granted</span>',
     processing:           '<span class="badge badge-yellow">processing</span>',
+    waitlist:             '<span class="badge badge-yellow">waitlist</span>',
     failed:               '<span class="badge badge-red">failed</span>',
     failed_no_username:   '<span class="badge badge-red">no username</span>',
     failed_unknown_product:'<span class="badge badge-red">unknown product</span>',
