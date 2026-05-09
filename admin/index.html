@@ -1413,7 +1413,9 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
           <div style="display:flex;gap:8px;align-items:center">
             <select id="waitlist-status-filter" onchange="loadWaitlist()" class="of-sel">
               <option value="waiting">Waiting</option>
+              <option value="withdraw_requested">Withdraw Requested</option>
               <option value="promoted">Promoted</option>
+              <option value="refunded">Refunded</option>
               <option value="cancelled">Cancelled</option>
               <option value="">Semua</option>
             </select>
@@ -1433,8 +1435,9 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
               <th class="hide-mobile">Est. Promoted</th>
               <th class="hide-mobile">Promoted</th>
               <th>Status</th>
+              <th>Aksi</th>
             </tr></thead>
-            <tbody id="waitlist-table"><tr><td colspan="10" class="empty">Loading…</td></tr></tbody>
+            <tbody id="waitlist-table"><tr><td colspan="11" class="empty">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -3000,6 +3003,15 @@ async function loadWaitlist() {
           const eta = w.status === 'waiting' && w.estimated_entry
             ? fmtDate(w.estimated_entry)
             : '—';
+          // Inline action buttons only for status='withdraw_requested' —
+          // mirror the Telegram inline-keyboard path so admin can act
+          // from web instead of having to keep TG open.
+          const actions = w.status === 'withdraw_requested'
+            ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
+                 <button class="btn btn-ghost btn-sm" onclick="markWaitlistRefunded(${w.id})" title="Tandai sudah refund">💵</button>
+                 <button class="btn btn-ghost btn-sm" onclick="rejectWaitlistRefund(${w.id})" title="Tolak refund">❌</button>
+               </div>`
+            : '<span style="color:var(--muted);font-size:11px;">—</span>';
           return `<tr>
             <td><strong>${i + 1}</strong></td>
             <td style="font-size:12px">${w.email}</td>
@@ -3011,13 +3023,33 @@ async function loadWaitlist() {
             <td class="hide-mobile mono" style="font-size:11px;color:${w.status === 'waiting' && w.estimated_entry ? '#C9A84C' : 'var(--muted)'}">${eta}</td>
             <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.promoted_at ? fmtDateTime(w.promoted_at) : '—'}</td>
             <td>${badge}</td>
+            <td>${actions}</td>
           </tr>`;
         }).join('')
-      : '<tr><td colspan="10" class="empty">Tidak ada entry di waitlist.</td></tr>';
+      : '<tr><td colspan="11" class="empty">Tidak ada entry di waitlist.</td></tr>';
   } catch (e) {
     document.getElementById('waitlist-table').innerHTML =
-      `<tr><td colspan="10" class="empty">Error: ${e.message}</td></tr>`;
+      `<tr><td colspan="11" class="empty">Error: ${e.message}</td></tr>`;
   }
+}
+
+async function markWaitlistRefunded(id) {
+  const ref = prompt('Input ref/no transfer (kosongkan kalau ga ada):');
+  if (ref === null) return; // user cancelled
+  try {
+    await api('POST', `/admin/waitlist/${id}/refund-paid`, { transfer_ref: ref });
+    await loadWaitlist();
+  } catch (e) { alert('Gagal: ' + e.message); }
+}
+
+async function rejectWaitlistRefund(id) {
+  const reason = prompt('Alasan tolak refund:');
+  if (reason === null) return;
+  if (!reason.trim()) return alert('Alasan tidak boleh kosong.');
+  try {
+    await api('POST', `/admin/waitlist/${id}/refund-reject`, { reason: reason.trim() });
+    await loadWaitlist();
+  } catch (e) { alert('Gagal: ' + e.message); }
 }
 
 // ── Products ──────────────────────────────────────────────────────
