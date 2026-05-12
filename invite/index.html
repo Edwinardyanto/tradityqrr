@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verifikasi Undangan · TRXC QRR</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <!-- Turnstile script (Cloudflare). Loaded async + waits for explicit
+       render via window.onTurnstileReady — keeps the page usable on
+       slow connections instead of locking until the widget loads. -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileReady" async defer></script>
+  <style>
+    :root {
+      --bg: #07060F;
+      --card: #0C0A1A;
+      --border: #1A1830;
+      --ink: #F0EFF8;
+      --muted: #A8A2C9;
+      --accent: #6B5FD4;
+      --gold: #C9A84C;
+      --green: #1D9E75;
+      --red: #DC2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      max-width: 440px;
+      width: calc(100% - 32px);
+      text-align: center;
+    }
+    .brand {
+      font-size: 22px; font-weight: 900; letter-spacing: 3px;
+      margin-bottom: 4px;
+    }
+    .brand .accent { color: var(--accent); }
+    .brand-sub {
+      font-size: 11px; color: var(--muted); letter-spacing: 2px;
+      text-transform: uppercase; margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 18px; font-weight: 700; margin: 0 0 8px;
+    }
+    p.lede {
+      font-size: 14px; color: var(--muted); line-height: 1.6;
+      margin: 0 0 20px;
+    }
+    .ts-wrap {
+      display: flex; justify-content: center;
+      min-height: 70px;
+      margin-bottom: 20px;
+    }
+    .ts-wrap.loading::before {
+      content: 'Memuat verifikasi...';
+      font-size: 12px; color: var(--muted);
+    }
+    .btn-primary {
+      background: var(--accent); color: #fff;
+      border: 0; padding: 12px 28px; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      width: 100%;
+    }
+    .btn-primary:disabled {
+      opacity: 0.5; cursor: not-allowed;
+    }
+    .alert {
+      padding: 12px 14px; border-radius: 8px;
+      font-size: 13px; line-height: 1.5; text-align: left;
+      margin-top: 14px;
+    }
+    .alert-error { background: rgba(220,38,38,0.12); border: 1px solid rgba(220,38,38,0.4); color: #FCA5A5; }
+    .alert-ok    { background: rgba(29,158,117,0.12); border: 1px solid rgba(29,158,117,0.4); color: #6EE7B7; }
+    .footer {
+      margin-top: 24px;
+      font-size: 11px; color: var(--muted);
+    }
+    .footer a { color: var(--muted); text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">TRXC <span class="accent">QRR</span></div>
+    <div class="brand-sub">Verifikasi Undangan</div>
+
+    <h1 id="title">Verifikasi dulu, biar bukan bot 🤖</h1>
+    <p class="lede" id="lede">
+      Selesaikan verifikasi singkat di bawah. Setelah itu, kamu akan diarahkan ke link Telegram-nya.
+    </p>
+
+    <div class="ts-wrap loading" id="ts-wrap">
+      <!-- Turnstile widget renders here once script + sitekey loaded -->
+      <div id="ts-widget"></div>
+    </div>
+
+    <button class="btn-primary" id="submit-btn" disabled>Lanjut ke Telegram</button>
+
+    <div id="msg"></div>
+
+    <div class="footer">
+      Powered by Cloudflare Turnstile · <a href="https://trxcqrr.com">trxcqrr.com</a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://tradity-qrr-server-production.up.railway.app';
+
+    const params = new URLSearchParams(location.search);
+    const token  = params.get('t') || '';
+
+    let tsToken = null;        // Turnstile response token, set on success
+    let widgetId = null;       // Turnstile widget id
+    let siteKey  = null;
+
+    const $msg   = document.getElementById('msg');
+    const $btn   = document.getElementById('submit-btn');
+    const $wrap  = document.getElementById('ts-wrap');
+    const $widget= document.getElementById('ts-widget');
+
+    function showError(text) {
+      $msg.innerHTML = `<div class="alert alert-error">${text}</div>`;
+    }
+    function showOk(text) {
+      $msg.innerHTML = `<div class="alert alert-ok">${text}</div>`;
+    }
+
+    // No token in URL → can't do anything
+    if (!token || !/^[a-f0-9]{32}$/i.test(token)) {
+      document.getElementById('title').textContent = 'Link tidak valid';
+      document.getElementById('lede').textContent  = 'URL undangan rusak / tidak lengkap. Minta link baru ke yang nge-invite kamu.';
+      $wrap.style.display = 'none';
+      $btn.style.display  = 'none';
+    } else {
+      // Fetch site key from backend (config endpoint), then render
+      // Turnstile widget.
+      fetch(API_BASE + '/invite-bot/turnstile-config')
+        .then(r => r.json())
+        .then(cfg => {
+          siteKey = cfg.siteKey;
+          if (!siteKey) {
+            showError('Server config error. Hubungi admin.');
+            return;
+          }
+          // If api.js already loaded, render now; otherwise onTurnstileReady will do it.
+          if (window.turnstile) renderWidget();
+        })
+        .catch(err => showError('Gagal load config verifikasi: ' + err.message));
+    }
+
+    // Called by Turnstile's api.js when ready.
+    window.onTurnstileReady = function () {
+      if (siteKey) renderWidget();
+    };
+
+    function renderWidget() {
+      if (widgetId !== null) return; // already rendered
+      $wrap.classList.remove('loading');
+      widgetId = window.turnstile.render('#ts-widget', {
+        sitekey: siteKey,
+        callback: function (responseToken) {
+          tsToken = responseToken;
+          $btn.disabled = false;
+        },
+        'error-callback': function () {
+          showError('Verifikasi error, refresh halaman.');
+          $btn.disabled = true;
+        },
+        'expired-callback': function () {
+          tsToken = null;
+          $btn.disabled = true;
+        },
+        theme: 'dark',
+      });
+    }
+
+    $btn.addEventListener('click', async () => {
+      if (!tsToken) return showError('Selesaikan verifikasi captcha dulu.');
+      $btn.disabled = true;
+      $btn.textContent = 'Memproses...';
+      try {
+        const res = await fetch(API_BASE + '/invite-bot/redeem-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, turnstile_response: tsToken }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.invite_link) {
+          showError(data.error || 'Verifikasi gagal. Coba refresh halaman.');
+          $btn.disabled = false;
+          $btn.textContent = 'Coba Lagi';
+          return;
+        }
+        showOk('✅ Terverifikasi! Mengarahkan ke Telegram...');
+        $btn.textContent = 'Buka Telegram';
+        // Small delay so user sees the success state
+        setTimeout(() => { window.location.href = data.invite_link; }, 800);
+      } catch (err) {
+        showError('Network error: ' + err.message);
+        $btn.disabled = false;
+        $btn.textContent = 'Coba Lagi';
+      }
+    });
+  </script>
+</body>
+</html>
