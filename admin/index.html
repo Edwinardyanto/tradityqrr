@@ -1410,17 +1410,26 @@ input:checked + .toggle-slider:before { transform: translateX(14px); }
       <div class="section">
         <div class="section-header">
           <div class="section-title">Waitlist</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <select id="waitlist-status-filter" onchange="loadWaitlist()" class="of-sel">
-              <option value="waiting">Waiting</option>
-              <option value="withdraw_requested">Withdraw Requested</option>
-              <option value="promoted">Promoted</option>
-              <option value="refunded">Refunded</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="">Semua</option>
-            </select>
-            <button class="btn btn-ghost btn-sm" onclick="loadWaitlist()">↻ Refresh</button>
-          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadWaitlist()">↻ Refresh</button>
+        </div>
+        <!-- FILTERS -->
+        <div class="orders-filters">
+          <input type="text" id="wl-search" placeholder="Cari email / nama / phone / TV username..." class="of-sel" style="max-width:240px" oninput="filterWaitlist()"/>
+
+          <select id="waitlist-status-filter" onchange="filterWaitlist()" class="of-sel">
+            <option value="waiting">Waiting</option>
+            <option value="withdraw_requested">Withdraw Requested</option>
+            <option value="promoted">Promoted</option>
+            <option value="refunded">Refunded</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="">Semua</option>
+          </select>
+
+          <select id="f-wl-plan" onchange="filterWaitlist()" class="of-sel">
+            <option value="">Plan</option>
+          </select>
+
+          <button onclick="resetWaitlistFilters()" class="btn btn-ghost btn-sm of-reset">Reset</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -2984,53 +2993,99 @@ async function saveCapConfig() {
   }
 }
 
+let allWaitlist = [];
+
 async function loadWaitlist() {
   try {
-    const status = document.getElementById('waitlist-status-filter').value;
-    const path = status ? `/admin/waitlist?status=${encodeURIComponent(status)}` : '/admin/waitlist';
-    const { waitlist } = await api('GET', path);
-    document.getElementById('waitlist-table').innerHTML = waitlist.length
-      ? waitlist.map((w, i) => {
-          const badge = w.status === 'promoted'  ? '<span class="badge badge-green">Promoted</span>'
-                      : w.status === 'cancelled' ? '<span class="badge badge-muted">Cancelled</span>'
-                      : w.status === 'withdraw_requested' ? '<span class="badge badge-red">Withdraw</span>'
-                      : w.status === 'refunded'  ? '<span class="badge badge-muted">Refunded</span>'
-                      : '<span class="badge badge-yellow">Waiting</span>';
-          // Est. Promoted hanya muncul untuk status='waiting'.
-          // Once promoted/cancelled/refunded, the slot estimate becomes
-          // historical noise — the actual promoted_at column tells the
-          // real story.
-          const eta = w.status === 'waiting' && w.estimated_entry
-            ? fmtDate(w.estimated_entry)
-            : '—';
-          // Inline action buttons only for status='withdraw_requested' —
-          // mirror the Telegram inline-keyboard path so admin can act
-          // from web instead of having to keep TG open.
-          const actions = w.status === 'withdraw_requested'
-            ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
-                 <button class="btn btn-ghost btn-sm" onclick="markWaitlistRefunded(${w.id})" title="Tandai sudah refund">💵</button>
-                 <button class="btn btn-ghost btn-sm" onclick="rejectWaitlistRefund(${w.id})" title="Tolak refund">❌</button>
-               </div>`
-            : '<span style="color:var(--muted);font-size:11px;">—</span>';
-          return `<tr>
-            <td><strong>${i + 1}</strong></td>
-            <td style="font-size:12px">${w.email}</td>
-            <td class="hide-mobile" style="font-size:12px">${w.customer_name || '—'}</td>
-            <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.customer_phone || '—'}</td>
-            <td class="hide-mobile mono" style="font-size:12px">${w.tv_username || '—'}</td>
-            <td class="hide-mobile" style="font-size:12px">${w.product_name || '—'}</td>
-            <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.joined_at ? fmtDateTime(w.joined_at) : '—'}</td>
-            <td class="hide-mobile mono" style="font-size:11px;color:${w.status === 'waiting' && w.estimated_entry ? '#C9A84C' : 'var(--muted)'}">${eta}</td>
-            <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.promoted_at ? fmtDateTime(w.promoted_at) : '—'}</td>
-            <td>${badge}</td>
-            <td>${actions}</td>
-          </tr>`;
-        }).join('')
-      : '<tr><td colspan="11" class="empty">Tidak ada entry di waitlist.</td></tr>';
+    const { waitlist } = await api('GET', '/admin/waitlist');
+    allWaitlist = waitlist;
+    populateWaitlistPlanFilter(waitlist);
+    renderWaitlist(getFilteredWaitlist());
   } catch (e) {
     document.getElementById('waitlist-table').innerHTML =
       `<tr><td colspan="11" class="empty">Error: ${e.message}</td></tr>`;
   }
+}
+
+function populateWaitlistPlanFilter(list) {
+  const sel = document.getElementById('f-wl-plan');
+  if (!sel) return;
+  const current = sel.value;
+  const plans = Array.from(new Set(list.map(w => w.product_name).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="">Plan</option>'
+    + plans.map(p => `<option value="${p}">${p}</option>`).join('');
+  if (current && plans.includes(current)) sel.value = current;
+}
+
+function getFilteredWaitlist() {
+  const q       = (document.getElementById('wl-search')?.value || '').toLowerCase().trim();
+  const fStatus = document.getElementById('waitlist-status-filter')?.value || '';
+  const fPlan   = document.getElementById('f-wl-plan')?.value || '';
+  return allWaitlist.filter(w => {
+    if (q) {
+      const blob = ((w.email||'') + ' ' + (w.customer_name||'') + ' '
+                  + (w.customer_phone||'') + ' ' + (w.tv_username||'')).toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    if (fStatus && w.status !== fStatus) return false;
+    if (fPlan   && w.product_name !== fPlan) return false;
+    return true;
+  });
+}
+
+function filterWaitlist() {
+  renderWaitlist(getFilteredWaitlist());
+}
+
+function resetWaitlistFilters() {
+  ['wl-search','f-wl-plan'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const stat = document.getElementById('waitlist-status-filter');
+  if (stat) stat.value = 'waiting';
+  filterWaitlist();
+}
+
+function renderWaitlist(list) {
+  document.getElementById('waitlist-table').innerHTML = list.length
+    ? list.map((w, i) => {
+        const badge = w.status === 'promoted'  ? '<span class="badge badge-green">Promoted</span>'
+                    : w.status === 'cancelled' ? '<span class="badge badge-muted">Cancelled</span>'
+                    : w.status === 'withdraw_requested' ? '<span class="badge badge-red">Withdraw</span>'
+                    : w.status === 'refunded'  ? '<span class="badge badge-muted">Refunded</span>'
+                    : '<span class="badge badge-yellow">Waiting</span>';
+        // Est. Promoted hanya muncul untuk status='waiting'.
+        // Once promoted/cancelled/refunded, the slot estimate becomes
+        // historical noise — the actual promoted_at column tells the
+        // real story.
+        const eta = w.status === 'waiting' && w.estimated_entry
+          ? fmtDate(w.estimated_entry)
+          : '—';
+        // Inline action buttons only for status='withdraw_requested' —
+        // mirror the Telegram inline-keyboard path so admin can act
+        // from web instead of having to keep TG open.
+        const actions = w.status === 'withdraw_requested'
+          ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
+               <button class="btn btn-ghost btn-sm" onclick="markWaitlistRefunded(${w.id})" title="Tandai sudah refund">💵</button>
+               <button class="btn btn-ghost btn-sm" onclick="rejectWaitlistRefund(${w.id})" title="Tolak refund">❌</button>
+             </div>`
+          : '<span style="color:var(--muted);font-size:11px;">—</span>';
+        return `<tr>
+          <td><strong>${i + 1}</strong></td>
+          <td style="font-size:12px">${w.email}</td>
+          <td class="hide-mobile" style="font-size:12px">${w.customer_name || '—'}</td>
+          <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.customer_phone || '—'}</td>
+          <td class="hide-mobile mono" style="font-size:12px">${w.tv_username || '—'}</td>
+          <td class="hide-mobile" style="font-size:12px">${w.product_name || '—'}</td>
+          <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.joined_at ? fmtDateTime(w.joined_at) : '—'}</td>
+          <td class="hide-mobile mono" style="font-size:11px;color:${w.status === 'waiting' && w.estimated_entry ? '#C9A84C' : 'var(--muted)'}">${eta}</td>
+          <td class="hide-mobile mono" style="font-size:11px;color:var(--muted)">${w.promoted_at ? fmtDateTime(w.promoted_at) : '—'}</td>
+          <td>${badge}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="11" class="empty">Tidak ada hasil.</td></tr>';
 }
 
 async function markWaitlistRefunded(id) {
